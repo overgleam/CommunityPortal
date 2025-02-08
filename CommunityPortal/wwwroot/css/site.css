@@ -1,3 +1,7 @@
+/* Layout CSS */
+.text-danger {
+    font-size: 0.69rem; 
+}
 .bg-image {
     background-image: url('/images/background.png');
     background-size: cover;
@@ -5,6 +9,46 @@
     background-attachment: fixed;
 }
 
-//Login
+.font-swift {
+    font-family: 'Swifted DEMO';
+}
 
-//Register
+/* Register CSS */
+.bg-image-register {
+    background-image: url('/images/backgroundregister.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.register-card {
+    width: 100%;
+    max-width: 900px;
+}
+
+.register-button {
+    background-color: #5F778C;
+    color: white;
+    border: none;
+}
+
+/* Login CSS */
+.bg-image-login {
+    background-image: url('/images/backgroundlogin.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* Login view specific styles */
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-button {
+    background-color: #5F778C;
+    color: white;
+    border: none;
+}

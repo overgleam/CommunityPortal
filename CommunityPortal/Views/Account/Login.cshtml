@@ -5,13 +5,13 @@
     ViewData["Title"] = "Login";
 }
 
-<!-- Fonts -->
 <link href="https://fonts.cdnfonts.com/css/swifted-demo" rel="stylesheet">
+<link rel="stylesheet" href="~/css/login.css" />
 
 <!-- Bootstrap Container -->
-<div class="d-flex justify-content-center align-items-center vh-100" style="background: url('/images/login-bg.jpg') no-repeat center center fixed; background-size: cover; font-family: 'Swifted DEMO', sans-serif;">
-    <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4" style="width: 400px;">
-        <div class="card-body">
+<div class="d-flex justify-content-center align-items-center min-vh-100 bg-image-login font-swift">
+    <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4 login-card">
+        <div class="card-body position-relative">
             <a asp-action="Index" asp-controller="Home" class="text-white text-decoration-none fs-4 position-absolute top-0 start-0 p-3">&larr;</a>
             <h2 class="text-center mb-4">Login</h2>
 
@@ -20,22 +20,22 @@
 
                 <div class="form-floating mb-3">
                     <input asp-for="Email" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Email">
-                    <label class="text-white">Email</label>
+                    <label asp-for="Email" class="text-white">Email</label>
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
 
                 <div class="form-floating mb-3">
                     <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Password">
-                    <label class="text-white">Password</label>
+                    <label asp-for="Password" class="text-white">Password</label>
                     <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
 
                 <div class="form-check mb-3">
-                    <input asp-for="RememberMe" class="form-check-input">
-                    <label asp-for="RememberMe" class="form-check-label">Remember Me</label>
+                    <input asp-for="RememberMe" class="form-check-input" type="checkbox">
+                    <label asp-for="RememberMe" class="form-check-label text-white">Remember Me</label>
                 </div>
 
-                <button type="submit" class="btn w-100 rounded-pill" style="background-color: #5F778C; color: white;">Login</button>
+                <button type="submit" class="btn w-100 rounded-pill login-button">Login</button>
             </form>
 
             <div class="text-center mt-3">

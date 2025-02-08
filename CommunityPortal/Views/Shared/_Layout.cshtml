@@ -4,7 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CommunityPortal</title>
-
     <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -13,16 +12,16 @@
     <link href="https://fonts.cdnfonts.com/css/swifted-demo" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Lovelace+Text&display=swap" rel="stylesheet">
 </head>
-<body class="d-flex flex-column min-vh-100" style="font-family: 'Swifted DEMO', sans-serif; background: url('/images/background.png') no-repeat center center fixed; background-size: cover;">
+<body class="d-flex flex-column min-vh-100 bg-image font-swift">
 
     <main class="d-flex align-items-center justify-content-center flex-grow-1 text-center">
         @RenderBody()
     </main>
 
-    <footer class="position-absolute bottom-0 start-0 w-100 bg-transparent text-white p-5 d-flex">
+    <footer class="position-absolute bottom-0 start-0 w-100 bg-transparent p-5 d-flex">
         <div class="mb-5 ms-5">
-            <a asp-controller="Account" asp-action="Login" class="btn btn-dark bg-opacity-50 text-white px-5 me-3">Login</a>
-            <a asp-controller="Account" asp-action="Register" class="btn btn-dark bg-opacity-50 text-white px-5">Sign Up</a>
+            <a asp-controller="Account" asp-action="Login" class="bg-dark bg-opacity-75 rounded-3 text-white px-5 py-3 me-3 text-decoration-none">Login</a>
+            <a asp-controller="Account" asp-action="Register" class="bg-dark bg-opacity-75 text-white rounded-3 px-5 py-3 text-decoration-none">Sign Up</a>
         </div>
         <img src="/images/logo.png" alt="Logo" class="position-absolute bottom-0 translate-middle-y" style="right: 100px;" width="200">
     </footer>

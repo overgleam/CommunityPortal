@@ -5,73 +5,89 @@
     ViewData["Title"] = "Sign Up";
 }
 
-<link href="https://fonts.cdnfonts.com/css/swifted-demo" rel="stylesheet">
-
-<!-- Bootstrap Container -->
-<div class="d-flex justify-content-center align-items-center vh-100" style="background: url('/images/background.png') no-repeat center center fixed; background-size: cover; font-family: 'Swifted DEMO', sans-serif;">
-    <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4" style="width: 400px;">
-        <div class="card-body">
+<div class="d-flex justify-content-center align-items-center min-vh-100 bg-image-register font-swift">
+    <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4 register-card">
+        <div class="card-body position-relative">
             <a asp-action="Index" asp-controller="Home" class="text-white text-decoration-none fs-4 position-absolute top-0 start-0 p-3">&larr;</a>
             <h2 class="text-center mb-4">Sign Up</h2>
 
             <form asp-action="Register" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <!-- Three Column Grid for Form Fields -->
+                <div class="row g-3">
+                    <!-- First Row -->
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input asp-for="FirstName" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="First Name" />
+                            <label asp-for="FirstName" class="text-white"></label>
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input asp-for="LastName" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Last Name" />
+                            <label asp-for="LastName" class="text-white"></label>
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input asp-for="HouseNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="House Number" />
+                            <label asp-for="HouseNumber" class="text-white"></label>
+                            <span asp-validation-for="HouseNumber" class="text-danger"></span>
+                        </div>
+                    </div>
 
-                <div class="form-floating mb-3">
-                    <input asp-for="FirstName" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="First Name">
-                    <label class="text-white">First Name</label>
-                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                    <!-- Second Row -->
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input asp-for="BlockNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Block #" />
+                            <label asp-for="BlockNumber" class="text-white"></label>
+                            <span asp-validation-for="BlockNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input asp-for="Address" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Address" />
+                            <label asp-for="Address" class="text-white"></label>
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input asp-for="Email" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Email" />
+                            <label asp-for="Email" class="text-white"></label>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Third Row -->
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input asp-for="PhoneNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Contact #" />
+                            <label asp-for="PhoneNumber" class="text-white"></label>
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Password" />
+                            <label asp-for="Password" class="text-white"></label>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input asp-for="ConfirmPassword" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Confirm Password" />
+                            <label asp-for="ConfirmPassword" class="text-white"></label>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-floating mb-3">
-                    <input asp-for="LastName" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Last Name">
-                    <label class="text-white">Last Name</label>
-                    <span asp-validation-for="LastName" class="text-danger"></span>
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn w-50 rounded-3 mt-4 register-button">Sign Up</button>
                 </div>
-
-                <div class="form-floating mb-3">
-                    <input asp-for="HouseNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="House Number">
-                    <label class="text-white">House Number</label>
-                    <span asp-validation-for="HouseNumber" class="text-danger"></span>
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input asp-for="BlockNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Block #">
-                    <label class="text-white">Block #</label>
-                    <span asp-validation-for="BlockNumber" class="text-danger"></span>
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input asp-for="Address" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Address">
-                    <label class="text-white">Address</label>
-                    <span asp-validation-for="Address" class="text-danger"></span>
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input asp-for="Email" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Email">
-                    <label class="text-white">Email</label>
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input asp-for="PhoneNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Contact #">
-                    <label class="text-white">Contact #</label>
-                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Password">
-                    <label class="text-white">Password</label>
-                    <span asp-validation-for="Password" class="text-danger"></span>
-                </div>
-
-                <div class="form-floating mb-3">
-                    <input asp-for="ConfirmPassword" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Confirm Password">
-                    <label class="text-white">Confirm Password</label>
-                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                </div>
-
-                <button type="submit" class="btn w-100 rounded-pill" style="background-color: #5F778C; color: white;">Sign Up</button>
 
                 <!-- Already have an account? -->
                 <div class="text-center mt-3">
