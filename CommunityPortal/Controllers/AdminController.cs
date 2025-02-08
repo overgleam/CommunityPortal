@@ -54,14 +54,49 @@ namespace CommunityPortal.Controllers
 
                 if (admin != null)
                 {
+                    // Update profile information
                     admin.FirstName = model.FirstName;
                     admin.LastName = model.LastName;
                     admin.Address = model.Address;
+
+                    // Handle Password Change
+                    if (!string.IsNullOrEmpty(model.CurrentPassword) || !string.IsNullOrEmpty(model.NewPassword))
+                    {
+                        // First verify the current password is correct
+                        var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
+                        
+                        if (!isCurrentPasswordValid)
+                        {
+                            ModelState.AddModelError("CurrentPassword", "Current password is incorrect");
+                            TempData["ErrorMessage"] = "Current password is incorrect.";
+                            return View(model);
+                        }
+
+                        var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+                        if (!changePasswordResult.Succeeded)
+                        {
+                            foreach (var error in changePasswordResult.Errors)
+                            {
+                                ModelState.AddModelError(string.Empty, error.Description);
+                            }
+                            TempData["ErrorMessage"] = "Failed to update password. Please check the requirements.";
+                            return View(model);
+                        }
+                        else
+                        {
+                            TempData["SuccessMessage"] = "Profile and password updated successfully.";
+                        }
+                    }
+                    else
+                    {
+                        TempData["SuccessMessage"] = "Profile updated successfully.";
+                    }
 
                     await _context.SaveChangesAsync();
                     return RedirectToAction("AdminSettings");
                 }
             }
+            TempData["ErrorMessage"] = "Failed to update profile. Please check your inputs.";
             return View(model);
         }
 

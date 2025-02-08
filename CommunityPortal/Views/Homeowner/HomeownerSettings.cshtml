@@ -4,6 +4,13 @@
     Layout = "~/Views/Shared/_HomeownersLayout.cshtml";
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
 <div class="container homeowner-settings">
     <div class="row g-4">
         <!-- Profile Card -->
@@ -34,6 +41,23 @@
                     <h4 class="mb-0"><i class="fas fa-user-cog me-2"></i>Account Settings</h4>
                 </div>
                 <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
                     <form asp-action="HomeownerSettings" method="post">
                         <div class="row g-4">
                             <div class="col-md-6">
@@ -70,6 +94,30 @@
                                               placeholder=" " style="height: 100px"></textarea>
                                     <label asp-for="Address"></label>
                                     <span asp-validation-for="Address" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <h5>Change Password</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input asp-for="CurrentPassword" class="form-control" placeholder="Current Password" />
+                                    <label asp-for="CurrentPassword"></label>
+                                    <span asp-validation-for="CurrentPassword" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input asp-for="NewPassword" class="form-control" placeholder="New Password" />
+                                    <label asp-for="NewPassword"></label>
+                                    <span asp-validation-for="NewPassword" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm New Password" />
+                                    <label asp-for="ConfirmPassword"></label>
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
                                 </div>
                             </div>
                             <div class="col-12 text-end">
@@ -128,3 +176,15 @@
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
         }
 </style>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
