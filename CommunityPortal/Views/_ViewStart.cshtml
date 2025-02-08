@@ -1,0 +1,21 @@
+﻿@{
+    if (User.Identity.IsAuthenticated)
+    {
+        if (User.IsInRole("admin") || User.IsInRole("staff"))
+        {
+            Layout = "~/Views/Shared/_AdminLayout.cshtml";
+        }
+        else if (User.IsInRole("homeowners"))
+        {
+            Layout = "~/Views/Shared/_HomeownersLayout.cshtml";
+        }
+        else
+        {
+            Layout = "~/Views/Shared/_Layout.cshtml";
+        }
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+}
