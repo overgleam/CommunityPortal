@@ -1,7 +1,7 @@
 ﻿@model CommunityPortal.Models.Account.RegisterViewModel
 
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_EmptyLayout.cshtml";
     ViewData["Title"] = "Register";
 }
 
@@ -22,9 +22,9 @@
                 <span asp-validation-for="LastName" class="form-text text-danger"></span>
             </div>
             <div class="mb-3">
-                <label asp-for="ContactNumber" class="form-label"></label>
-                <input asp-for="ContactNumber" class="form-control" />
-                <span asp-validation-for="ContactNumber" class="form-text text-danger"></span>
+                <label asp-for="PhoneNumber" class="form-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="form-text text-danger"></span>
             </div>
             <div class="mb-3">
                 <label asp-for="Email" class="form-label"></label>
@@ -60,6 +60,10 @@
 
             <button type="submit" class="btn btn-primary w-100">Register</button>
         </form>
+        <div class="text-center mt-3">
+            <a asp-action="Index" asp-controller="Home" class="btn btn-secondary">Back</a>
+            <a asp-action="Login" asp-controller="Account" class="btn btn-link">Login</a>
+        </div>
     </div>
 </div>
 

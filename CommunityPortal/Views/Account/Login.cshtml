@@ -1,7 +1,7 @@
 ﻿@model CommunityPortal.Models.Account.LoginViewModel
 
 @{
-    // Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_EmptyLayout.cshtml";
     ViewData["Title"] = "Login";
 }
 
@@ -26,6 +26,10 @@
             </div>
             <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
+        <div class="text-center mt-3">
+            <a asp-action="Index" asp-controller="Home" class="btn btn-secondary">Back</a>
+            <a asp-action="Register" asp-controller="Account" class="btn btn-link">Register</a>
+        </div>
     </div>
 </div>
 

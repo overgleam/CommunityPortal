@@ -80,8 +80,12 @@ using (var scope = app.Services.CreateScope())
         {
             UserName = adminEmail,
             Email = adminEmail,
-            Enable = true // Admins are approved by default
+            Enable = true, // Admins are approved by default
+            PhoneNumber = "09123456789",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
+
 
         var result = await userManager.CreateAsync(adminUser, adminPassword);
         if (result.Succeeded)
@@ -94,8 +98,6 @@ using (var scope = app.Services.CreateScope())
                 UserId = adminUser.Id,
                 FirstName = "Admin",
                 LastName = "Admin",
-                Email = "admin@admin.com",
-                ContactNumber = "09123456789",
                 Address = "123 Admin St, Admin City, Admin Country"
             };
             

@@ -32,7 +32,7 @@ namespace CommunityPortal.Controllers
         public async Task<IActionResult> ApproveUsers()
         {
             var users = await _userManager.Users
-                 .Include(u => u.Administrator)
+                .Include(u => u.Administrator)
                 .Where(u => u.Administrator == null)
                 .ToListAsync();
 

@@ -22,8 +22,6 @@ namespace CommunityPortal.Controllers
             _context = context;
         }
 
-
-
         public IActionResult Index()
         {
             return View();
@@ -53,6 +51,7 @@ namespace CommunityPortal.Controllers
                     UserName = model.Email,
                     Email = model.Email,
                     Enable = false,
+                    PhoneNumber = model.PhoneNumber,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -67,10 +66,8 @@ namespace CommunityPortal.Controllers
                         UserId = user.Id,
                         FirstName = model.FirstName,
                         LastName = model.LastName,
-                        Email = model.Email,
                         BlockNumber = model.BlockNumber,
                         HouseNumber = model.HouseNumber,
-                        ContactNumber = model.ContactNumber,
                         Address = model.Address
                     };
 

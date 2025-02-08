@@ -14,8 +14,8 @@ namespace CommunityPortal.Models.Account
 
         [Required]
         [Phone]
-        [Display(Name = "Contact Number")]
-        public string ContactNumber { get; set; }
+        [Display(Name = "Phone Number")]
+        public string PhoneNumber { get; set; }
 
         [Required]
         [Display(Name = "Block Number")]
