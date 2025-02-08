@@ -1,6 +1,7 @@
 using CommunityPortal.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using CommunityPortal.Models.Admin;
 using CommunityPortal.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -93,7 +94,7 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(adminUser, "admin");
 
             // Create Admin profile
-            var adminProfile = new Administrator 
+            var adminProfile = new Administrator
             { 
                 UserId = adminUser.Id,
                 FirstName = "Admin",

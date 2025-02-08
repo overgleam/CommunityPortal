@@ -1,2 +1,16 @@
-﻿body {
+﻿.sidebar {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
 }
+
+.nav-link {
+    transition: all 0.3s ease;
+}
+
+    .nav-link:hover {
+        background-color: #e9ecef;
+        border-radius: 4px;
+    }

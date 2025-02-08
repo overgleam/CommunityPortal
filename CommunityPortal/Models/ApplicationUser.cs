@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using CommunityPortal.Models.Homeowners;
+using CommunityPortal.Models.Staffs;
+using Microsoft.AspNetCore.Identity;
+using CommunityPortal.Models.Admin;
 
 namespace CommunityPortal.Models
 {

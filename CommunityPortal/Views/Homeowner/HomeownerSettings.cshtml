@@ -1,0 +1,130 @@
+﻿@model CommunityPortal.Models.Homeowners.HomeownerSettingsViewModel
+@{
+    ViewData["Title"] = "Homeowner Settings";
+    Layout = "~/Views/Shared/_HomeownersLayout.cshtml";
+}
+
+<div class="container homeowner-settings">
+    <div class="row g-4">
+        <!-- Profile Card -->
+        <div class="col-lg-4">
+            <div class="card profile-card shadow-lg border-0">
+                <div class="card-header bg-gradient-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-home me-2"></i>My Residence</h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="community-badge mb-4">
+                        <i class="fas fa-building fa-4x text-success"></i>
+                    </div>
+                    <h5 class="mb-1">Block @Model.BlockNumber</h5>
+                    <h3 class="fw-bold text-success">#@Model.HouseNumber</h3>
+                    <hr>
+                    <p class="text-muted">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        @Model.Address
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Form -->
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-cog me-2"></i>Account Settings</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="HomeownerSettings" method="post">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="FirstName" class="form-control" placeholder=" " />
+                                    <label asp-for="FirstName"></label>
+                                    <span asp-validation-for="FirstName" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="LastName" class="form-control" placeholder=" " />
+                                    <label asp-for="LastName"></label>
+                                    <span asp-validation-for="LastName" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="BlockNumber" class="form-control" placeholder=" " />
+                                    <label asp-for="BlockNumber"></label>
+                                    <span asp-validation-for="BlockNumber" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="HouseNumber" class="form-control" placeholder=" " />
+                                    <label asp-for="HouseNumber"></label>
+                                    <span asp-validation-for="HouseNumber" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea asp-for="Address" class="form-control"
+                                              placeholder=" " style="height: 100px"></textarea>
+                                    <label asp-for="Address"></label>
+                                    <span asp-validation-for="Address" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-12 text-end">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-save me-2"></i>Update Profile
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .homeowner-settings {
+        max-width: 1200px;
+    }
+
+    .profile-card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+        .profile-card .card-header {
+            border-radius: 15px 15px 0 0;
+        }
+
+    .community-badge {
+        background: rgba(46, 204, 113, 0.1);
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+    }
+
+    .form-control {
+        transition: all 0.3s ease;
+        border: 2px solid #e9ecef;
+    }
+
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+</style>

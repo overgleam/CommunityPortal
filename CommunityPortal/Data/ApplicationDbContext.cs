@@ -5,6 +5,9 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityPortal.Models.Admin;
+using CommunityPortal.Models.Homeowners;
+using CommunityPortal.Models.Staffs;
 
 namespace CommunityPortal.Data
 {

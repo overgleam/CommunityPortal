@@ -1,9 +1,11 @@
-﻿using CommunityPortal.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using CommunityPortal.Models.Account;
 using CommunityPortal.Data;
+using CommunityPortal.Models;
+using CommunityPortal.Models.Account;
+using CommunityPortal.Models.Homeowners;
+using CommunityPortal.Models.Admin;
 
 namespace CommunityPortal.Controllers
 {
@@ -23,11 +25,6 @@ namespace CommunityPortal.Controllers
         }
 
         public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Settings()
         {
             return View();
         }

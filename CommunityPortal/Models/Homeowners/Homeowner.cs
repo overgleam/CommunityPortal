@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CommunityPortal.Models
+namespace CommunityPortal.Models.Homeowners
 {
     public class Homeowner
     {

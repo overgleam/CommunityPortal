@@ -7,26 +7,42 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 </head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            <aside class="col-md-2 bg-light sidebar">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="@Url.Action("Index", "Admin")">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("ApproveUsers", "Admin")">Approve Users</a>
-                    </li>
-                </ul>
-            </aside>
-            <main class="container mt-4">
-                @RenderBody()
+<body class="d-flex flex-column min-vh-100">
+    <header class="navbar navbar-dark bg-dark flex-md-nowrap p-3 shadow">
+        <a class="navbar-brand col-md-2 me-0 px-3" href="#">Admin Dashboard</a>
+        <partial name="_LoginPartial.cshtml" />
+    </header>
+
+    <div class="container-fluid flex-grow-1">
+        <div class="row h-100">
+            <!-- Sidebar -->
+            <nav class="col-md-2 bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="@Url.Action("Index", "Admin")">
+                                <i class="fas fa-home me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("ApproveUsers", "Admin")">
+                                <i class="fas fa-user-check me-2"></i>
+                                Approve Users
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="pt-3 pb-2 mb-3 border-bottom">
+                    @RenderBody()
+                </div>
             </main>
         </div>
     </div>
-    <partial name="_LoginPartial.cshtml" />
-
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

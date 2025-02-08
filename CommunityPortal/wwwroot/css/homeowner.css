@@ -1,0 +1,41 @@
+﻿.sidebar {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    border-right: 1px solid #dee2e6;
+}
+
+.nav-link {
+    transition: all 0.3s ease;
+    border-radius: 5px;
+    margin: 2px 0;
+}
+
+    .nav-link:hover {
+        background-color: rgba(13,110,253,0.1);
+        transform: translateX(5px);
+    }
+
+.sidebar-heading {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    }
+
+.fab {
+    transition: transform 0.3s ease;
+}
+
+    .fab:hover {
+        transform: scale(1.2);
+    }

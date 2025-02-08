@@ -28,6 +28,43 @@ namespace CommunityPortal.Controllers
             return View();
         }
 
+        public async Task<IActionResult> AdminSettings()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var admin = _context.Admins.FirstOrDefault(a => a.UserId == user.Id);
+
+            var model = new AdminSettingsViewModel
+            {
+                FirstName = admin?.FirstName,
+                LastName = admin?.LastName,
+                Address = admin?.Address
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminSettings(AdminSettingsViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var admin = _context.Admins.FirstOrDefault(a => a.UserId == user.Id);
+
+                if (admin != null)
+                {
+                    admin.FirstName = model.FirstName;
+                    admin.LastName = model.LastName;
+                    admin.Address = model.Address;
+
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("AdminSettings");
+                }
+            }
+            return View(model);
+        }
+
         // GET: /Admin/ApproveUsers
         public async Task<IActionResult> ApproveUsers()
         {
