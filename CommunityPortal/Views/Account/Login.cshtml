@@ -5,30 +5,42 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="card mx-auto" style="max-width: 400px; margin-top: 50px;">
-    <div class="card-body">
-        <h3 class="card-title text-center">Login</h3>
-        <form asp-action="Login" method="post">
-            <div asp-validation-summary="All" class="text-danger"></div>
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="form-text text-danger"></span>
+<!-- Fonts -->
+<link href="https://fonts.cdnfonts.com/css/swifted-demo" rel="stylesheet">
+
+<!-- Bootstrap Container -->
+<div class="d-flex justify-content-center align-items-center vh-100" style="background: url('/images/login-bg.jpg') no-repeat center center fixed; background-size: cover; font-family: 'Swifted DEMO', sans-serif;">
+    <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4" style="width: 400px;">
+        <div class="card-body">
+            <a asp-action="Index" asp-controller="Home" class="text-white text-decoration-none fs-4 position-absolute top-0 start-0 p-3">&larr;</a>
+            <h2 class="text-center mb-4">Login</h2>
+
+            <form asp-action="Login" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Email" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Email">
+                    <label class="text-white">Email</label>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Password">
+                    <label class="text-white">Password</label>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input asp-for="RememberMe" class="form-check-input">
+                    <label asp-for="RememberMe" class="form-check-label">Remember Me</label>
+                </div>
+
+                <button type="submit" class="btn w-100 rounded-pill" style="background-color: #5F778C; color: white;">Login</button>
+            </form>
+
+            <div class="text-center mt-3">
+                <a asp-action="Register" asp-controller="Account" class="text-white text-decoration-none">Create an Account</a>
             </div>
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" type="password" />
-                <span asp-validation-for="Password" class="form-text text-danger"></span>
-            </div>
-            <div class="form-check mb-3">
-                <input asp-for="RememberMe" class="form-check-input" />
-                <label asp-for="RememberMe" class="form-check-label"></label>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Login</button>
-        </form>
-        <div class="text-center mt-3">
-            <a asp-action="Index" asp-controller="Home" class="btn btn-secondary">Back</a>
-            <a asp-action="Register" asp-controller="Account" class="btn btn-link">Register</a>
         </div>
     </div>
 </div>
