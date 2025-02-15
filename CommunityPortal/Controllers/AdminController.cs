@@ -7,6 +7,7 @@ using CommunityPortal.Data;
 using System.Data;
 using CommunityPortal.Models.Admin;
 using CommunityPortal.Models.Enums;
+using CommunityPortal.Models.Staffs;
 
 namespace CommunityPortal.Controllers
 {
@@ -333,5 +334,56 @@ namespace CommunityPortal.Controllers
 
             return RedirectToAction("ApproveUsers");
         }
+
+        [HttpGet]
+        public IActionResult CreateStaff()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateStaff(StaffCreateViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    Status = UserStatus.Approved,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(user, "staff");
+
+                    var staff = new Staff
+                    {
+                        UserId = user.Id,
+                        FirstName = model.FirstName,
+                        LastName = model.LastName,
+                        Department = model.Department
+                    };
+
+                    _context.Staffs.Add(staff);
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Staff account created successfully!";
+                    return RedirectToAction("Index");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+
+            return View(model);
+        }
+
     }
 }
