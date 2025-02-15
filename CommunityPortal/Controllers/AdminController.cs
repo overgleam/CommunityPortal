@@ -127,7 +127,7 @@ namespace CommunityPortal.Controllers
             var model = new ApproveUsersViewModel
             {
                 Users = new List<UserWithRoleViewModel>()
-            };
+            };  
 
             foreach (var user in users)
             {

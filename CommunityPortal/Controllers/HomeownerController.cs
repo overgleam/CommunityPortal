@@ -97,7 +97,7 @@ namespace CommunityPortal.Controllers
                     }
 
                     await _context.SaveChangesAsync();
-                    return RedirectToAction("HomeownerSettings");
+                    return RedirectToAction("Settings");
                 }
             }
             TempData["ErrorMessage"] = "Failed to update profile. Please check your inputs.";
