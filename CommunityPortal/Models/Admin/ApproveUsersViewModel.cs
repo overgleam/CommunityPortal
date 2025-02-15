@@ -2,6 +2,12 @@
 {
     public class ApproveUsersViewModel
     {
-        public List<ApplicationUser> Users { get; set; }
+        public List<UserWithRoleViewModel> Users { get; set; }
+    }
+
+    public class UserWithRoleViewModel
+    {
+        public ApplicationUser User { get; set; }
+        public string Role { get; set; }
     }
 }

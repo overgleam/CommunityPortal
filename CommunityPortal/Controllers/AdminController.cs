@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Data;
 using System.Data;
 using CommunityPortal.Models.Admin;
+using CommunityPortal.Models.Enums;
 
 namespace CommunityPortal.Controllers
 {
@@ -31,13 +32,22 @@ namespace CommunityPortal.Controllers
         public async Task<IActionResult> AdminSettings()
         {
             var user = await _userManager.GetUserAsync(User);
-            var admin = _context.Admins.FirstOrDefault(a => a.UserId == user.Id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var admin = await _context.Admins.FirstOrDefaultAsync(a => a.UserId == user.Id);
+            if (admin == null)
+            {
+                return NotFound("Admin profile not found.");
+            }
 
             var model = new AdminSettingsViewModel
             {
-                FirstName = admin?.FirstName,
-                LastName = admin?.LastName,
-                Address = admin?.Address
+                FirstName = admin.FirstName,
+                LastName = admin.LastName,
+                Address = admin.Address
             };
 
             return View(model);
@@ -50,51 +60,57 @@ namespace CommunityPortal.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _userManager.GetUserAsync(User);
-                var admin = _context.Admins.FirstOrDefault(a => a.UserId == user.Id);
-
-                if (admin != null)
+                if (user == null)
                 {
-                    // Update profile information
-                    admin.FirstName = model.FirstName;
-                    admin.LastName = model.LastName;
-                    admin.Address = model.Address;
+                    return NotFound("User not found.");
+                }
 
-                    // Handle Password Change
-                    if (!string.IsNullOrEmpty(model.CurrentPassword) || !string.IsNullOrEmpty(model.NewPassword))
+                var admin = await _context.Admins.FirstOrDefaultAsync(a => a.UserId == user.Id);
+                if (admin == null)
+                {
+                    return NotFound("Admin profile not found.");
+                }
+
+                // Update profile information
+                admin.FirstName = model.FirstName;
+                admin.LastName = model.LastName;
+                admin.Address = model.Address;
+
+                // Handle Password Change
+                if (!string.IsNullOrEmpty(model.CurrentPassword) || !string.IsNullOrEmpty(model.NewPassword))
+                {
+                    // First verify the current password is correct
+                    var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
+                    
+                    if (!isCurrentPasswordValid)
                     {
-                        // First verify the current password is correct
-                        var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
-                        
-                        if (!isCurrentPasswordValid)
-                        {
-                            ModelState.AddModelError("CurrentPassword", "Current password is incorrect");
-                            TempData["ErrorMessage"] = "Current password is incorrect.";
-                            return View(model);
-                        }
+                        ModelState.AddModelError("CurrentPassword", "Current password is incorrect");
+                        TempData["ErrorMessage"] = "Current password is incorrect.";
+                        return View(model);
+                    }
 
-                        var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
-                        if (!changePasswordResult.Succeeded)
+                    var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+                    if (!changePasswordResult.Succeeded)
+                    {
+                        foreach (var error in changePasswordResult.Errors)
                         {
-                            foreach (var error in changePasswordResult.Errors)
-                            {
-                                ModelState.AddModelError(string.Empty, error.Description);
-                            }
-                            TempData["ErrorMessage"] = "Failed to update password. Please check the requirements.";
-                            return View(model);
+                            ModelState.AddModelError(string.Empty, error.Description);
                         }
-                        else
-                        {
-                            TempData["SuccessMessage"] = "Profile and password updated successfully.";
-                        }
+                        TempData["ErrorMessage"] = "Failed to update password. Please check the requirements.";
+                        return View(model);
                     }
                     else
                     {
-                        TempData["SuccessMessage"] = "Profile updated successfully.";
+                        TempData["SuccessMessage"] = "Profile and password updated successfully.";
                     }
-
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction("AdminSettings");
                 }
+                else
+                {
+                    TempData["SuccessMessage"] = "Profile updated successfully.";
+                }
+
+                await _context.SaveChangesAsync();
+                return RedirectToAction("AdminSettings");
             }
             TempData["ErrorMessage"] = "Failed to update profile. Please check your inputs.";
             return View(model);
@@ -110,8 +126,20 @@ namespace CommunityPortal.Controllers
 
             var model = new ApproveUsersViewModel
             {
-                Users = users
+                Users = new List<UserWithRoleViewModel>()
             };
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                var role = roles.FirstOrDefault() ?? "Unknown";
+
+                model.Users.Add(new UserWithRoleViewModel
+                {
+                    User = user,
+                    Role = role
+                });
+            }
 
             return View(model);
         }
@@ -145,60 +173,61 @@ namespace CommunityPortal.Controllers
         {
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return BadRequest();
+                TempData["ErrorMessage"] = "Invalid user ID.";
+                return RedirectToAction("ApproveUsers");
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("ApproveUsers");
             }
 
-            user.Enable = true;
-            var updateResult = await _userManager.UpdateAsync(user);
-            if (!updateResult.Succeeded)
+            user.Status = UserStatus.Approved;
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
             {
-                foreach (var error in updateResult.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-                return View("ApproveUsers", new ApproveUsersViewModel { Users = new List<ApplicationUser> { user } });
+                TempData["SuccessMessage"] = "User approved successfully.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to approve user.";
             }
 
-            return RedirectToAction(nameof(ApproveUsers));
+            return RedirectToAction("ApproveUsers");
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DisableUser(string userId)
         {
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                return BadRequest();
+                TempData["ErrorMessage"] = "Invalid user ID.";
+                return RedirectToAction("ApproveUsers");
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("ApproveUsers");
             }
 
-            user.Enable = false;
+            user.Status = UserStatus.Disabled;
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
-                return RedirectToAction(nameof(ApproveUsers));
+                TempData["SuccessMessage"] = "User disabled successfully.";
             }
-
-            foreach (var error in result.Errors)
+            else
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                TempData["ErrorMessage"] = "Failed to disable user.";
             }
 
-            return View("ApproveUsers", new ApproveUsersViewModel { Users = new List<ApplicationUser> { user } });
+            return RedirectToAction("ApproveUsers");
         }
-
 
         // POST: /Admin/RemoveUser
         [HttpPost]
@@ -240,7 +269,69 @@ namespace CommunityPortal.Controllers
 
             return RedirectToAction("ApproveUsers");
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BanUser(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                TempData["ErrorMessage"] = "Invalid user ID.";
+                return RedirectToAction("ApproveUsers");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("ApproveUsers");
+            }
+
+            user.Status = UserStatus.Banned;
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "User banned successfully.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to ban user.";
+            }
+
+            return RedirectToAction("ApproveUsers");
+        }
+
+        // POST: /Admin/UnbanUser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnbanUser(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                TempData["ErrorMessage"] = "Invalid user ID.";
+                return RedirectToAction("ApproveUsers");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("ApproveUsers");
+            }
+
+            // Update the user's status to Approved or any other appropriate status
+            user.Status = UserStatus.Approved;
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "User unbanned successfully.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to unban user.";
+            }
+
+            return RedirectToAction("ApproveUsers");
+        }
     }
-
-
 }

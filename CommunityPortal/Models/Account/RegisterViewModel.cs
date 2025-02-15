@@ -12,10 +12,13 @@ namespace CommunityPortal.Models.Account
         [Display(Name = "Last Name")]
         public string LastName { get; set; }
 
-        [Required]
         [Phone]
+        [Required(ErrorMessage = "You must provide a phone number")]
+        [DataType(DataType.PhoneNumber)]
+        [RegularExpression(@"^(09|\+639)\d{9}$", ErrorMessage = "Not a valid phone number")]
         [Display(Name = "Phone Number")]
         public string PhoneNumber { get; set; }
+
 
         [Required]
         [Display(Name = "Block Number")]

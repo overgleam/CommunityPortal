@@ -46,7 +46,7 @@
                             <span class="label">Last Name</span>
                             <span class="value">@Model.Administrator.LastName</span>
                         </div>
-                        <div class="info-item">
+                        <div class="info-item address-item">
                             <span class="label">Address</span>
                             <span class="value">@Model.Administrator.Address</span>
                         </div>
@@ -86,7 +86,7 @@
                             <span class="label">House Number</span>
                             <span class="value">@Model.Homeowner.HouseNumber</span>
                         </div>
-                        <div class="info-item">
+                        <div class="info-item address-item">
                             <span class="label">Address</span>
                             <span class="value">@Model.Homeowner.Address</span>
                         </div>
@@ -145,7 +145,7 @@
     .info-item {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         padding: 0.75rem 0;
         border-bottom: 1px solid #e9ecef;
     }
@@ -157,11 +157,21 @@
     .label {
         color: #6c757d;
         font-weight: 500;
+        flex: 0 0 120px;
     }
 
     .value {
         color: #212529;
         font-weight: 400;
+        flex: 1;
+        text-align: right;
+        word-wrap: break-word;
+        max-width: calc(100% - 140px);
+    }
+
+    .info-item.address-item .value {
+        white-space: pre-line;
+        line-height: 1.4;
     }
 
     .role-badge {

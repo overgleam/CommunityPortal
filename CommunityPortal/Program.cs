@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Models.Admin;
 using CommunityPortal.Models;
+using CommunityPortal.Models.Enums;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,7 +73,7 @@ using (var scope = app.Services.CreateScope())
 
     // Create an admin user if it doesn't exist
     string adminEmail = "admin@gmail.com";
-    string adminPassword = "123123"; // Use a strong password in production
+    string adminPassword = "5202013"; // Use a strong password in production
 
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
     if (adminUser == null)
@@ -81,7 +82,7 @@ using (var scope = app.Services.CreateScope())
         {
             UserName = adminEmail,
             Email = adminEmail,
-            Enable = true, // Admins are approved by default
+            Status = UserStatus.Approved, // Admins are approved by default
             PhoneNumber = "09123456789",
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow

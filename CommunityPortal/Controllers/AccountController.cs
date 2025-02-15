@@ -6,6 +6,7 @@ using CommunityPortal.Models;
 using CommunityPortal.Models.Account;
 using CommunityPortal.Models.Homeowners;
 using CommunityPortal.Models.Admin;
+using CommunityPortal.Models.Enums;
 
 namespace CommunityPortal.Controllers
 {
@@ -47,10 +48,10 @@ namespace CommunityPortal.Controllers
                 { 
                     UserName = model.Email,
                     Email = model.Email,
-                    Enable = false,
                     PhoneNumber = model.PhoneNumber,
                     CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
+                    UpdatedAt = DateTime.UtcNow,
+                    Status = UserStatus.PendingApproval
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -71,6 +72,7 @@ namespace CommunityPortal.Controllers
                     _context.Homeowners.Add(homeowner);
                     await _context.SaveChangesAsync();
 
+                    TempData["SuccessMessage"] = "Registration successful! Your account is pending approval.";
                     return RedirectToAction("Login", "Account");
                 }
                 foreach (var error in result.Errors)
@@ -79,7 +81,7 @@ namespace CommunityPortal.Controllers
                 }
 
             }
-            ModelState.AddModelError(string.Empty, "Error");
+            ModelState.AddModelError(string.Empty, "Registration failed. Please check your inputs.");
             return View(model);
         }
 
@@ -98,10 +100,26 @@ namespace CommunityPortal.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
-                if (user != null && !user.Enable)
+                if (user != null)
                 {
-                    ModelState.AddModelError(string.Empty, "Your account is awaiting approval by an administrator");
-                    return View();
+                    switch(user.Status)
+                    {
+                        case UserStatus.PendingApproval:
+                            ModelState.AddModelError(string.Empty, "Your account is awaiting approval by an administrator.");
+                            return View();
+                        case UserStatus.Banned:
+                            ModelState.AddModelError(string.Empty, "Your account has been banned.");
+                            return View();
+                        case UserStatus.Disabled:
+                            ModelState.AddModelError(string.Empty, "Your account is disabled.");
+                            return View();
+                        case UserStatus.Approved:
+                            // Proceed with login
+                            break;
+                        default:
+                            ModelState.AddModelError(string.Empty, "Invalid account status.");
+                            return View();
+                    }
                 }
 
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
@@ -128,7 +146,7 @@ namespace CommunityPortal.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt");
+                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
                     return View(model);
                 }
             }
@@ -140,8 +158,8 @@ namespace CommunityPortal.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
+            TempData["SuccessMessage"] = "You have been logged out successfully.";
             return RedirectToAction("Index", "Home");
         }
-
     }
 }

@@ -1,5 +1,4 @@
-﻿
-/* Color Scheme */
+﻿/* Color Scheme */
 :root {
     --primary-color: #2b2e34;
     --secondary-color: #5f778c;
@@ -138,7 +137,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* THIS IS FOR ADMIN SETTINGS */
-<style>
     .user-management-container {
         padding: 2rem;
         background: #fff;
@@ -217,6 +215,21 @@ h1, h2, h3, h4, h5, h6 {
         .status-badge.pending {
             background: #fff3cd;
             color: #856404;
+        }
+
+        .status-badge.disabled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-badge.banned {
+            background: #f5c6cb;
+            color: #721c24;
+        }
+
+        .status-badge.unknown {
+            background: #e2e3e5;
+            color: #6c757d;
         }
 
     .action-buttons {
@@ -338,15 +351,40 @@ h1, h2, h3, h4, h5, h6 {
         }
 
     @keyframes spin {
-        0%
+        0% {
+            transform: rotate(0deg);
+        }
 
-    {
-        transform: rotate(0deg);
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
-    100% {
-        transform: rotate(360deg);
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 500;
     }
 
+    .role-badge.admin {
+        background-color: #cff4fc;
+        color: #055160;
     }
-</style>
+
+    .role-badge.staff {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .role-badge.homeowners {
+        background-color: #fff3cd;
+        color: #664d03;
+    }
+
+    .role-badge i {
+        font-size: 1rem;
+    }
