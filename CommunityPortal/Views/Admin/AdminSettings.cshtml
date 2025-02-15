@@ -6,32 +6,6 @@
 
 <div class="container-fluid">
     <div class="settings-dashboard">
-        <!-- Header -->
-        <div class="dashboard-header bg-gradient-primary text-white p-4 rounded-4 shadow-lg mb-4">
-            <h1 class="display-5 fw-bold"><i class="fas fa-user-shield me-3"></i>Administrator Control Panel</h1>
-            <p class="lead">Manage your account and system settings</p>
-        </div>
-
-        <div class="row g-4">
-            <!-- Navigation -->
-            <div class="col-lg-3">
-                <div class="card settings-nav-card shadow-sm">
-                    <div class="card-body">
-                        <div class="nav flex-column nav-pills">
-                            <a class="nav-link active" data-bs-toggle="pill" href="#profile">
-                                <i class="fas fa-id-card me-2"></i>Profile
-                            </a>
-                            <a class="nav-link" data-bs-toggle="pill" href="#security">
-                                <i class="fas fa-shield-alt me-2"></i>Security
-                            </a>
-                            <a class="nav-link" data-bs-toggle="pill" href="#system">
-                                <i class="fas fa-cogs me-2"></i>System
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Content -->
             <div class="col-lg-9">
                 <div class="tab-content">
@@ -118,78 +92,11 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Security Tab -->
-                    <div class="tab-pane fade" id="security">
-                        <div class="card shadow-sm animate__animated animate__fadeIn">
-                            <div class="card-header bg-transparent">
-                                <h4 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security Settings</h4>
-                            </div>
-                            <div class="card-body">
-                                <div class="security-widgets">
-                                    <div class="d-flex justify-content-between align-items-center p-3 mb-3 bg-light rounded-3">
-                                        <div>
-                                            <h5 class="mb-0">Two-Factor Authentication</h5>
-                                            <p class="mb-0 text-muted">Add an extra layer of security</p>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" role="switch">
-                                        </div>
-                                    </div>
-
-                                    <div class="recent-activity p-3 bg-light rounded-3">
-                                        <h5>Recent Activity</h5>
-                                        <div class="list-group">
-                                            <a href="#" class="list-group-item list-group-item-action">
-                                                <i class="fas fa-sign-in-alt me-2"></i>
-                                                Login from new device (Chrome, Windows)
-                                                <span class="text-muted ms-2">2 hours ago</span>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    .settings-dashboard {
-        max-width: 1400px;
-        margin: 0 auto;
-    }
-
-    .dashboard-header {
-        background: linear-gradient(135deg, #2c3e50, #3498db);
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .settings-nav-card .nav-link {
-        border-radius: 8px;
-        margin: 5px 0;
-        padding: 12px 20px;
-        transition: all 0.3s ease;
-    }
-
-        .settings-nav-card .nav-link.active {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-    .form-floating input:focus, .form-floating textarea:focus {
-        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
-        border-color: #3498db;
-    }
-
-    .security-widgets .form-switch .form-check-input {
-        width: 3em;
-        height: 1.5em;
-    }
-</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

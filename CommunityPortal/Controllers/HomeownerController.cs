@@ -27,7 +27,7 @@ namespace CommunityPortal.Controllers
         }
 
         [Authorize(Roles = "homeowners")]
-        public async Task<IActionResult> HomeownerSettings()
+        public async Task<IActionResult> Settings()
         {
             var user = await _userManager.GetUserAsync(User);
             var homeowner = _context.Homeowners.FirstOrDefault(h => h.UserId == user.Id);
@@ -47,7 +47,7 @@ namespace CommunityPortal.Controllers
         [HttpPost]
         [Authorize(Roles = "homeowners")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> HomeownerSettings(HomeownerSettingsViewModel model)
+        public async Task<IActionResult> Settings(HomeownerSettingsViewModel model)
         {
             if (ModelState.IsValid)
             {

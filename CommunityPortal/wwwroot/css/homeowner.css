@@ -1,41 +1,138 @@
-﻿.sidebar {
-    position: -webkit-sticky;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    border-right: 1px solid #dee2e6;
+﻿
+/* Color Scheme */
+:root {
+    --primary-color: #2b2e34;
+    --secondary-color: #5f778c;
+    --background-color: #efe7d4;
+    --text-color: #fff9f4;
+    --card-shadow: rgba(0, 0, 0, 0.1);
 }
 
-.nav-link {
-    transition: all 0.3s ease;
-    border-radius: 5px;
-    margin: 2px 0;
+/* Font Styles */
+body {
+    font-family: 'Lovelace Text', serif;
 }
 
-    .nav-link:hover {
-        background-color: rgba(13,110,253,0.1);
-        transform: translateX(5px);
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Swifted-Regular', sans-serif;
+}
+
+.navbar, .list-group-item {
+    font-family: 'Franklin Gothic Book', sans-serif;
+}
+
+.special-emphasis {
+    font-family: '1769 Display', sans-serif;
+}
+
+.subheading {
+    font-family: 'Francisco Serial Ex', sans-serif;
+}
+
+/* Example for using Chemsymbols LT */
+.symbols {
+    font-family: 'Chemsymbols LT', sans-serif;
+}
+
+/* Wrapper */
+#wrapper {
+    display: flex;
+    width: 100%;
+    background-color: var(--background-color);
+}
+
+/* Sidebar */
+.bg-sidebar {
+    background-color: var(--primary-color);
+    color: #fff;
+    transition: all 0.3s;
+    padding: 1rem;
+    white-space: nowrap;
+}
+
+    .bg-sidebar .list-group-item {
+        background-color: var(--primary-color);
+        color: var(--text-color);
+        border: none;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
     }
 
-.sidebar-heading {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+.bg-sidebar .list-group-item:hover {
+    background-color: var(--secondary-color);
+    color: #fff;
 }
 
+/* Top Bar */
+.bg-topbar {
+    background-color: var(--text-color);
+    border-bottom: 1px solid #ddd;
+}
+
+.navbar .navbar-nav .nav-link {
+    color: var(--primary-color);
+}
+
+    .navbar .navbar-nav .nav-link:hover {
+        color: var(--secondary-color);
+    }
+
+/* Main Content */
+#page-content-wrapper {
+    width: 100%;
+    padding: 1.25rem;
+    overflow-y: auto;
+}
+
+/* Cards */
 .card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.375rem var(--card-shadow);
+    background-color: #fff;
 }
 
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
-    }
-
-.fab {
-    transition: transform 0.3s ease;
+/* Sidebar Heading */
+.sidebar-heading i {
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    font-size: 1.5rem;
 }
 
-    .fab:hover {
-        transform: scale(1.2);
+/* Material Icons */
+.material-icons {
+    vertical-align: middle;
+}
+
+/* Profile Image */
+.navbar .rounded-circle {
+    object-fit: cover;
+}
+
+/* Profile Dropdown */
+.navbar .dropdown-menu {
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.navbar .dropdown-item {
+    padding: 0.625rem 1.25rem;
+    transition: background-color 0.2s;
+}
+
+.navbar .dropdown-item:hover {
+    background-color: var(--secondary-color);
+    color: #fff;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .bg-sidebar {
+        margin-left: -250px;
     }
+
+    #wrapper.toggled .bg-sidebar {
+        margin-left: 0;
+    }
+}

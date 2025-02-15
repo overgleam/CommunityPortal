@@ -1,145 +1,109 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Neighborhood Portal</title>
+    <title>@ViewData["Title"] - Community Portal</title>
+    <link href="https://fonts.cdnfonts.com/css/swifted-demo" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lovelace+Text&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Franklin+Gothic+Book&display=swap" rel="stylesheet">
+    <!-- Add other font links here if available -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <link rel="stylesheet" href="~/css/homeowner.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="d-flex flex-column min-vh-100">
-    <!-- Top Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
+<body>
+    <div class="d-flex min-vh-100" id="wrapper">
+        <div class="bg-sidebar border-right" id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4 primary-text mb-3 fs-4 fw-bold text-uppercase border-bottom">
                 <img src="/images/logo.png" alt="Logo" width="169" height="92" class="me-2">
-                Neighborhood Portal
-            </a>
-
-            <!-- Notifications and Profile -->
-            <div class="d-flex align-items-center">
-                <div class="dropdown me-3">
-                    <a class="btn btn-link text-white" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge bg-danger">3</span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-end p-2" style="min-width: 300px;">
-                        <h6 class="dropdown-header">Recent Notifications</h6>
-                        <a class="dropdown-item d-flex align-items-center" href="#">
-                            <i class="fas fa-calendar-check me-2 text-success"></i>
-                            <div>
-                                <div>Community Meeting Tomorrow</div>
-                                <small class="text-muted">2 hours ago</small>
-                            </div>
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item text-center small" href="#">View All Notifications</a>
-                    </div>
-                </div>
-                <div class="d-flex flex-row">
-                    <partial name="_LoginPartial" />
-                </div>
+            </div>
+            <div class="list-group list-group-flush">
+                <a asp-controller="Homeowner" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">dashboard</i> Dashboard
+                </a>
+                <a asp-controller="Announcements" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">announcement</i> Announcements
+                </a>
+                <a asp-controller="Billing" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">payment</i> Billing & Payments
+                </a>
+                <a asp-controller="Facility" asp-action="Reserve" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">event_available</i> Facility Reservation
+                </a>
+                <a asp-controller="ServiceRequests" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">build</i> Service Requests
+                </a>
+                <a asp-controller="Forum" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">forum</i> Community Forum
+                </a>
+                <a asp-controller="Events" asp-action="Calendar" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">calendar_today</i> Events Calendar
+                </a>
+                <a asp-controller="Documents" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">insert_drive_file</i> Documents
+                </a>
+                <a asp-controller="Feedback" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">feedback</i> Feedback and Complaints
+                </a>
             </div>
         </div>
-    </nav>
 
-    <div class="container-fluid flex-grow-1">
-        <div class="row h-100">
-            <!-- Sidebar -->
-            <aside class="col-md-3 col-lg-2 bg-light sidebar shadow">
-                <div class="position-sticky pt-3">
-                    <nav class="nav flex-column">
-                        <a class="nav-link active" asp-controller="Homeowner" asp-action="Index">
-                            <i class="fas fa-home me-2"></i>
-                            Dashboard
-                        </a>
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-calendar-alt me-2"></i>
-                            Events
-                        </a>
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-comments me-2"></i>
-                            Community Board
-                        </a>
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-tools me-2"></i>
-                            Maintenance Requests
-                        </a>
-                        <div class="dropdown-divider my-3"></div>
-                        <h6 class="sidebar-heading px-3 mt-4 text-muted">Quick Links</h6>
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-file-invoice-dollar me-2"></i>
-                            Payments
-                        </a>
-                    </nav>
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-topbar border-bottom rounded-3">
+                <div class="container-fluid">
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
+                            <li class="nav-item me-3">
+                                <a class="nav-link" href="#"><i class="material-icons">notifications</i></a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
+                                   aria-haspopup="true" aria-expanded="false">
+                                    <img src="~/images/profile.jpg" alt="Profile" class="rounded-circle me-3" width="30" height="30" />
+                                    <span>@User.Identity.Name</span>
+                                    <i class="material-icons ms-1">expand_more</i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a asp-controller="Homeowner" asp-action="Settings" class="dropdown-item">Settings</a>
+                                    <div class="dropdown-divider"></div>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item">Logout</button>
+                                    </form>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </aside>
+            </nav>
 
             <!-- Main Content -->
-            <main class="col-md-9 col-lg-10 px-md-4 py-4">
-                <!-- Community Alerts -->
-                <div class="alert alert-warning d-flex align-items-center" role="alert">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    <div>Upcoming community cleanup day - Saturday 10:00 AM</div>
-                </div>
-
-                <!-- Content Section -->
-                <div class="row">
-                    <div class="col-12 col-xl-8">
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0"><i class="fas fa-bullhorn me-2"></i>Community Board</h5>
-                            </div>
-                            <div class="card-body">
-                                @RenderBody()
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Quick Actions -->
-                    <div class="col-12 col-xl-4">
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-success text-white">
-                                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
-                            </div>
-                            <div class="card-body">
-                                <button class="btn btn-outline-success w-100 mb-2">
-                                    <i class="fas fa-plus me-2"></i>New Post
-                                </button>
-                                <button class="btn btn-outline-primary w-100 mb-2">
-                                    <i class="fas fa-calendar-plus me-2"></i>Create Event
-                                </button>
-                                <button class="btn btn-outline-danger w-100">
-                                    <i class="fas fa-toolbox me-2"></i>Request Maintenance
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
+            <div class="container-fluid mt-4">
+                @RenderBody()
+            </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="mt-auto bg-dark text-white py-3">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-6 text-center text-md-start">
-                    <p class="mb-0">&copy; @DateTime.Now.Year Neighborhood Portal</p>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <a href="#" class="text-white me-3"><i class="fab fa-facebook"></i></a>
-                    <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="text-white"><i class="fas fa-envelope"></i></a>
-                </div>
-            </div>
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <div class="container">
+            <p class="mb-0">&copy; 2023 Community Portal. All rights reserved.</p>
+            <p class="mb-0">Contact us: <a href="mailto:support@communityportal.com" class="text-white">support@communityportal.com</a></p>
         </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
