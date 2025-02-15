@@ -136,3 +136,217 @@ h1, h2, h3, h4, h5, h6 {
         margin-left: 0;
     }
 }
+
+/* THIS IS FOR ADMIN SETTINGS */
+<style>
+    .user-management-container {
+        padding: 2rem;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    }
+
+    .header-section {
+        margin-bottom: 2rem;
+    }
+
+        .header-section h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-section .material-icons {
+            font-size: 2rem;
+            color: #3498db;
+        }
+
+    .table-container {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    .custom-table {
+        margin-bottom: 0;
+    }
+
+        .custom-table thead {
+            background: #f8f9fa;
+        }
+
+        .custom-table th {
+            padding: 1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .custom-table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+    .user-email {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .user-email .material-icons {
+            color: #7f8c8d;
+        }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+    }
+
+        .status-badge.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .custom-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+        .custom-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .custom-btn.info {
+            background: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        .custom-btn.success {
+            background: #e8f5e9;
+            color: #1b5e20;
+        }
+
+        .custom-btn.danger {
+            background: #ffebee;
+            color: #b71c1c;
+        }
+
+        .custom-btn.warning {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .custom-btn.secondary {
+            background: #eceff1;
+            color: #263238;
+        }
+
+    .custom-alert {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border: none;
+    }
+
+        .custom-alert.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .custom-alert.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+    .custom-modal .modal-content {
+        border-radius: 15px;
+        border: none;
+    }
+
+    .custom-modal .modal-header {
+        background: #f8f9fa;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .custom-modal .modal-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #2c3e50;
+    }
+
+    .warning-message {
+        background: #fff3cd;
+        padding: 1rem;
+        border-radius: 8px;
+        color: #856404;
+    }
+
+    .loading-spinner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 2rem;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .no-users-message {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+
+        .no-users-message .material-icons {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+    @keyframes spin {
+        0%
+
+    {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+
+    }
+</style>

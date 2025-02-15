@@ -11,7 +11,11 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+
+    @RenderSection("Styles" , required: false )
 </head>
+
+
 <body>
     <div class="d-flex min-vh-100" id="wrapper">
         <div class="bg-sidebar border-right" id="sidebar-wrapper">
@@ -31,13 +35,6 @@
         <div id="page-content-wrapper">
             <nav class="navbar navbar-expand-lg navbar-light bg-topbar border-bottom rounded-3">
                 <div class="container-fluid">
-                    <button class="btn btn-dark" id="menu-toggle"><i class="material-icons">menu</i></button>
-
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-                            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
                             <li class="nav-item me-3">
@@ -80,12 +77,6 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        $("#menu-toggle").click(function(e) {
-            e.preventDefault();
-            $("#wrapper").toggleClass("toggled");
-        });
-    </script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

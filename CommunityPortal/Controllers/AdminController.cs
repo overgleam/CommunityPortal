@@ -116,6 +116,28 @@ namespace CommunityPortal.Controllers
             return View(model);
         }
 
+        // GET: /Admin/GetUserDetails
+        public async Task<IActionResult> GetUserDetails(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return BadRequest("User ID is required.");
+            }
+
+            var user = await _userManager.Users
+                .Include(u => u.Administrator)
+                .Include(u => u.Staff)
+                .Include(u => u.Homeowner)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return PartialView("_UserDetails", user);
+        }
+
         // POST: /Admin/ApproveUser
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -146,6 +168,7 @@ namespace CommunityPortal.Controllers
             return RedirectToAction(nameof(ApproveUsers));
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DisableUser(string userId)
@@ -174,6 +197,48 @@ namespace CommunityPortal.Controllers
             }
 
             return View("ApproveUsers", new ApproveUsersViewModel { Users = new List<ApplicationUser> { user } });
+        }
+
+
+        // POST: /Admin/RemoveUser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveUser(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                TempData["ErrorMessage"] = "Invalid user ID.";
+                return RedirectToAction("ApproveUsers");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("ApproveUsers");
+            }
+
+            // Remove user roles
+            var roles = await _userManager.GetRolesAsync(user);
+            var removeRolesResult = await _userManager.RemoveFromRolesAsync(user, roles);
+            if (!removeRolesResult.Succeeded)
+            {
+                TempData["ErrorMessage"] = "Failed to remove user roles.";
+                return RedirectToAction("ApproveUsers");
+            }
+
+            // Remove user
+            var deleteResult = await _userManager.DeleteAsync(user);
+            if (deleteResult.Succeeded)
+            {
+                TempData["SuccessMessage"] = "User removed successfully.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to remove user.";
+            }
+
+            return RedirectToAction("ApproveUsers");
         }
     }
 
