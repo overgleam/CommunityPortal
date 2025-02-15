@@ -13,8 +13,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Franklin+Gothic+Book&display=swap" rel="stylesheet">
     <!-- Add other font links here if available -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <link rel="stylesheet" href="~/css/homeowner.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
 </head>
 <body>
     <div class="d-flex min-vh-100" id="wrapper">
@@ -26,22 +26,22 @@
                 <a asp-controller="Homeowner" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">dashboard</i> Dashboard
                 </a>
-                <a asp-controller="Announcements" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                <a asp-controller="Announcement" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">announcement</i> Announcements
                 </a>
                 <a asp-controller="Billing" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">payment</i> Billing & Payments
                 </a>
-                <a asp-controller="Facility" asp-action="Reserve" class="list-group-item list-group-item-action bg-sidebar">
+                <a asp-controller="Facility" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">event_available</i> Facility Reservation
                 </a>
-                <a asp-controller="ServiceRequests" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                <a asp-controller="ServiceRequest" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">build</i> Service Requests
                 </a>
                 <a asp-controller="Forum" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">forum</i> Community Forum
                 </a>
-                <a asp-controller="Events" asp-action="Calendar" class="list-group-item list-group-item-action bg-sidebar">
+                <a asp-controller="Events" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">calendar_today</i> Events Calendar
                 </a>
                 <a asp-controller="Documents" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">

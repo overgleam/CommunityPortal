@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Models.Admin;
 using CommunityPortal.Models;
 using CommunityPortal.Models.Enums;
+//using CommunityPortal.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +32,8 @@ builder.Services.AddControllersWithViews();
 // Register Razor Pages so that MapRazorPages() can properly locate the required services.
 builder.Services.AddRazorPages();
 
+//builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -48,6 +51,9 @@ app.UseRouting();
 
 app.UseAuthentication(); // Add Authentication
 app.UseAuthorization();
+
+//app.MapHub<ChatHub>("/chatHub");
+
 
 app.MapControllerRoute(
     name: "default",
