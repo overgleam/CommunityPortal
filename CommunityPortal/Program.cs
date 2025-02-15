@@ -26,6 +26,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("AdminOnly", policy =>
+    {
+        policy.RequireRole("admin");
+    });
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

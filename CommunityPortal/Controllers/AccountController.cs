@@ -166,7 +166,6 @@ namespace CommunityPortal.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            TempData["SuccessMessage"] = "You have been logged out successfully.";
             return RedirectToAction("Index", "Home");
         }
     }

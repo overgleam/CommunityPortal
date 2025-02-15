@@ -12,16 +12,16 @@
                     <div class="card shadow-lg rounded-3 border-0 animate__animated animate__fadeIn">
                         <div class="card-header bg-white border-bottom-0 py-4">
                             <h4 class="mb-0 text-primary">
-                                <i class="fas fa-user-edit me-2"></i>Profile Settings
+                                <span class="material-icons-round align-middle me-2">manage_accounts</span>Profile Settings
                             </h4>
                             <p class="text-muted mb-0 mt-2">Manage your personal information and security settings</p>
                         </div>
                         
-                        <div class="card-body px-4 py-5">
+                        <div class="card-body px-4">
                             @if (TempData["SuccessMessage"] != null)
                             {
                                 <div class="alert alert-success alert-dismissible fade show border-0 rounded-3" role="alert">
-                                    <i class="fas fa-check-circle me-2"></i>
+                                    <span class="material-icons-round align-middle me-2">check_circle</span>
                                     @TempData["SuccessMessage"]
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
@@ -29,7 +29,7 @@
                             @if (TempData["ErrorMessage"] != null)
                             {
                                 <div class="alert alert-danger alert-dismissible fade show border-0 rounded-3" role="alert">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <span class="material-icons-round align-middle me-2">error</span>
                                     @TempData["ErrorMessage"]
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
@@ -37,8 +37,10 @@
 
                             <form asp-action="AdminSettings" method="post" class="needs-validation">
                                 <div class="row g-4">
-                                    <div class="col-12 mb-4">
-                                        <h5 class="text-primary mb-4">Personal Information</h5>
+                                    <div class="col-12">
+                                        <h5 class="text-primary mb-4">
+                                            <span class="material-icons-round align-middle me-2">person</span>Personal Information
+                                        </h5>
                                         <div class="row g-4">
                                             <div class="col-md-6">
                                                 <div class="form-floating">
@@ -66,7 +68,9 @@
                                     </div>
 
                                     <div class="col-12 mt-5">
-                                        <h5 class="text-primary mb-4">Security Settings</h5>
+                                        <h5 class="text-primary mb-4">
+                                            <span class="material-icons-round align-middle me-2">security</span>Security Settings
+                                        </h5>
                                         <div class="row g-4">
                                             <div class="col-md-4">
                                                 <div class="form-floating">
@@ -94,7 +98,7 @@
 
                                     <div class="col-12 text-end mt-5">
                                         <button type="submit" class="btn btn-primary btn-lg px-5 rounded-3 shadow-sm hover-shadow">
-                                            <i class="fas fa-save me-2"></i>Save Changes
+                                            <span class="material-icons-round align-middle me-2">save</span>Save Changes
                                         </button>
                                     </div>
                                 </div>
@@ -109,6 +113,8 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <style>
         .hover-shadow:hover {
             transform: translateY(-1px);
@@ -121,6 +127,39 @@
         }
         .card {
             transition: all 0.3s ease;
+        }
+
+        /* Material Icons Styling */
+        .material-icons-round {
+            font-size: 1.25rem;
+            vertical-align: middle;
+            position: relative;
+            top: -1px;
+        }
+
+        /* Enhanced button style */
+        .btn .material-icons-round {
+            font-size: 1.1rem;
+            margin-right: 0.5rem;
+        }
+
+        /* Alert icon styling */
+        .alert .material-icons-round {
+            font-size: 1.2rem;
+        }
+
+        /* Section header icon styling */
+        h5 .material-icons-round {
+            background: rgba(var(--bs-primary-rgb), 0.1);
+            padding: 0.5rem;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        h5:hover .material-icons-round {
+            transform: scale(1.1);
+            background: rgba(var(--bs-primary-rgb), 0.2);
         }
     </style>
 }

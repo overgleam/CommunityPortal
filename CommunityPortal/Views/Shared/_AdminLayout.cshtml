@@ -10,6 +10,7 @@
     <!-- Add other font links here if available -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
 
     @RenderSection("Styles" , required: false )
@@ -26,12 +27,15 @@
                 <a asp-controller="Admin" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">dashboard</i> Dashboard
                 </a>
-                <a asp-controller="Admin" asp-action="ApproveUsers" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">groups</i> User Management
-                </a>
-                <a asp-controller="Admin" asp-action="CreateStaff" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">groups</i> Create Staff Account
-                </a>
+                @if (User.IsInRole("admin"))
+                {
+                    <a asp-controller="Admin" asp-action="ApproveUsers" class="list-group-item list-group-item-action bg-sidebar">
+                        <i class="material-icons me-2">groups</i> User Management
+                    </a>
+                    <a asp-controller="Admin" asp-action="CreateStaff" class="list-group-item list-group-item-action bg-sidebar">
+                        <i class="material-icons me-2">account_circle</i> Create Staff Account
+                    </a>
+                }
             </div>
         </div>
 
@@ -51,7 +55,7 @@
                                     <i class="material-icons ms-1">expand_more</i>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end">
-                                    <a asp-controller="Admin" asp-action="AdminSettings" class="dropdown-item">Settings</a>
+                                    <a asp-controller="Admin" asp-action="Settings" class="dropdown-item">Settings</a>
                                     <div class="dropdown-divider"></div>
                                     <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()

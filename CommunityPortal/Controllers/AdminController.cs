@@ -11,7 +11,7 @@ using CommunityPortal.Models.Staffs;
 
 namespace CommunityPortal.Controllers
 {
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin, staff")]
     public class AdminController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -30,7 +30,7 @@ namespace CommunityPortal.Controllers
             return View();
         }
 
-        public async Task<IActionResult> AdminSettings()
+        public async Task<IActionResult> Settings()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -56,7 +56,7 @@ namespace CommunityPortal.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AdminSettings(AdminSettingsViewModel model)
+        public async Task<IActionResult> Settings(AdminSettingsViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -111,13 +111,14 @@ namespace CommunityPortal.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-                return RedirectToAction("AdminSettings");
+                return RedirectToAction("Settings");
             }
             TempData["ErrorMessage"] = "Failed to update profile. Please check your inputs.";
             return View(model);
         }
 
         // GET: /Admin/ApproveUsers
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> ApproveUsers()
         {
             var users = await _userManager.Users
@@ -170,6 +171,7 @@ namespace CommunityPortal.Controllers
         // POST: /Admin/ApproveUser
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> ApproveUser(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId))
@@ -373,7 +375,7 @@ namespace CommunityPortal.Controllers
                     await _context.SaveChangesAsync();
 
                     TempData["SuccessMessage"] = "Staff account created successfully!";
-                    return RedirectToAction("Index");
+                    return RedirectToAction("ApproveUsers");
                 }
 
                 foreach (var error in result.Errors)

@@ -4,59 +4,349 @@
     ViewData["Title"] = "Create Staff Account";
 }
 
-<div class="container mt-5">
-    <div class="card shadow-lg border-0 rounded-3">
-        <div class="card-header bg-primary text-white text-center">
-            <h2 class="my-2">@ViewData["Title"]</h2>
-        </div>
-        <div class="card-body p-4">
-            <form asp-action="CreateStaff" method="post">
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label asp-for="FirstName" class="form-label fw-bold"></label>
-                        <input asp-for="FirstName" class="form-control" placeholder="Enter first name" />
-                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+<div class="container-fluid py-4">
+    <div class="create-staff-container">
+        <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeIn">
+            <div class="card-header bg-gradient-primary text-white py-4 border-0 position-relative overflow-hidden">
+                <div class="header-pattern"></div>
+                <h4 class="mb-0 position-relative">
+                    <i class="material-icons-round">person_add</i> Create Staff Account
+                </h4>
+                <p class="text-white-50 mb-0 mt-2 position-relative">Add a new staff member to the system</p>
+            </div>
+            
+            <div class="card-body p-4">
+                <form asp-action="CreateStaff" method="post" id="createStaffForm" class="needs-validation">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 border-0">
+                        <span class="material-icons-round align-middle me-2">error</span>
+                        <span>Please correct the following errors:</span>
                     </div>
 
-                    <div class="col-md-6">
-                        <label asp-for="LastName" class="form-label fw-bold"></label>
-                        <input asp-for="LastName" class="form-control" placeholder="Enter last name" />
-                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                    <!-- Personal Information Section -->
+                    <div class="section mb-4">
+                        <div class="section-header d-flex align-items-center mb-4">
+                            <div class="section-icon me-3">
+                                <i class="material-icons-round">badge</i>
+                            </div>
+                            <div>
+                                <h5 class="text-primary mb-1">Personal Information</h5>
+                                <p class="text-muted small mb-0">Enter the staff member's basic information</p>
+                            </div>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="FirstName" class="form-control form-control-lg rounded-3" placeholder=" " />
+                                    <label asp-for="FirstName"></label>
+                                    <span asp-validation-for="FirstName" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="LastName" class="form-control form-control-lg rounded-3" placeholder=" " />
+                                    <label asp-for="LastName"></label>
+                                    <span asp-validation-for="LastName" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    <input asp-for="Department" class="form-control form-control-lg rounded-3" placeholder=" " />
+                                    <label asp-for="Department"></label>
+                                    <span asp-validation-for="Department" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="mt-3">
-                    <label asp-for="Department" class="form-label fw-bold"></label>
-                    <input asp-for="Department" class="form-control" placeholder="Enter department" />
-                    <span asp-validation-for="Department" class="text-danger small"></span>
-                </div>
-
-                <div class="mt-3">
-                    <label asp-for="Email" class="form-label fw-bold"></label>
-                    <input asp-for="Email" type="email" class="form-control" placeholder="Enter email" />
-                    <span asp-validation-for="Email" class="text-danger small"></span>
-                </div>
-
-                <div class="row g-3 mt-3">
-                    <div class="col-md-6">
-                        <label asp-for="Password" class="form-label fw-bold"></label>
-                        <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" />
-                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    <!-- Account Credentials Section -->
+                    <div class="section mt-4">
+                        <div class="section-header d-flex align-items-center mb-4">
+                            <div class="section-icon me-3">
+                                <i class="material-icons-round">key</i>
+                            </div>
+                            <div>
+                                <h5 class="text-primary mb-1">Account Credentials</h5>
+                                <p class="text-muted small mb-0">Set up login credentials for the staff account</p>
+                            </div>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-12">
+                                <div class="form-floating">
+                                    <input asp-for="Email" type="email" class="form-control form-control-lg rounded-3" placeholder=" " />
+                                    <label asp-for="Email"></label>
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Password" type="password" class="form-control form-control-lg rounded-3" placeholder=" " />
+                                    <label asp-for="Password"></label>
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="ConfirmPassword" type="password" class="form-control form-control-lg rounded-3" placeholder=" " />
+                                    <label asp-for="ConfirmPassword"></label>
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <label asp-for="ConfirmPassword" class="form-label fw-bold"></label>
-                        <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm password" />
-                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    <!-- Action Buttons -->
+                    <div class="text-end mt-5">
+                        <button type="button" id="submitBtn" class="btn btn-primary btn-lg px-5 rounded-3 shadow-sm hover-shadow">
+                            <i class="material-icons-round">person_add</i> Create Account
+                        </button>
                     </div>
-                </div>
-
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg">Submit</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade custom-modal" id="confirmationModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="material-icons-round">help</i> Confirm Staff Account Creation
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="user-details-preview">
+                    <h6 class="text-primary mb-3">Staff Details</h6>
+                    <div class="preview-item">
+                        <span class="label">Name:</span>
+                        <span id="previewName" class="value"></span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="label">Email:</span>
+                        <span id="previewEmail" class="value"></span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="label">Department:</span>
+                        <span id="previewDepartment" class="value"></span>
+                    </div>
+                </div>
+                <div class="alert alert-warning mt-3">
+                    <i class="material-icons-round align-middle me-2">warning</i>
+                    Are you sure you want to create this staff account?
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmCreate" class="btn btn-primary">
+                    <i class="material-icons-round">check</i> Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .create-staff-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, var(--bs-primary), #2980b9);
+    }
+
+    .section-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(var(--bs-primary-rgb), 0.1);
+        border-radius: 12px;
+    }
+
+    .form-control {
+        transition: all 0.3s ease;
+        border: 2px solid #e9ecef;
+    }
+
+    .form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    }
+
+    .form-floating > label {
+        padding-left: 1rem;
+    }
+
+    .form-floating > .form-control {
+        padding: 1rem;
+        height: calc(3.5rem + 2px);
+    }
+
+    .hover-shadow:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+        transition: all 0.3s ease;
+    }
+
+    .btn {
+        transition: all 0.3s ease;
+    }
+
+    .btn-light {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+    }
+
+    .btn-light:hover {
+        background: #e9ecef;
+        border-color: #dee2e6;
+    }
+
+    .card {
+        transition: all 0.3s ease;
+    }
+
+    .animate__animated {
+        animation-duration: 0.6s;
+    }
+
+    .alert {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .alert-danger {
+        background-color: #fff5f5;
+        color: #dc3545;
+        border-left: 4px solid #dc3545;
+    }
+
+    /* Material Icons Styling */
+    .material-icons-round {
+        font-size: 1.25rem;
+        vertical-align: middle;
+        position: relative;
+        top: -1px;
+    }
+
+    .section-icon .material-icons-round {
+        font-size: 2rem;
+    }
+
+    .btn .material-icons-round {
+        font-size: 1.1rem;
+        margin-right: 0.5rem;
+    }
+
+    .alert .material-icons-round {
+        font-size: 1.2rem;
+    }
+
+    .section-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(var(--bs-primary-rgb), 0.1);
+        border-radius: 12px;
+    }
+
+    /* Additional Modal Styles */
+    .validation-error-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .validation-error-list li {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+        background-color: #fff5f5;
+        border-radius: 6px;
+        color: #dc3545;
+    }
+
+    .validation-error-list .material-icons-round {
+        font-size: 1.25rem;
+        color: #dc3545;
+    }
+
+    .custom-modal .modal-content {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .custom-modal .modal-header {
+        background: #f8f9fa;
+        border-bottom: 2px solid #e9ecef;
+        border-radius: 15px 15px 0 0;
+    }
+
+    .custom-modal .modal-title {
+        display: flex;
+        align-items: center;
+        color: #2c3e50;
+    }
+
+    .warning-message {
+        background: #fff3cd;
+        padding: 1rem;
+        border-radius: 8px;
+        color: #856404;
+    }
+
+    .modal-footer .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .modal-footer .btn:hover {
+        transform: translateY(-1px);
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            const form = $('#createStaffForm');
+            const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+
+            $('#submitBtn').click(function(e) {
+                e.preventDefault();
+                if (form[0].checkValidity()) {
+                    // Update preview
+                    $('#previewName').text($('#FirstName').val() + ' ' + $('#LastName').val());
+                    $('#previewEmail').text($('#Email').val());
+                    $('#previewDepartment').text($('#Department').val());
+                    
+                    modal.show();
+                } else {
+                    form.addClass('was-validated');
+                }
+            });
+
+            $('#confirmCreate').click(function() {
+                form.attr('action', '@Url.Action("CreateStaff")');
+                form.attr('method', 'post');
+                form.submit();
+            });
+        });
+    </script>
+}
