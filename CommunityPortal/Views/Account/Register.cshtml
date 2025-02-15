@@ -5,6 +5,13 @@
     ViewData["Title"] = "Sign Up";
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
 <div class="d-flex justify-content-center align-items-center min-vh-100 bg-image-register font-swift">
     <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4 register-card">
         <div class="card-body position-relative">

@@ -5,8 +5,12 @@
     ViewData["Title"] = "Login";
 }
 
-<link href="https://fonts.cdnfonts.com/css/swifted-demo" rel="stylesheet">
-<link rel="stylesheet" href="~/css/login.css" />
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
 
 <!-- Bootstrap Container -->
 <div class="d-flex justify-content-center align-items-center min-vh-100 bg-image-login font-swift">
