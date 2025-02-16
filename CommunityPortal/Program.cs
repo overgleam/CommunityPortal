@@ -25,6 +25,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// for policy
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminOnly", policy =>
     {

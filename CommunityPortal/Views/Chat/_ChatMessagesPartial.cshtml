@@ -1,0 +1,10 @@
+﻿@model IEnumerable<CommunityPortal.Models.Chat.ChatMessageViewModel>
+
+@foreach (var message in Model)
+{
+    <div class="message @(message.SenderUsername == User.Identity.Name ? "sent" : "received")">
+        <span class="message-sender">@message.SenderFullName</span>
+        <p>@message.Message</p>
+        <span class="message-timestamp">@message.Timestamp</span>
+    </div>
+}

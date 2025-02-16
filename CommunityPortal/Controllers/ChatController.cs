@@ -5,6 +5,7 @@ using CommunityPortal.Data;
 using CommunityPortal.Models.Chat;
 using CommunityPortal.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace CommunityPortal.Controllers
 {
@@ -35,7 +36,7 @@ namespace CommunityPortal.Controllers
         }
 
         // Display chat interface with a specific user
-        public async Task<IActionResult> Chat(string recipientId)
+        public async Task<IActionResult> Message(string recipientId)
         {
             if (string.IsNullOrWhiteSpace(recipientId))
             {
@@ -60,11 +61,13 @@ namespace CommunityPortal.Controllers
                 return NotFound("Recipient not found.");
             }
 
-            // Retrieve chat history
+            // Retrieve the latest 20 messages
             var messages = await _context.ChatMessages
                 .Where(m => (m.SenderId == currentUser.Id && m.RecipientId == recipientId) ||
                             (m.SenderId == recipientId && m.RecipientId == currentUser.Id))
-                .OrderBy(m => m.Timestamp)
+                .OrderByDescending(m => m.Timestamp)
+                .Take(20)
+                .OrderBy(m => m.Timestamp) // Re-order to ascending for display
                 .ToListAsync();
 
             var model = new ChatViewModel
@@ -74,7 +77,9 @@ namespace CommunityPortal.Controllers
                 CurrentUserFullName = GetFullName(currentUser),
                 Messages = messages.Select(m => new ChatMessageViewModel
                 {
-                    SenderFullName = m.SenderId == currentUser.Id ? GetFullName(currentUser) : GetFullName(recipient),
+                    Id = m.Id,
+                    SenderUsername = m.Sender.UserName, // Ensure Sender is loaded or include it
+                    SenderFullName = GetFullName(m.Sender),
                     Message = m.Message,
                     Timestamp = m.Timestamp.ToLocalTime().ToString("g")
                 }).ToList()
@@ -83,9 +88,46 @@ namespace CommunityPortal.Controllers
             return View(model);
         }
 
+        // New Action to Load More Messages
+        [HttpGet]
+        public async Task<IActionResult> LoadMoreMessages(string recipientId, int skip, int take = 20)
+        {
+            if (string.IsNullOrWhiteSpace(recipientId))
+            {
+                return BadRequest("Recipient ID is required.");
+            }
+
+            var currentUserId = _userManager.GetUserId(User);
+
+            // Include the Sender so that m.Sender is loaded and won't be null.
+            var messages = await _context.ChatMessages
+                .Include(m => m.Sender)
+                .Where(m => (m.SenderId == currentUserId && m.RecipientId == recipientId) ||
+                            (m.SenderId == recipientId && m.RecipientId == currentUserId))
+                .OrderByDescending(m => m.Timestamp)
+                .Skip(skip)
+                .Take(take)
+                .OrderBy(m => m.Timestamp) // Re-order for display
+                .ToListAsync();
+
+            var messageViewModels = messages.Select(m => new ChatMessageViewModel
+            {
+                Id = m.Id,
+                // Safely access Sender properties and fallback if it somehow is null
+                SenderUsername = m.Sender != null ? m.Sender.UserName : "Unknown",
+                SenderFullName = GetFullName(m.Sender),
+                Message = m.Message,
+                Timestamp = m.Timestamp.ToLocalTime().ToString("g")
+            }).ToList();
+
+            return PartialView("_ChatMessagesPartial", messageViewModels);
+        }
 
         private string GetFullName(ApplicationUser user)
         {
+            if (user == null)
+                return "Unknown";
+
             if (user.Administrator != null)
             {
                 return $"{user.Administrator.FirstName} {user.Administrator.LastName}";

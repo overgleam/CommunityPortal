@@ -4,7 +4,6 @@ using CommunityPortal.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace CommunityPortal.Hubs
 {
