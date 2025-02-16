@@ -1,13 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Models;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using CommunityPortal.Models.Admin;
-using CommunityPortal.Models.Homeowners;
-using CommunityPortal.Models.Staffs;
 
 namespace CommunityPortal.Data
 {
@@ -16,6 +9,8 @@ namespace CommunityPortal.Data
         public DbSet<Administrator> Admins { get; set; }
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<Homeowner> Homeowners { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -57,6 +52,19 @@ namespace CommunityPortal.Data
             builder.Entity<ApplicationUser>()
                 .Property(u => u.UpdatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
+
+
+            builder.Entity<ChatMessage>()
+                .HasOne(cm => cm.Sender)
+                .WithMany()
+                .HasForeignKey(cm => cm.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ChatMessage>()
+                .HasOne(cm => cm.Recipient)
+                .WithMany()
+                .HasForeignKey(cm => cm.RecipientId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public override int SaveChanges()

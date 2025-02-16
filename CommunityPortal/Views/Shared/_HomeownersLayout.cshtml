@@ -9,12 +9,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Community Portal</title>
     <link href="https://fonts.cdnfonts.com/css/swifted-demo" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Lovelace+Text&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Franklin+Gothic+Book&display=swap" rel="stylesheet">
     <!-- Add other font links here if available -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/homeowner.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    @RenderSection("Styles", required: false)
 </head>
 <body>
     <div class="d-flex min-vh-100" id="wrapper">
@@ -25,6 +24,9 @@
             <div class="list-group list-group-flush">
                 <a asp-controller="Homeowner" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">dashboard</i> Dashboard
+                </a>
+                <a asp-controller="Chat" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">chat</i> Chat
                 </a>
                 <a asp-controller="Announcement" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">announcement</i> Announcements
@@ -89,15 +91,31 @@
         </div>
     </div>
 
-    <footer class="bg-dark text-white text-center py-3 mt-auto">
+    <footer class="footer mt-auto py-2">
         <div class="container">
-            <p class="mb-0">&copy; 2023 Community Portal. All rights reserved.</p>
-            <p class="mb-0">Contact us: <a href="mailto:support@communityportal.com" class="text-white">support@communityportal.com</a></p>
+            <div class="row g-4 align-items-center">
+                <div class="col-md-4 text-center text-md-start">
+                    @* <img src="/images/logo.png" alt="Logo" class="footer-logo inv" width="150"> *@
+                </div>
+                <div class="col-md-4 text-center">
+                    <p class="mb-0">&copy; 2023 Community Portal</p>
+                    <p class="text-muted mb-0">All rights reserved</p>
+                </div>
+                <div class="col-md-4 text-center text-md-end">
+                    <div class="footer-contact">
+                        <p class="mb-1">Contact us:</p>
+                        <a href="mailto:support@communityportal.com" class="text-decoration-none">
+                            <i class="material-icons align-middle me-1">email</i>
+                            support@communityportal.com
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

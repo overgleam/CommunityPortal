@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using CommunityPortal.Data;
 using CommunityPortal.Models;
 using CommunityPortal.Models.Account;
-using CommunityPortal.Models.Homeowners;
-using CommunityPortal.Models.Admin;
 using CommunityPortal.Models.Enums;
 
 namespace CommunityPortal.Controllers
