@@ -1,4 +1,11 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using CommunityPortal.Data
+@using CommunityPortal.Models
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<ApplicationUser> _userManager
+@inject ApplicationDbContext _context
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -51,7 +58,12 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
                                    aria-haspopup="true" aria-expanded="false">
-                                    <img src="~/images/profile.jpg" alt="Profile" class="rounded-circle me-3" width="30" height="30" />
+                                    @{
+                                        var user = await _userManager.GetUserAsync(User);
+                                        var admin = await _context.Admins.FirstOrDefaultAsync(a => a.UserId == user.Id);
+                                        var profilePicture = admin?.ProfilePicturePath ?? "/images/profile.jpg";
+                                    }
+                                    <img src="@profilePicture" alt="Profile" class="rounded-circle me-3" width="30" height="30" />
                                     <span>@User.Identity.Name</span>
                                     <i class="material-icons ms-1">expand_more</i>
                                 </a>

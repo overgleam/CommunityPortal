@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CommunityPortal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250215063742_Init")]
-    partial class Init
+    [Migration("20250217101750_SettingsPfp")]
+    partial class SettingsPfp
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace CommunityPortal.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("CommunityPortal.Models.Admin.Administrator", b =>
+            modelBuilder.Entity("CommunityPortal.Models.Administrator", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -40,6 +40,9 @@ namespace CommunityPortal.Migrations
 
                     b.Property<string>("LastName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfilePicturePath")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId");
@@ -125,7 +128,39 @@ namespace CommunityPortal.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.Homeowners.Homeowner", b =>
+            modelBuilder.Entity("CommunityPortal.Models.ChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecipientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipientId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("ChatMessages");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Homeowner", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -148,12 +183,15 @@ namespace CommunityPortal.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ProfilePicturePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("UserId");
 
                     b.ToTable("Homeowners");
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.Staffs.Staff", b =>
+            modelBuilder.Entity("CommunityPortal.Models.Staff", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -308,33 +346,52 @@ namespace CommunityPortal.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.Admin.Administrator", b =>
+            modelBuilder.Entity("CommunityPortal.Models.Administrator", b =>
                 {
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "User")
                         .WithOne("Administrator")
-                        .HasForeignKey("CommunityPortal.Models.Admin.Administrator", "UserId")
+                        .HasForeignKey("CommunityPortal.Models.Administrator", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.Homeowners.Homeowner", b =>
+            modelBuilder.Entity("CommunityPortal.Models.ChatMessage", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "Recipient")
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Recipient");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Homeowner", b =>
                 {
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "User")
                         .WithOne("Homeowner")
-                        .HasForeignKey("CommunityPortal.Models.Homeowners.Homeowner", "UserId")
+                        .HasForeignKey("CommunityPortal.Models.Homeowner", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.Staffs.Staff", b =>
+            modelBuilder.Entity("CommunityPortal.Models.Staff", b =>
                 {
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "User")
                         .WithOne("Staff")
-                        .HasForeignKey("CommunityPortal.Models.Staffs.Staff", "UserId")
+                        .HasForeignKey("CommunityPortal.Models.Staff", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

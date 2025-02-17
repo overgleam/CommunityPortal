@@ -24,6 +24,11 @@ namespace CommunityPortal.Models.Homeowners
         [Display(Name = "Address")]
         public string Address { get; set; }
 
+        public string? ProfilePicturePath { get; set; }
+
+        [DataType(DataType.Upload)]
+        public IFormFile? ProfilePicture { get; set; }
+
         // Password Change Fields
         [DataType(DataType.Password)]
         [Display(Name = "Current Password")]

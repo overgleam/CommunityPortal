@@ -1,4 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using CommunityPortal.Models
+@using CommunityPortal.Data
+@inject ApplicationDbContext _context
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
@@ -66,7 +69,12 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
                                    aria-haspopup="true" aria-expanded="false">
-                                    <img src="~/images/profile.jpg" alt="Profile" class="rounded-circle me-3" width="30" height="30" />
+                                    @{
+                                        var user = await UserManager.GetUserAsync(User);
+                                        var homeowner = _context.Homeowners.FirstOrDefault(h => h.UserId == user.Id);
+                                        var profilePicture = homeowner?.ProfilePicturePath ?? "/images/profile.jpg";
+                                    }
+                                    <img src="@profilePicture" alt="Profile" class="rounded-circle me-3" width="30" height="30" />
                                     <span>@User.Identity.Name</span>
                                     <i class="material-icons ms-1">expand_more</i>
                                 </a>

@@ -4,13 +4,6 @@
     Layout = "~/Views/Shared/_HomeownersLayout.cshtml";
 }
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["SuccessMessage"]
-    </div>
-}
-
 <div class="container-fluid py-4">
     <div class="settings-dashboard">
         <div class="row g-4">
@@ -23,7 +16,8 @@
                     </div>
                     <div class="card-body text-center p-4">
                         <div class="community-badge mb-4">
-                            <img src="~/images/profile.jpg" alt="Building" class="profile-image">
+                            <img src="@(!string.IsNullOrEmpty(Model.ProfilePicturePath) ? Url.Content(Model.ProfilePicturePath) : "/images/profile.jpg")"
+                                 alt="Profile Picture" class="profile-image rounded-circle" width="120" height="120">
                         </div>
                         <h5 class="text-muted mb-2">Block</h5>
                         <h2 class="fw-bold text-primary mb-3">@Model.BlockNumber</h2>
@@ -66,12 +60,29 @@
                             </div>
                         }
 
-                        <form asp-controller="Homeowner" asp-action="Settings" method="post" class="needs-validation">
+                        <form asp-controller="Homeowner" asp-action="Settings" method="post" enctype="multipart/form-data">
                             <div class="row g-4">
                                 <div class="col-12 mb-4">
                                     <h5 class="text-primary mb-4">Personal Information</h5>
                                     <div class="row g-4">
-                                        <div class="col-md-6">
+                                        <!-- Profile Picture Upload Section -->
+                                        <div class="col-12 text-center mb-4">
+                                            <div class="position-relative d-inline-block">
+                                                <img id="profilePicPreview"
+                                                     src="@(string.IsNullOrEmpty(Model.ProfilePicturePath) ? "/images/profile.jpg" : Model.ProfilePicturePath)"
+                                                     class="rounded-circle border shadow-sm"
+                                                     style="width: 200px; height: 200px; object-fit: cover;">
+
+                                                <label for="ProfilePicture" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 cursor-pointer">
+                                                    <span class="material-icons-round cursor-pointer m-1">photo_camera</span>
+                                                </label>
+
+                                                <input type="file" asp-for="ProfilePicture" id="ProfilePicture"
+                                                       class="d-none" accept="image/*" onchange="previewImage(event)">
+                                            </div>
+                                            <span asp-validation-for="ProfilePicture" class="text-danger small"></span>
+                                        </div>
+                                        <div class="col-md-12">
                                             <div class="form-floating">
                                                 <input asp-for="FirstName" class="form-control form-control-lg rounded-3" placeholder=" " />
                                                 <label asp-for="FirstName"></label>
@@ -151,6 +162,20 @@
     </div>
 </div>
 
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <script>
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                var output = document.getElementById('profilePicPreview');
+                output.src = reader.result;
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
 <style>
     .settings-dashboard {
         max-width: 1400px;
@@ -221,7 +246,4 @@
     }
 </style>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 }

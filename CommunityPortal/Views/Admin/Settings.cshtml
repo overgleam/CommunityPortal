@@ -16,7 +16,7 @@
                             </h4>
                             <p class="text-muted mb-0 mt-2">Manage your personal information and security settings</p>
                         </div>
-                        
+
                         <div class="card-body px-4">
                             @if (TempData["SuccessMessage"] != null)
                             {
@@ -35,8 +35,26 @@
                                 </div>
                             }
 
-                            <form asp-action="Settings" method="post" class="needs-validation">
+                            <form asp-action="Settings" method="post" class="needs-validation" enctype="multipart/form-data">
                                 <div class="row g-4">
+                                    <!-- Profile Picture Upload Section -->
+                                    <div class="col-12 text-center mb-4">
+                                        <div class="position-relative d-inline-block">
+                                            <img id="profilePicPreview"
+                                                 src="@(string.IsNullOrEmpty(Model.ProfilePicturePath) ? "/images/profile.jpg" : Model.ProfilePicturePath)"
+                                                 class="rounded-circle border shadow-sm"
+                                                 style="width: 150px; height: 150px; object-fit: cover;">
+
+                                            <label for="ProfilePicture" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 cursor-pointer">
+                                                <span class="material-icons-round">photo_camera</span>
+                                            </label>
+
+                                            <input type="file" asp-for="ProfilePicture" id="ProfilePicture"
+                                                   class="d-none" accept="image/*" onchange="previewImage(event)">
+                                        </div>
+                                        <span asp-validation-for="ProfilePicture" class="text-danger small"></span>
+                                    </div>
+
                                     <div class="col-12">
                                         <h5 class="text-primary mb-4">
                                             <span class="material-icons-round align-middle me-2">person</span>Personal Information
@@ -115,6 +133,16 @@
     <partial name="_ValidationScriptsPartial" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <script>
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                var output = document.getElementById('profilePicPreview');
+                output.src = reader.result;
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
     <style>
         .hover-shadow:hover {
             transform: translateY(-1px);

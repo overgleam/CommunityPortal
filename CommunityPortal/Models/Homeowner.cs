@@ -12,5 +12,6 @@ namespace CommunityPortal.Models
         public int BlockNumber { get; set; }
         public int HouseNumber { get; set; }
         public string Address { get; set; }
+        public string? ProfilePicturePath { get; set; }
     }
 }

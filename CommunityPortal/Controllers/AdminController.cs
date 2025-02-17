@@ -16,12 +16,15 @@ namespace CommunityPortal.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public AdminController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context)
+
+        public AdminController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager,IWebHostEnvironment webHostEnvironment, ApplicationDbContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public IActionResult Index()
@@ -43,14 +46,16 @@ namespace CommunityPortal.Controllers
                 return NotFound("Admin profile not found.");
             }
 
+            // Create the ViewModel and populate it with data from the database
             var model = new AdminSettingsViewModel
             {
                 FirstName = admin.FirstName,
                 LastName = admin.LastName,
-                Address = admin.Address
+                Address = admin.Address,
+                ProfilePicturePath = admin.ProfilePicturePath // Populate the ProfilePicturePath
             };
 
-            return View(model);
+            return View(model); // Return the populated view model to the view
         }
 
         [HttpPost]
@@ -81,7 +86,7 @@ namespace CommunityPortal.Controllers
                 {
                     // First verify the current password is correct
                     var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
-                    
+
                     if (!isCurrentPasswordValid)
                     {
                         ModelState.AddModelError("CurrentPassword", "Current password is incorrect");
@@ -109,12 +114,49 @@ namespace CommunityPortal.Controllers
                     TempData["SuccessMessage"] = "Profile updated successfully.";
                 }
 
+                // Handle Profile Picture Upload
+                if (model.ProfilePicture != null)
+                {
+                    // Define upload path
+                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+
+                    // Ensure directory exists
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    // Generate unique filename
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + model.ProfilePicture.FileName;
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    // Save the file
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await model.ProfilePicture.CopyToAsync(fileStream);
+                    }
+
+                    // Save file path in database
+                    admin.ProfilePicturePath = "/uploads/" + uniqueFileName;
+                }
+
+                // Save the changes to the database
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Settings");
+
+                // Retrieve the updated model for passing to the view
+                model.ProfilePicturePath = admin.ProfilePicturePath; // Ensure the updated profile picture path is set
+
+                TempData["SuccessMessage"] = "Profile updated successfully!";
+                return View(model); // Return the model with the updated data
             }
-            TempData["ErrorMessage"] = "Failed to update profile. Please check your inputs.";
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to update profile. Please check your inputs.";
+            }
+
             return View(model);
         }
+
 
         // GET: /Admin/ApproveUsers
         [Authorize(Policy = "AdminOnly")]
