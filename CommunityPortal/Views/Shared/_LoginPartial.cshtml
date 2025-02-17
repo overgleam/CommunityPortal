@@ -8,13 +8,19 @@
     <div class="">
         @if (User.IsInRole("admin") || User.IsInRole("staff"))
         {
-            <a asp-controller="Admin" asp-action="AdminSettings" class="btn bg-white">
+            <a asp-controller="Admin" asp-action="Settings" class="btn bg-white">
+                Hello @User.Identity?.Name!
+            </a>
+        }
+        else if (User.IsInRole("staff"))
+        {
+            <a asp-controller="Staff" asp-action="Settings" class="btn bg-white">
                 Hello @User.Identity?.Name!
             </a>
         }
         else if (User.IsInRole("homeowners"))
         {
-            <a asp-controller="Homeowner" asp-action="HomeownerSettings" class="btn bg-white">
+            <a asp-controller="Homeowner" asp-action="Settings" class="btn bg-white">
                 Hello @User.Identity?.Name!
             </a>
         }

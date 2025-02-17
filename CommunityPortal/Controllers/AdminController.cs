@@ -337,6 +337,7 @@ namespace CommunityPortal.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy ="AdminOnly")]
         public IActionResult CreateStaff()
         {
             return View();

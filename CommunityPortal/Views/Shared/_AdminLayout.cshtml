@@ -56,7 +56,14 @@
                                     <i class="material-icons ms-1">expand_more</i>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end">
-                                    <a asp-controller="Admin" asp-action="Settings" class="dropdown-item">Settings</a>
+                                    @if (User.IsInRole("admin"))
+                                    {
+                                        <a asp-controller="Admin" asp-action="Settings" class="dropdown-item">Settings</a>
+                                    }
+                                    else if (User.IsInRole("staff"))
+                                    {
+                                        <a asp-controller="Staff" asp-action="Settings" class="dropdown-item">Settings</a>
+                                    }
                                     <div class="dropdown-divider"></div>
                                     <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()

@@ -50,10 +50,10 @@ namespace CommunityPortal.Hubs
             await _context.SaveChangesAsync();
 
             // Send message to recipient
-            await Clients.Group(recipientId).SendAsync("ReceiveMessage", senderFullName, message, chatMessage.Timestamp.ToString("g"));
+            await Clients.Group(recipientId).SendAsync("ReceiveMessage", senderFullName, message, chatMessage.Timestamp.ToLocalTime().ToString("g"));
 
             // Optionally, send message back to sender to update their chat window
-            await Clients.Caller.SendAsync("ReceiveMessage", senderFullName, message, chatMessage.Timestamp.ToString("g"));
+            await Clients.Caller.SendAsync("ReceiveMessage", senderFullName, message, chatMessage.Timestamp.ToLocalTime().ToString("g"));
         }
 
         private string GetFullName(ApplicationUser user)

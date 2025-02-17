@@ -1,13 +1,13 @@
-﻿@model CommunityPortal.Models.Admin.AdminSettingsViewModel
+﻿@model CommunityPortal.Models.Staffs.StaffSettingsViewModel
+
 @{
-    ViewData["Title"] = "Admin Settings";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Staff Settings";
 }
 
 @section Styles {
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <style>
+        <style>
         .hover-shadow:hover {
             transform: translateY(-1px);
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
@@ -53,6 +53,7 @@
             transform: scale(1.1);
             background: rgba(var(--bs-primary-rgb), 0.2);
         }
+
     </style>
 }
 
@@ -110,10 +111,10 @@
                                             </div>
                                             <div class="col-12">
                                                 <div class="form-floating">
-                                                    <textarea asp-for="Address" class="form-control form-control-lg rounded-3"
+                                                    <textarea asp-for="Department" class="form-control form-control-lg rounded-3"
                                                               placeholder=" " style="height: 120px"></textarea>
-                                                    <label asp-for="Address"></label>
-                                                    <span asp-validation-for="Address" class="text-danger small"></span>
+                                                    <label asp-for="Department"></label>
+                                                    <span asp-validation-for="Department" class="text-danger small"></span>
                                                 </div>
                                             </div>
                                         </div>

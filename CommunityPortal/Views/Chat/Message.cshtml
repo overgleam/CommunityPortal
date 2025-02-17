@@ -156,7 +156,7 @@
         }
 
         /* Optional: Loader styles */
-        .loader {
+        .loader, .loading-spinner .spinner {
             border: 6px solid #f3f3f3;
             border-top: 6px solid #3498db;
             border-radius: 50%;
@@ -171,26 +171,9 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Add this to your existing Styles section or CSS file */
         .loading-spinner {
             text-align: center;
             padding: 1rem;
-        }
-
-        .loading-spinner .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #007bff;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-bottom: 0.5rem;
-        }
-
-        @@keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
     </style>
 }
@@ -285,6 +268,7 @@
         });
 
         function loadMoreMessages() {
+            if (loading || !hasMore) return;
             loading = true;
             let loadingDiv = document.createElement('div');
             loadingDiv.classList.add('loading-spinner');

@@ -25,6 +25,7 @@ namespace CommunityPortal.Controllers
         public async Task<IActionResult> Index()
         {
             var currentUser = await _userManager.GetUserAsync(User);
+
             var users = await _userManager.Users
                 .Include(u => u.Administrator)
                 .Include(u => u.Staff)
@@ -67,7 +68,7 @@ namespace CommunityPortal.Controllers
                             (m.SenderId == recipientId && m.RecipientId == currentUser.Id))
                 .OrderByDescending(m => m.Timestamp)
                 .Take(20)
-                .OrderBy(m => m.Timestamp) // Re-order to ascending for display
+                .OrderBy(m => m.Timestamp) 
                 .ToListAsync();
 
             var model = new ChatViewModel
@@ -78,7 +79,7 @@ namespace CommunityPortal.Controllers
                 Messages = messages.Select(m => new ChatMessageViewModel
                 {
                     Id = m.Id,
-                    SenderUsername = m.Sender.UserName, // Ensure Sender is loaded or include it
+                    SenderUsername = m.Sender.UserName, 
                     SenderFullName = GetFullName(m.Sender),
                     Message = m.Message,
                     Timestamp = m.Timestamp.ToLocalTime().ToString("g")
@@ -99,7 +100,6 @@ namespace CommunityPortal.Controllers
 
             var currentUserId = _userManager.GetUserId(User);
 
-            // Include the Sender so that m.Sender is loaded and won't be null.
             var messages = await _context.ChatMessages
                 .Include(m => m.Sender)
                 .Where(m => (m.SenderId == currentUserId && m.RecipientId == recipientId) ||
@@ -107,13 +107,12 @@ namespace CommunityPortal.Controllers
                 .OrderByDescending(m => m.Timestamp)
                 .Skip(skip)
                 .Take(take)
-                .OrderBy(m => m.Timestamp) // Re-order for display
+                .OrderBy(m => m.Timestamp) 
                 .ToListAsync();
 
             var messageViewModels = messages.Select(m => new ChatMessageViewModel
             {
                 Id = m.Id,
-                // Safely access Sender properties and fallback if it somehow is null
                 SenderUsername = m.Sender != null ? m.Sender.UserName : "Unknown",
                 SenderFullName = GetFullName(m.Sender),
                 Message = m.Message,
