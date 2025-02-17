@@ -4,6 +4,13 @@
     ViewData["Title"] = "Chat Users";
 }
 
+@section Styles {
+    <style>
+        <link href="~/css/chat/index.css" rel="stylesheet" / >
+    </style>
+}
+
+
 <div class="container my-4">
     <!-- User Categories Cards -->
     <div class="row" id="userCards">
@@ -41,49 +48,6 @@
         }
     </div>
 </div>
-
-@section Styles {
-    <style>
-        .card-header {
-            text-align: center;
-            font-size: 1.25rem;
-        }
-        .list-group {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .user-item {
-            transition: background-color 0.2s;
-        }
-        .user-item:hover {
-            background-color: #f1f1f1;
-            cursor: pointer;
-        }
-        .user-name {
-            font-weight: bold;
-        }
-        .text-muted {
-            font-size: 0.85rem;
-        }
-        /* Scrollbar Styling */
-        .list-group::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .list-group::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .list-group::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-
-        .list-group::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-    </style>
-}
 
 @section Scripts {
     <script>

@@ -4,6 +4,10 @@
     ViewData["Title"] = "Create Staff Account";
 }
 
+@section Styles {
+    <link href="~/css/admin/createstaff.css" rel="stylesheet" />
+}
+
 <div class="container-fluid py-4">
     <div class="create-staff-container">
         <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeIn">
@@ -22,7 +26,6 @@
                         <span>Please correct the following errors:</span>
                     </div>
 
-                    <!-- Personal Information Section -->
                     <div class="section mb-4">
                         <div class="section-header d-flex align-items-center mb-4">
                             <div class="section-icon me-3">
@@ -146,180 +149,6 @@
         </div>
     </div>
 </div>
-
-<style>
-    .create-staff-container {
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, var(--bs-primary), #2980b9);
-    }
-
-    .section-icon {
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(var(--bs-primary-rgb), 0.1);
-        border-radius: 12px;
-    }
-
-    .form-control {
-        transition: all 0.3s ease;
-        border: 2px solid #e9ecef;
-    }
-
-    .form-control:focus {
-        border-color: var(--bs-primary);
-        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
-    }
-
-    .form-floating > label {
-        padding-left: 1rem;
-    }
-
-    .form-floating > .form-control {
-        padding: 1rem;
-        height: calc(3.5rem + 2px);
-    }
-
-    .hover-shadow:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
-        transition: all 0.3s ease;
-    }
-
-    .btn {
-        transition: all 0.3s ease;
-    }
-
-    .btn-light {
-        background: #f8f9fa;
-        border: 2px solid #e9ecef;
-    }
-
-    .btn-light:hover {
-        background: #e9ecef;
-        border-color: #dee2e6;
-    }
-
-    .card {
-        transition: all 0.3s ease;
-    }
-
-    .animate__animated {
-        animation-duration: 0.6s;
-    }
-
-    .alert {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .alert-danger {
-        background-color: #fff5f5;
-        color: #dc3545;
-        border-left: 4px solid #dc3545;
-    }
-
-    /* Material Icons Styling */
-    .material-icons-round {
-        font-size: 1.25rem;
-        vertical-align: middle;
-        position: relative;
-        top: -1px;
-    }
-
-    .section-icon .material-icons-round {
-        font-size: 2rem;
-    }
-
-    .btn .material-icons-round {
-        font-size: 1.1rem;
-        margin-right: 0.5rem;
-    }
-
-    .alert .material-icons-round {
-        font-size: 1.2rem;
-    }
-
-    .section-icon {
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(var(--bs-primary-rgb), 0.1);
-        border-radius: 12px;
-    }
-
-    /* Additional Modal Styles */
-    .validation-error-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .validation-error-list li {
-        display: flex;
-        align-items: center;
-        padding: 0.5rem;
-        margin-bottom: 0.5rem;
-        background-color: #fff5f5;
-        border-radius: 6px;
-        color: #dc3545;
-    }
-
-    .validation-error-list .material-icons-round {
-        font-size: 1.25rem;
-        color: #dc3545;
-    }
-
-    .custom-modal .modal-content {
-        border-radius: 15px;
-        border: none;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    }
-
-    .custom-modal .modal-header {
-        background: #f8f9fa;
-        border-bottom: 2px solid #e9ecef;
-        border-radius: 15px 15px 0 0;
-    }
-
-    .custom-modal .modal-title {
-        display: flex;
-        align-items: center;
-        color: #2c3e50;
-    }
-
-    .warning-message {
-        background: #fff3cd;
-        padding: 1rem;
-        border-radius: 8px;
-        color: #856404;
-    }
-
-    .modal-footer .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        transition: all 0.3s ease;
-    }
-
-    .modal-footer .btn:hover {
-        transform: translateY(-1px);
-    }
-</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

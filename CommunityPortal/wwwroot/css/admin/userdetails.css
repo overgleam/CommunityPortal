@@ -1,0 +1,103 @@
+﻿.user-details-container {
+    padding: 1rem;
+}
+
+.info-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    height: 100%;
+    transition: transform 0.2s;
+}
+
+    .info-card:hover {
+        transform: translateY(-2px);
+    }
+
+.card-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 2px solid #e9ecef;
+}
+
+    .card-header i {
+        margin-right: 0.5rem;
+        color: #6c757d;
+    }
+
+    .card-header h5 {
+        margin: 0;
+        color: #495057;
+        font-weight: 600;
+    }
+
+.info-content {
+    padding: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+.label {
+    color: #6c757d;
+    font-weight: 500;
+    flex: 0 0 120px;
+}
+
+.value {
+    color: #212529;
+    font-weight: 400;
+    flex: 1;
+    text-align: right;
+    word-wrap: break-word;
+    max-width: calc(100% - 140px);
+}
+
+.info-item.address-item .value {
+    white-space: pre-line;
+    line-height: 1.4;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    text-align: center;
+    width: fit-content;
+}
+
+    .role-badge.admin {
+        background: #cff4fc;
+        color: #055160;
+    }
+
+    .role-badge.staff {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .role-badge.homeowner {
+        background: #fff3cd;
+        color: #664d03;
+    }
+
+.no-info {
+    color: #6c757d;
+    text-align: center;
+    font-style: italic;
+    margin: 1rem 0;
+}
