@@ -58,7 +58,7 @@
                             <td>
                                 <div class="user-email">
                                     <i class="material-icons">account_circle</i>
-                                    <span>@user.Email</span>
+                                    <a asp-controller="Profile" asp-action="ViewProfile" asp-route-userId="@user.Id" class="text-decoration-none text-dark">@user.Email</a>
                                 </div>
                             </td>
                             <td>

@@ -1,0 +1,350 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using CommunityPortal.Data;
+using CommunityPortal.Models;
+using CommunityPortal.Models.Profile;
+using Microsoft.EntityFrameworkCore;
+
+namespace CommunityPortal.Controllers
+{
+    [Authorize]
+    public class ProfileController : Controller
+    {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
+
+        public ProfileController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        {
+            _userManager = userManager;
+            _context = context;
+        }
+
+        private async Task<ApplicationUser> GetUserAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return await _userManager.GetUserAsync(User);
+            }
+
+            if (!User.IsInRole("admin"))
+            {
+                return null; // Non-admins cannot access other users' profiles
+            }
+
+            return await _userManager.Users
+                .Include(u => u.Administrator)
+                .Include(u => u.Staff)
+                .Include(u => u.Homeowner)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+        }
+
+        private IActionResult GetProfileView(ApplicationUser user)
+        {
+            if (user.Administrator != null)
+            {
+                var model = new AdminProfileViewModel
+                {
+                    User = user,
+                    FirstName = user.Administrator.FirstName,
+                    LastName = user.Administrator.LastName,
+                    Address = user.Administrator.Address
+                };
+                return View("AdminViewProfile", model);
+            }
+            else if (user.Staff != null)
+            {
+                var model = new StaffProfileViewModel
+                {
+                    User = user,
+                    FirstName = user.Staff.FirstName,
+                    LastName = user.Staff.LastName,
+                    Department = user.Staff.Department,
+                    Position = user.Staff.Position,
+                    Address = user.Staff.Address
+                };
+                return View("StaffViewProfile", model);
+            }
+            else if (user.Homeowner != null)
+            {
+                var model = new HomeownerProfileViewModel
+                {
+                    User = user,
+                    FirstName = user.Homeowner.FirstName,
+                    LastName = user.Homeowner.LastName,
+                    BlockNumber = user.Homeowner.BlockNumber,
+                    HouseNumber = user.Homeowner.HouseNumber,
+                    Address = user.Homeowner.Address,
+                    MoveInDate = user.Homeowner.MoveInDate,
+                    TypeOfResidency = user.Homeowner.TypeOfResidency
+                };
+                return View("HomeownerViewProfile", model);
+            }
+            else
+            {
+                return NotFound("User role not found.");
+            }
+        }
+
+        // GET: /Profile/View/{userId?}
+        public async Task<IActionResult> ViewProfile(string userId = null)
+        {
+            var user = await _userManager.Users
+                .Include(u => u.Administrator)
+                .Include(u => u.Staff)
+                .Include(u => u.Homeowner)
+                .FirstOrDefaultAsync(u => u.Id == (userId ?? _userManager.GetUserId(User)));
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return GetProfileView(user);
+        }
+
+        // GET: /Profile/Edit/{userId?}
+        public async Task<IActionResult> Edit(string userId = null)
+        {
+            var user = await GetUserAsync(userId);
+            if (user == null)
+            {
+                return Forbid();
+            }
+
+            if (user.Administrator != null)
+            {
+                var model = new AdminProfileEditViewModel
+                {
+                    User = user,
+                    FirstName = user.Administrator.FirstName,
+                    LastName = user.Administrator.LastName,
+                    Address = user.Administrator.Address
+                };
+                return View("AdminEditProfile", model);
+            }
+            else if (user.Staff != null)
+            {
+                var model = new StaffProfileEditViewModel
+                {
+                    User = user,
+                    FirstName = user.Staff.FirstName,
+                    LastName = user.Staff.LastName,
+                    Department = user.Staff.Department,
+                    Position = user.Staff.Position,
+                    Address = user.Staff.Address,
+                    PhoneNumber = user.PhoneNumber
+                };
+                return View("StaffEditProfile", model);
+            }
+            else if (user.Homeowner != null)
+            {
+                var model = new HomeownerProfileEditViewModel
+                {
+                    User = user,
+                    FirstName = user.Homeowner.FirstName,
+                    LastName = user.Homeowner.LastName,
+                    BlockNumber = user.Homeowner.BlockNumber,
+                    HouseNumber = user.Homeowner.HouseNumber,
+                    Address = user.Homeowner.Address,
+                    MoveInDate = user.Homeowner.MoveInDate,
+                    TypeOfResidency = user.Homeowner.TypeOfResidency,
+                    PhoneNumber = user.PhoneNumber
+                };
+                return View("HomeownerEditProfile", model);
+            }
+            else
+            {
+                return NotFound("User role not found.");
+            }
+        }
+
+        // POST: /Profile/EditAdminProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditAdminProfile(AdminProfileEditViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("AdminEditProfile", model);
+            }
+
+            var user = await GetUserAsync(model.User.Id);
+            if (user == null || user.Administrator == null)
+            {
+                return NotFound("Admin user not found.");
+            }
+
+            user.Administrator.FirstName = model.FirstName;
+            user.Administrator.LastName = model.LastName;
+            user.Administrator.Address = model.Address;
+
+            if (!string.IsNullOrEmpty(model.CurrentPassword) || !string.IsNullOrEmpty(model.NewPassword))
+            {
+                var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
+                if (!isCurrentPasswordValid)
+                {
+                    ModelState.AddModelError("CurrentPassword", "Current password is incorrect.");
+                    TempData["ErrorMessage"] = "Current password is incorrect.";
+                    return View("AdminEditProfile", model);
+                }
+
+                var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+                if (!changePasswordResult.Succeeded)
+                {
+                    foreach (var error in changePasswordResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    TempData["ErrorMessage"] = "Failed to update password. Please check the requirements.";
+                    return View("AdminEditProfile", model);
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Profile and password updated successfully.";
+                }
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Profile updated successfully.";
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("ViewProfile", new { userId = user.Id });
+        }
+
+        // POST: /Profile/EditStaffProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditStaffProfile(StaffProfileEditViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("StaffEditProfile", model);
+            }
+
+            var user = await GetUserAsync(model.User.Id);
+            if (user == null || user.Staff == null)
+            {
+                return NotFound("Staff user not found.");
+            }
+
+            if (user.PhoneNumber != model.PhoneNumber)
+            {
+                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, model.PhoneNumber);
+                if (!setPhoneResult.Succeeded)
+                {
+                    ModelState.AddModelError("PhoneNumber", "Error updating phone number");
+                    return View("StaffEditProfile", model);
+                }
+            }
+
+            user.Staff.FirstName = model.FirstName;
+            user.Staff.LastName = model.LastName;
+            user.Staff.Department = model.Department;
+            user.Staff.Position = model.Position;
+            user.Staff.Address = model.Address;
+
+            if (!string.IsNullOrEmpty(model.CurrentPassword) || !string.IsNullOrEmpty(model.NewPassword))
+            {
+                var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
+                if (!isCurrentPasswordValid)
+                {
+                    ModelState.AddModelError("CurrentPassword", "Current password is incorrect.");
+                    TempData["ErrorMessage"] = "Current password is incorrect.";
+                    return View("StaffEditProfile", model);
+                }
+
+                var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+                if (!changePasswordResult.Succeeded)
+                {
+                    foreach (var error in changePasswordResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    TempData["ErrorMessage"] = "Failed to update password. Please check the requirements.";
+                    return View("StaffEditProfile", model);
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Profile and password updated successfully.";
+                }
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Profile updated successfully.";
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("ViewProfile", new { userId = user.Id });
+        }
+
+        // POST: /Profile/EditHomeownerProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditHomeownerProfile(HomeownerProfileEditViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("HomeownerEditProfile", model);
+            }
+
+            var user = await GetUserAsync(model.User.Id);
+            if (user == null || user.Homeowner == null)
+            {
+                return NotFound("Homeowner user not found.");
+            }
+
+            if (user.PhoneNumber != model.PhoneNumber)
+            {
+                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, model.PhoneNumber);
+                if (!setPhoneResult.Succeeded)
+                {
+                    ModelState.AddModelError("PhoneNumber", "Error updating phone number");
+                    return View("HomeownerEditProfile", model);
+                }
+            }
+
+            user.Homeowner.FirstName = model.FirstName;
+            user.Homeowner.LastName = model.LastName;
+            user.Homeowner.BlockNumber = model.BlockNumber;
+            user.Homeowner.HouseNumber = model.HouseNumber;
+            user.Homeowner.Address = model.Address;
+            user.Homeowner.MoveInDate = model.MoveInDate;
+            user.Homeowner.TypeOfResidency = model.TypeOfResidency;
+
+            if (!string.IsNullOrEmpty(model.CurrentPassword) || !string.IsNullOrEmpty(model.NewPassword))
+            {
+                var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
+                if (!isCurrentPasswordValid)
+                {
+                    ModelState.AddModelError("CurrentPassword", "Current password is incorrect.");
+                    TempData["ErrorMessage"] = "Current password is incorrect.";
+                    return View("HomeownerEditProfile", model);
+                }
+
+                var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+                if (!changePasswordResult.Succeeded)
+                {
+                    foreach (var error in changePasswordResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    TempData["ErrorMessage"] = "Failed to update password. Please check the requirements.";
+                    return View("HomeownerEditProfile", model);
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Profile and password updated successfully.";
+                }
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Profile updated successfully.";
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("ViewProfile", new { userId = user.Id });
+        }
+    }
+}

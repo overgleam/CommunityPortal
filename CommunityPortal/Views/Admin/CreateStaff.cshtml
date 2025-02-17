@@ -51,11 +51,32 @@
                                     <span asp-validation-for="LastName" class="text-danger small"></span>
                                 </div>
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Address" class="form-control form-control-lg rounded-3" placeholder=" " />
+                                    <label asp-for="Address"></label>
+                                    <span asp-validation-for="Address" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="PhoneNumber" class="form-control form-control-lg rounded-3" placeholder=" " />
+                                    <label asp-for="PhoneNumber"></label>
+                                    <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
                                 <div class="form-floating">
                                     <input asp-for="Department" class="form-control form-control-lg rounded-3" placeholder=" " />
                                     <label asp-for="Department"></label>
                                     <span asp-validation-for="Department" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Position" class="form-control form-control-lg rounded-3" placeholder=" " />
+                                    <label asp-for="Position"></label>
+                                    <span asp-validation-for="Position" class="text-danger small"></span>
                                 </div>
                             </div>
                         </div>
@@ -131,8 +152,16 @@
                         <span id="previewEmail" class="value"></span>
                     </div>
                     <div class="preview-item">
+                        <span class="label">Address:</span>
+                        <span id="previewAddress" class="value"></span>
+                    </div>
+                    <div class="preview-item">
                         <span class="label">Department:</span>
                         <span id="previewDepartment" class="value"></span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="label">Position:</span>
+                        <span id="previewPosition" class="value"></span>
                     </div>
                 </div>
                 <div class="alert alert-warning mt-3">
@@ -164,6 +193,8 @@
                     $('#previewName').text($('#FirstName').val() + ' ' + $('#LastName').val());
                     $('#previewEmail').text($('#Email').val());
                     $('#previewDepartment').text($('#Department').val());
+                    $('#previewPosition').text($('#Position').val());
+                    $('#previewAddress').text($('#Address').val());
                     
                     modal.show();
                 } else {

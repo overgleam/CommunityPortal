@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CommunityPortal.Models.Homeowners
+namespace CommunityPortal.Models.Profile
 {
-    public class HomeownerSettingsViewModel
+    public class HomeownerProfileViewModel
     {
+        public ApplicationUser User { get; set; }
+
         [Required]
         [Display(Name = "First Name")]
         public string FirstName { get; set; }
@@ -32,7 +34,18 @@ namespace CommunityPortal.Models.Homeowners
         [Display(Name = "Type of Residency")]
         public string TypeOfResidency { get; set; }
 
-        // Password Change Fields
+        [Phone]
+        [Required(ErrorMessage = "You must provide a phone number")]
+        [DataType(DataType.PhoneNumber)]
+        [RegularExpression(@"^(09|\+639)\d{9}$", ErrorMessage = "Not a valid phone number")]
+        [Display(Name = "Phone Number")]
+        public string PhoneNumber { get; set; }
+
+    }
+
+    public class HomeownerProfileEditViewModel : HomeownerProfileViewModel
+    {
+        // Password change fields
         [DataType(DataType.Password)]
         [Display(Name = "Current Password")]
         public string CurrentPassword { get; set; }

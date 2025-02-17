@@ -1,8 +1,5 @@
 ﻿@model CommunityPortal.Models.ApplicationUser
 
-@section Styles {
-}
-
 <div class="user-details-container">
     <div class="row g-4">
         <div class="col-md-6">
@@ -65,9 +62,17 @@
                             <span class="label">Last Name</span>
                             <span class="value">@Model.Staff.LastName</span>
                         </div>
+                        <div class="info-item address-item">
+                            <span class="label">Address</span>
+                            <span class="value">@Model.Staff.Address</span>
+                        </div>
                         <div class="info-item">
                             <span class="label">Department</span>
                             <span class="value">@Model.Staff.Department</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Position</span>
+                            <span class="value">@Model.Staff.Position</span>
                         </div>
                     }
                     else if (Model.Homeowner != null)
@@ -92,6 +97,14 @@
                         <div class="info-item address-item">
                             <span class="label">Address</span>
                             <span class="value">@Model.Homeowner.Address</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Move In Date</span>
+                            <span class="value">@Model.Homeowner.MoveInDate.ToString("yyyy-MM-dd")</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Type of Residency</span>
+                            <span class="value">@Model.Homeowner.TypeOfResidency</span>
                         </div>
                     }
                     else

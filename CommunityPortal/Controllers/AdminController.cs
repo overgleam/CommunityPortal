@@ -249,6 +249,17 @@ namespace CommunityPortal.Controllers
                 return RedirectToAction("ApproveUsers");
             }
 
+            // Add this code before removing the user
+            var messages = await _context.ChatMessages
+                .Where(m => m.SenderId == userId || m.RecipientId == userId)
+                .ToListAsync();
+
+            if (messages.Any())
+            {
+                _context.ChatMessages.RemoveRange(messages);
+                await _context.SaveChangesAsync();
+            }
+
             // Remove user roles
             var roles = await _userManager.GetRolesAsync(user);
             var removeRolesResult = await _userManager.RemoveFromRolesAsync(user, roles);
@@ -343,7 +354,7 @@ namespace CommunityPortal.Controllers
             return View();
         }
 
-        [HttpPost]
+        [HttpPost]  
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateStaff(StaffCreateViewModel model)
         {
@@ -353,7 +364,8 @@ namespace CommunityPortal.Controllers
                 {
                     UserName = model.Email,
                     Email = model.Email,
-                    Status = UserStatus.Approved,
+                    PhoneNumber = model.PhoneNumber,
+                    Status = UserStatus.PendingApproval,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -368,7 +380,9 @@ namespace CommunityPortal.Controllers
                         UserId = user.Id,
                         FirstName = model.FirstName,
                         LastName = model.LastName,
-                        Department = model.Department
+                        Department = model.Department,
+                        Address = model.Address,
+                        Position = model.Position,
                     };
 
                     _context.Staffs.Add(staff);

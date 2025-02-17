@@ -5,6 +5,7 @@ using CommunityPortal.Data;
 using CommunityPortal.Models;
 using CommunityPortal.Models.Account;
 using CommunityPortal.Models.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace CommunityPortal.Controllers
 {
@@ -12,14 +13,12 @@ namespace CommunityPortal.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _context;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _roleManager = roleManager;
             _context = context;
         }
 
@@ -46,6 +45,16 @@ namespace CommunityPortal.Controllers
         {
             if (ModelState.IsValid)
             {
+
+                var existingUser = await _userManager.Users
+                    .FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+
+                if (existingUser != null)
+                {
+                    ModelState.AddModelError("PhoneNumber", "This phone number is already in use.");
+                    return View(model);
+                }
+                
                 var user = new ApplicationUser 
                 { 
                     UserName = model.Email,
@@ -68,13 +77,14 @@ namespace CommunityPortal.Controllers
                         LastName = model.LastName,
                         BlockNumber = model.BlockNumber,
                         HouseNumber = model.HouseNumber,
-                        Address = model.Address
+                        Address = model.Address,
+                        MoveInDate = model.MoveInDate,
+                        TypeOfResidency = model.TypeOfResidency
                     };
 
                     _context.Homeowners.Add(homeowner);
                     await _context.SaveChangesAsync();
 
-                    TempData["SuccessMessage"] = "Registration successful! Your account is pending approval.";
                     return RedirectToAction("Login", "Account");
                 }
                 foreach (var error in result.Errors)
@@ -166,5 +176,6 @@ namespace CommunityPortal.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
+
     }
 }

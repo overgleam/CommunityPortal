@@ -62,7 +62,7 @@
         appearance: none;
         -webkit-appearance: none;
         cursor: pointer;
-        min-width: 100px;
+/*        min-width: 100px;*/
     }
 
         .dataTables_wrapper .dataTables_length select:focus {
@@ -238,7 +238,7 @@ table.dataTable tbody th, table.dataTable tbody td {
         margin-bottom: 1rem;
     }
 
-@@keyframes spin {
+@keyframes spin {
     0% {
         transform: rotate(0deg);
     }

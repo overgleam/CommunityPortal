@@ -22,6 +22,21 @@ namespace CommunityPortal.Models.Admin
         public string Email { get; set; }
 
         [Required]
+        [Display(Name = "Position")]
+        public string Position { get; set; }
+
+        [Required]
+        [Display(Name = "Address")]
+        public string Address { get; set; }
+
+        [Phone]
+        [Required(ErrorMessage = "You must provide a phone number")]
+        [DataType(DataType.PhoneNumber)]
+        [RegularExpression(@"^(09|\+639)\d{9}$", ErrorMessage = "Not a valid phone number")]
+        [Display(Name = "Phone Number")]
+        public string PhoneNumber { get; set; }
+
+        [Required]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]

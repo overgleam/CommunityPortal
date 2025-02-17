@@ -13,24 +13,64 @@
 
             <form asp-action="Register" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <!-- Three Column Grid for Form Fields -->
                 <div class="row g-3">
                     <!-- First Row -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <div class="form-floating">
                             <input asp-for="FirstName" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="First Name" />
                             <label asp-for="FirstName" class="text-white"></label>
                             <span asp-validation-for="FirstName" class="text-danger"></span>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <div class="form-floating">
                             <input asp-for="LastName" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Last Name" />
                             <label asp-for="LastName" class="text-white"></label>
                             <span asp-validation-for="LastName" class="text-danger"></span>
                         </div>
                     </div>
-                    <div class="col-md-4">
+
+                    <!-- Second Row -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input asp-for="Email" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Email" />
+                            <label asp-for="Email" class="text-white"></label>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input asp-for="PhoneNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Contact #" maxlength="11" />
+                            <label asp-for="PhoneNumber" class="text-white"></label>
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Third Row -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Password" />
+                            <label asp-for="Password" class="text-white"></label>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input asp-for="ConfirmPassword" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Confirm Password" />
+                            <label asp-for="ConfirmPassword" class="text-white"></label>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Fourth Row -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input asp-for="BlockNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Block #" />
+                            <label asp-for="BlockNumber" class="text-white"></label>
+                            <span asp-validation-for="BlockNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
                         <div class="form-floating">
                             <input asp-for="HouseNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="House Number" />
                             <label asp-for="HouseNumber" class="text-white"></label>
@@ -38,49 +78,32 @@
                         </div>
                     </div>
 
-                    <!-- Second Row -->
-                    <div class="col-md-4">
-                        <div class="form-floating">
-                            <input asp-for="BlockNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Block #" />
-                            <label asp-for="BlockNumber" class="text-white"></label>
-                            <span asp-validation-for="BlockNumber" class="text-danger"></span>
+                    <!-- Fifth Row -->
+                    <div class="col-md-6">
+                        <div class="form-floating position-relative">
+                            <select asp-for="TypeOfResidency" class="form-control bg-transparent text-white border-0 border-bottom" style="color: white !important;">
+                                <option value="Tenant" style="color: black;">Tenant</option>
+                                <option value="Homeowner" style="color: black;">Homeowner</option>
+                            </select>
+                            <label asp-for="TypeOfResidency" class="text-white"></label>
+                            <span asp-validation-for="TypeOfResidency" class="text-danger"></span>
+                            <i class="material-icons position-absolute" style="right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: white;">arrow_drop_down</i>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input asp-for="MoveInDate" type="date" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Move In Date" value="">
+                            <label asp-for="MoveInDate" class="text-white"></label>
+                            <span asp-validation-for="MoveInDate" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Last Row -->
+                    <div class="col-md-12">
                         <div class="form-floating">
                             <input asp-for="Address" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Address" />
                             <label asp-for="Address" class="text-white"></label>
                             <span asp-validation-for="Address" class="text-danger"></span>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-floating">
-                            <input asp-for="Email" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Email" />
-                            <label asp-for="Email" class="text-white"></label>
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <!-- Third Row -->
-                    <div class="col-md-4">
-                        <div class="form-floating">
-                            <input asp-for="PhoneNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Contact #" maxlength="11" />
-                            <label asp-for="PhoneNumber" class="text-white"></label>
-                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-floating">
-                            <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Password" />
-                            <label asp-for="Password" class="text-white"></label>
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-floating">
-                            <input asp-for="ConfirmPassword" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Confirm Password" />
-                            <label asp-for="ConfirmPassword" class="text-white"></label>
-                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                         </div>
                     </div>
                 </div>

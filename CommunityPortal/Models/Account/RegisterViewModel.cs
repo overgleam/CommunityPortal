@@ -19,7 +19,6 @@ namespace CommunityPortal.Models.Account
         [Display(Name = "Phone Number")]
         public string PhoneNumber { get; set; }
 
-
         [Required]
         [Display(Name = "Block Number")]
         public int BlockNumber { get; set; }
@@ -31,6 +30,14 @@ namespace CommunityPortal.Models.Account
         [Required]
         [Display(Name = "Address")]
         public string Address { get; set; }
+
+        [Required]
+        [Display(Name = "Move In Date")]
+        public DateTime MoveInDate { get; set; }
+
+        [Required]
+        [Display(Name = "Type of Residency")]
+        public string TypeOfResidency { get; set; }
 
         [Required]
         [EmailAddress]

@@ -13,8 +13,16 @@ namespace CommunityPortal.Models.Staffs
         public string LastName { get; set; }
 
         [Required]
+        [Display(Name = "Address")]
+        public string Address { get; set; }
+
+        [Required]
         [Display(Name = "Department")]
         public string Department { get; set; }
+
+        [Required]
+        [Display(Name = "Position")]
+        public string Position { get; set; }
 
         // Password Change Fields
         [DataType(DataType.Password)]

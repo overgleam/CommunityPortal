@@ -1,0 +1,90 @@
+﻿@model CommunityPortal.Models.Profile.HomeownerProfileEditViewModel
+
+@{
+    ViewData["Title"] = "Edit Homeowner Profile";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card shadow p-4">
+    <form asp-action="EditHomeownerProfile" method="post">
+        <input type="hidden" asp-for="User.Id" />
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label asp-for="FirstName" class="form-label"></label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="LastName" class="form-label"></label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="PhoneNumber" class="form-label"></label>
+            <input asp-for="PhoneNumber" class="form-control" type="tel" maxlength="11" />
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState["PhoneNumber"]?.Errors.Count > 0)
+            {
+                <span class="text-danger">@ViewData.ModelState["PhoneNumber"].Errors.First().ErrorMessage</span>
+            }
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="BlockNumber" class="form-label"></label>
+            <input asp-for="BlockNumber" class="form-control" />
+            <span asp-validation-for="BlockNumber" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="HouseNumber" class="form-label"></label>
+            <input asp-for="HouseNumber" class="form-control" />
+            <span asp-validation-for="HouseNumber" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Address" class="form-label"></label>
+            <input asp-for="Address" class="form-control" />
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="MoveInDate" class="form-label"></label>
+            <input asp-for="MoveInDate" class="form-control" type="date" />
+            <span asp-validation-for="MoveInDate" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="TypeOfResidency" class="form-label"></label>
+            <input asp-for="TypeOfResidency" class="form-control" />
+            <span asp-validation-for="TypeOfResidency" class="text-danger"></span>
+        </div>
+
+        <hr />
+
+        <h5>Change Password</h5>
+
+        <div class="mb-3">
+            <label asp-for="CurrentPassword" class="form-label"></label>
+            <input asp-for="CurrentPassword" class="form-control" type="password" />
+            <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="NewPassword" class="form-label"></label>
+            <input asp-for="NewPassword" class="form-control" type="password" />
+            <span asp-validation-for="NewPassword" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ConfirmPassword" class="form-label"></label>
+            <input asp-for="ConfirmPassword" class="form-control" type="password" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success">Save Changes</button>
+    </form>
+</div>

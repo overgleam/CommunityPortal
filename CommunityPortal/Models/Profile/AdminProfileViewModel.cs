@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CommunityPortal.Models.Homeowners
+namespace CommunityPortal.Models.Profile
 {
-    public class HomeownerSettingsViewModel
+    public class AdminProfileViewModel
     {
+        public ApplicationUser User { get; set; }
+
         [Required]
         [Display(Name = "First Name")]
         public string FirstName { get; set; }
@@ -13,26 +15,12 @@ namespace CommunityPortal.Models.Homeowners
         public string LastName { get; set; }
 
         [Required]
-        [Display(Name = "Block Number")]
-        public int BlockNumber { get; set; }
-
-        [Required]
-        [Display(Name = "House Number")]
-        public int HouseNumber { get; set; }
-
-        [Required]
-        [Display(Name = "Address")]
         public string Address { get; set; }
+    }
 
-        [Required]
-        [Display(Name = "Move In Date")]
-        public DateTime MoveInDate { get; set; }
-
-        [Required]
-        [Display(Name = "Type of Residency")]
-        public string TypeOfResidency { get; set; }
-
-        // Password Change Fields
+    public class AdminProfileEditViewModel : AdminProfileViewModel
+    {
+        // Password change fields
         [DataType(DataType.Password)]
         [Display(Name = "Current Password")]
         public string CurrentPassword { get; set; }

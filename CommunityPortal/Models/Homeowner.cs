@@ -12,5 +12,7 @@ namespace CommunityPortal.Models
         public int BlockNumber { get; set; }
         public int HouseNumber { get; set; }
         public string Address { get; set; }
+        public DateTime MoveInDate { get; set; }
+        public string TypeOfResidency { get; set; }
     }
 }

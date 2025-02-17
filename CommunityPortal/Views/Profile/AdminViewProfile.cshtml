@@ -1,0 +1,20 @@
+﻿@model CommunityPortal.Models.Profile.AdminProfileViewModel
+
+@{
+    ViewData["Title"] = "Admin Profile";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card shadow p-4">
+    <h4>Contact Information</h4>
+    <p><strong>Email:</strong> @Model.User.Email</p>
+    <p><strong>Phone Number:</strong> @(string.IsNullOrEmpty(Model.User.PhoneNumber) ? "N/A" : Model.User.PhoneNumber)</p>
+
+    <h4>Profile Details</h4>
+    <p><strong>First Name:</strong> @Model.FirstName</p>
+    <p><strong>Last Name:</strong> @Model.LastName</p>
+    <p><strong>Address:</strong> @Model.Address</p>
+
+    <a asp-action="Edit" asp-route-userId="@Model.User.Id" class="btn btn-primary mt-3">Edit Profile</a>
+</div>
