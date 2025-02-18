@@ -5,123 +5,225 @@
 }
 
 @section Styles {
-    <link href="~/css/admin/createstaff.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .create-staff-card {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+        }
+
+        .form-section {
+            background-color: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: #0277bd;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #424242;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            padding: 0.75rem;
+            transition: all 0.3s;
+            height: 3.2rem;
+        }
+
+            .form-control:focus {
+                border-color: #0277bd;
+                box-shadow: 0 0 0 0.2rem rgba(2, 119, 189, 0.25);
+            }
+
+        .btn-create {
+            background: linear-gradient(45deg, #0277bd, #039be5);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+            .btn-create:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(2, 119, 189, 0.3);
+            }
+
+        .staff-badge {
+            background: linear-gradient(45deg, #0277bd, #039be5);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .validation-error {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .modal-header {
+            background: linear-gradient(45deg, #0277bd, #039be5);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .preview-item {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+            .preview-item .label {
+                color: #666;
+                font-weight: 500;
+                min-width: 120px;
+                display: inline-block;
+            }
+
+            .preview-item .value {
+                color: #333;
+            }
+
+    </style>
 }
 
-<div class="container-fluid py-4">
-    <div class="create-staff-container">
-        <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeIn">
-            <div class="card-header bg-gradient-primary text-white py-4 border-0 position-relative overflow-hidden">
-                <div class="header-pattern"></div>
-                <h4 class="mb-0 position-relative">
-                    <i class="material-icons-round">person_add</i> Create Staff Account
-                </h4>
-                <p class="text-white-50 mb-0 mt-2 position-relative">Add a new staff member to the system</p>
-            </div>
-            
-            <div class="card-body p-4">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="create-staff-card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="staff-badge">
+                        <i class="fas fa-user-plus me-2"></i>New Staff Account
+                    </div>
+                    <h2 class="mb-3">Create Staff Account</h2>
+                    <p class="text-muted">Fill in the information below to create a new staff account</p>
+                </div>
+
                 <form asp-action="CreateStaff" method="post" id="createStaffForm" class="needs-validation">
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 border-0">
-                        <span class="material-icons-round align-middle me-2">error</span>
+                        <i class="fas fa-exclamation-circle me-2"></i>
                         <span>Please correct the following errors:</span>
                     </div>
 
-                    <div class="section mb-4">
-                        <div class="section-header d-flex align-items-center mb-4">
-                            <div class="section-icon me-3">
-                                <i class="material-icons-round">badge</i>
-                            </div>
-                            <div>
-                                <h5 class="text-primary mb-1">Personal Information</h5>
-                                <p class="text-muted small mb-0">Enter the staff member's basic information</p>
-                            </div>
-                        </div>
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-user me-2"></i>Personal Information
+                        </h3>
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input asp-for="FirstName" class="form-control form-control-lg rounded-3" placeholder=" " />
-                                    <label asp-for="FirstName"></label>
-                                    <span asp-validation-for="FirstName" class="text-danger small"></span>
+                                <div class="form-group">
+                                    <label asp-for="FirstName" class="form-label">First Name</label>
+                                    <input asp-for="FirstName" class="form-control" placeholder="Enter first name" />
+                                    <span asp-validation-for="FirstName" class="validation-error"></span>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input asp-for="LastName" class="form-control form-control-lg rounded-3" placeholder=" " />
-                                    <label asp-for="LastName"></label>
-                                    <span asp-validation-for="LastName" class="text-danger small"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input asp-for="Address" class="form-control form-control-lg rounded-3" placeholder=" " />
-                                    <label asp-for="Address"></label>
-                                    <span asp-validation-for="Address" class="text-danger small"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input asp-for="PhoneNumber" class="form-control form-control-lg rounded-3" placeholder=" " maxlength="11" />
-                                    <label asp-for="PhoneNumber"></label>
-                                    <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input asp-for="Department" class="form-control form-control-lg rounded-3" placeholder=" " />
-                                    <label asp-for="Department"></label>
-                                    <span asp-validation-for="Department" class="text-danger small"></span>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input asp-for="Position" class="form-control form-control-lg rounded-3" placeholder=" " />
-                                    <label asp-for="Position"></label>
-                                    <span asp-validation-for="Position" class="text-danger small"></span>
+                                <div class="form-group">
+                                    <label asp-for="LastName" class="form-label">Last Name</label>
+                                    <input asp-for="LastName" class="form-control" placeholder="Enter last name" />
+                                    <span asp-validation-for="LastName" class="validation-error"></span>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Account Credentials Section -->
-                    <div class="section mt-4">
-                        <div class="section-header d-flex align-items-center mb-4">
-                            <div class="section-icon me-3">
-                                <i class="material-icons-round">key</i>
-                            </div>
-                            <div>
-                                <h5 class="text-primary mb-1">Account Credentials</h5>
-                                <p class="text-muted small mb-0">Set up login credentials for the staff account</p>
-                            </div>
-                        </div>
                         <div class="row g-4">
                             <div class="col-md-12">
-                                <div class="form-floating">
-                                    <input asp-for="Email" type="email" class="form-control form-control-lg rounded-3" placeholder=" " />
-                                    <label asp-for="Email"></label>
-                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                <div class="form-group">
+                                    <label asp-for="Address" class="form-label">Address</label>
+                                    <input asp-for="Address" class="form-control" placeholder="Enter complete address" />
+                                    <span asp-validation-for="Address" class="validation-error"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                                    <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" maxlength="11" />
+                                    <span asp-validation-for="PhoneNumber" class="validation-error"></span>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input asp-for="Password" type="password" class="form-control form-control-lg rounded-3" placeholder=" " />
-                                    <label asp-for="Password"></label>
-                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                <div class="form-group">
+                                    <label asp-for="Department" class="form-label">Department</label>
+                                    <input asp-for="Department" class="form-control" placeholder="Enter department" />
+                                    <span asp-validation-for="Department" class="validation-error"></span>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-floating">
-                                    <input asp-for="ConfirmPassword" type="password" class="form-control form-control-lg rounded-3" placeholder=" " />
-                                    <label asp-for="ConfirmPassword"></label>
-                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label asp-for="Position" class="form-label">Position</label>
+                                    <input asp-for="Position" class="form-control" placeholder="Enter position" />
+                                    <span asp-validation-for="Position" class="validation-error"></span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div class="text-end mt-5">
-                        <button type="button" id="submitBtn" class="btn btn-primary btn-lg px-5 rounded-3 shadow-sm hover-shadow">
-                            <i class="material-icons-round">person_add</i> Create Account
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-lock me-2"></i>Account Credentials
+                        </h3>
+                        <div class="row g-4">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label asp-for="Email" class="form-label">Email Address</label>
+                                    <input asp-for="Email" type="email" class="form-control" placeholder="Enter email address" />
+                                    <span asp-validation-for="Email" class="validation-error"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Password" class="form-label">Password</label>
+                                    <input asp-for="Password" type="password" class="form-control" placeholder="Enter password" />
+                                    <span asp-validation-for="Password" class="validation-error"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+                                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm password" />
+                                    <span asp-validation-for="ConfirmPassword" class="validation-error"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-4">
+                        <button type="button" id="submitBtn" class="btn btn-create btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Create Staff Account
                         </button>
                     </div>
                 </form>
@@ -131,14 +233,14 @@
 </div>
 
 <!-- Confirmation Modal -->
-<div class="modal fade custom-modal" id="confirmationModal" tabindex="-1">
+<div class="modal fade" id="confirmationModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="material-icons-round">help</i> Confirm Staff Account Creation
+                    <i class="fas fa-user-check me-2"></i>Confirm Staff Account Creation
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="user-details-preview">
@@ -150,6 +252,10 @@
                     <div class="preview-item">
                         <span class="label">Email:</span>
                         <span id="previewEmail" class="value"></span>
+                    </div>
+                    <div class="preview-item">
+                        <span class="label">Phone:</span>
+                        <span id="previewPhone" class="value"></span>
                     </div>
                     <div class="preview-item">
                         <span class="label">Address:</span>
@@ -165,14 +271,16 @@
                     </div>
                 </div>
                 <div class="alert alert-warning mt-3">
-                    <i class="material-icons-round align-middle me-2">warning</i>
+                    <i class="fas fa-exclamation-triangle me-2"></i>
                     Are you sure you want to create this staff account?
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="confirmCreate" class="btn btn-primary">
-                    <i class="material-icons-round">check</i> Confirm
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" id="confirmCreate" class="btn btn-create">
+                    <i class="fas fa-check me-2"></i>Confirm
                 </button>
             </div>
         </div>
@@ -189,9 +297,9 @@
             $('#submitBtn').click(function(e) {
                 e.preventDefault();
                 if (form[0].checkValidity()) {
-                    // Update preview
                     $('#previewName').text($('#FirstName').val() + ' ' + $('#LastName').val());
                     $('#previewEmail').text($('#Email').val());
+                    $('#previewPhone').text($('#PhoneNumber').val());
                     $('#previewDepartment').text($('#Department').val());
                     $('#previewPosition').text($('#Position').val());
                     $('#previewAddress').text($('#Address').val());
@@ -203,8 +311,6 @@
             });
 
             $('#confirmCreate').click(function() {
-                form.attr('action', '@Url.Action("CreateStaff")');
-                form.attr('method', 'post');
                 form.submit();
             });
         });
