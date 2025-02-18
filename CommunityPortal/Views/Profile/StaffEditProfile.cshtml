@@ -8,6 +8,7 @@
 
 <div class="card shadow p-4">
     <form asp-action="EditStaffProfile" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="User.Id" />
         @Html.AntiForgeryToken()
 
@@ -30,6 +31,12 @@
         </div>
 
         <div class="mb-3">
+            <label asp-for="PhoneNumber" class="form-label"></label>
+            <input asp-for="PhoneNumber" class="form-control" type="tel" maxlength="11" />
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
             <label asp-for="Department" class="form-label"></label>
             <input asp-for="Department" class="form-control" />
             <span asp-validation-for="Department" class="text-danger"></span>
@@ -39,12 +46,6 @@
             <label asp-for="Position" class="form-label"></label>
             <input asp-for="Position" class="form-control" />
             <span asp-validation-for="Position" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="PhoneNumber" class="form-label"></label>
-            <input asp-for="PhoneNumber" class="form-control" type="tel" maxlength="11" />
-            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
         </div>
 
         <hr />

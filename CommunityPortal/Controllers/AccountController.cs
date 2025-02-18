@@ -45,7 +45,6 @@ namespace CommunityPortal.Controllers
         {
             if (ModelState.IsValid)
             {
-
                 var existingUser = await _userManager.Users
                     .FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
 
@@ -66,6 +65,7 @@ namespace CommunityPortal.Controllers
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
+
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(user, "homeowners");
@@ -93,7 +93,9 @@ namespace CommunityPortal.Controllers
                 }
 
             }
+
             ModelState.AddModelError(string.Empty, "Registration failed. Please check your inputs.");
+
             return View(model);
         }
 

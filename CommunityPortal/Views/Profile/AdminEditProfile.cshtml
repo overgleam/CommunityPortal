@@ -8,6 +8,7 @@
 
 <div class="card shadow p-4">
     <form asp-action="EditAdminProfile" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="User.Id" />
         @Html.AntiForgeryToken()
 

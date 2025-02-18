@@ -15,11 +15,11 @@ namespace CommunityPortal.Models.Profile
         public string LastName { get; set; }
 
         [Required]
-        [Display(Name = "Block Number")]
+        [Display(Name = "Block No.")]
         public int BlockNumber { get; set; }
 
         [Required]
-        [Display(Name = "House Number")]
+        [Display(Name = "House No.")]
         public int HouseNumber { get; set; }
 
         [Required]

@@ -10,17 +10,15 @@ using CommunityPortal.Models.Enums;
 
 namespace CommunityPortal.Controllers
 {
-    [Authorize(Roles = "admin, staff")]
+    [Authorize(Roles = "admin")]
     public class AdminController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _context;
 
-        public AdminController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ApplicationDbContext context)
+        public AdminController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
             _context = context;
         }
 
@@ -41,7 +39,7 @@ namespace CommunityPortal.Controllers
             var model = new ApproveUsersViewModel
             {
                 Users = new List<UserWithRoleViewModel>()
-            };  
+            };
 
             foreach (var user in users)
             {
@@ -80,89 +78,52 @@ namespace CommunityPortal.Controllers
             return PartialView("_UserDetails", user);
         }
 
+        // Helper method to update a user's status.
+        private async Task<IActionResult> ChangeUserStatus(string userId, UserStatus status)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return RedirectToAction("ApproveUsers");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return RedirectToAction("ApproveUsers");
+            }
+
+            user.Status = status;
+            await _userManager.UpdateAsync(user);
+            TempData["SuccessMessage"] = "User status updated successfully.";
+            return RedirectToAction("ApproveUsers");
+        }
+
         // POST: /Admin/ApproveUser
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> ApproveUser(string userId)
-        {
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                TempData["ErrorMessage"] = "Invalid user ID.";
-                return RedirectToAction("ApproveUsers");
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["ErrorMessage"] = "User not found.";
-                return RedirectToAction("ApproveUsers");
-            }
-
-            user.Status = UserStatus.Approved;
-            var result = await _userManager.UpdateAsync(user);
-            if (result.Succeeded)
-            {
-                TempData["SuccessMessage"] = "User approved successfully.";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Failed to approve user.";
-            }
-
-            return RedirectToAction("ApproveUsers");
-        }
+        public Task<IActionResult> ApproveUser(string userId) =>
+            ChangeUserStatus(userId, UserStatus.Approved);
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DisableUser(string userId)
-        {
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                TempData["ErrorMessage"] = "Invalid user ID.";
-                return RedirectToAction("ApproveUsers");
-            }
+        public Task<IActionResult> DisableUser(string userId) =>
+            ChangeUserStatus(userId, UserStatus.Disabled);
 
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["ErrorMessage"] = "User not found.";
-                return RedirectToAction("ApproveUsers");
-            }
-
-            user.Status = UserStatus.Disabled;
-            var result = await _userManager.UpdateAsync(user);
-            if (result.Succeeded)
-            {
-                TempData["SuccessMessage"] = "User disabled successfully.";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Failed to disable user.";
-            }
-
-            return RedirectToAction("ApproveUsers");
-        }
-
-        // POST: /Admin/RemoveUser
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RemoveUser(string userId)
+        public Task<IActionResult> BanUser(string userId) =>
+            ChangeUserStatus(userId, UserStatus.Banned);
+
+        // POST: /Admin/UnbanUser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public Task<IActionResult> UnbanUser(string userId) =>
+            ChangeUserStatus(userId, UserStatus.PendingApproval);
+
+        // Helper method to remove all related chat messages from a given user.
+        private async Task RemoveUserChatMessages(string userId)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                TempData["ErrorMessage"] = "Invalid user ID.";
-                return RedirectToAction("ApproveUsers");
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["ErrorMessage"] = "User not found.";
-                return RedirectToAction("ApproveUsers");
-            }
-
-            // Add this code before removing the user
             var messages = await _context.ChatMessages
                 .Where(m => m.SenderId == userId || m.RecipientId == userId)
                 .ToListAsync();
@@ -172,108 +133,53 @@ namespace CommunityPortal.Controllers
                 _context.ChatMessages.RemoveRange(messages);
                 await _context.SaveChangesAsync();
             }
+        }
 
-            // Remove user roles
+        // POST: /Admin/RemoveUser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveUser(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return RedirectToAction("ApproveUsers");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return RedirectToAction("ApproveUsers");
+            }
+
+            // Remove associated chat messages.
+            await RemoveUserChatMessages(userId);
+
+            // Remove the user's roles.
             var roles = await _userManager.GetRolesAsync(user);
             var removeRolesResult = await _userManager.RemoveFromRolesAsync(user, roles);
             if (!removeRolesResult.Succeeded)
             {
-                TempData["ErrorMessage"] = "Failed to remove user roles.";
                 return RedirectToAction("ApproveUsers");
             }
 
-            // Remove user
-            var deleteResult = await _userManager.DeleteAsync(user);
-            if (deleteResult.Succeeded)
-            {
-                TempData["SuccessMessage"] = "User removed successfully.";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Failed to remove user.";
-            }
-
-            return RedirectToAction("ApproveUsers");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> BanUser(string userId)
-        {
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                TempData["ErrorMessage"] = "Invalid user ID.";
-                return RedirectToAction("ApproveUsers");
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["ErrorMessage"] = "User not found.";
-                return RedirectToAction("ApproveUsers");
-            }
-
-            user.Status = UserStatus.Banned;
-            var result = await _userManager.UpdateAsync(user);
-            if (result.Succeeded)
-            {
-                TempData["SuccessMessage"] = "User banned successfully.";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Failed to ban user.";
-            }
-
-            return RedirectToAction("ApproveUsers");
-        }
-
-        // POST: /Admin/UnbanUser
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UnbanUser(string userId)
-        {
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                TempData["ErrorMessage"] = "Invalid user ID.";
-                return RedirectToAction("ApproveUsers");
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["ErrorMessage"] = "User not found.";
-                return RedirectToAction("ApproveUsers");
-            }
-
-            // Update the user's status to Approved or any other appropriate status
-            user.Status = UserStatus.Approved;
-            var result = await _userManager.UpdateAsync(user);
-            if (result.Succeeded)
-            {
-                TempData["SuccessMessage"] = "User unbanned successfully.";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Failed to unban user.";
-            }
-
+            // Delete the user.
+            await _userManager.DeleteAsync(user);
             return RedirectToAction("ApproveUsers");
         }
 
         [HttpGet]
-        [Authorize(Policy ="AdminOnly")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult CreateStaff()
         {
             return View();
         }
 
-        [HttpPost]  
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateStaff(StaffCreateViewModel model)
         {
             if (ModelState.IsValid)
             {
-
                 var existingUser = await _userManager.Users
                     .FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
 
@@ -311,7 +217,6 @@ namespace CommunityPortal.Controllers
                     _context.Staffs.Add(staff);
                     await _context.SaveChangesAsync();
 
-                    TempData["SuccessMessage"] = "Staff account created successfully!";
                     return RedirectToAction("ApproveUsers");
                 }
 
@@ -323,6 +228,5 @@ namespace CommunityPortal.Controllers
 
             return View(model);
         }
-
     }
 }

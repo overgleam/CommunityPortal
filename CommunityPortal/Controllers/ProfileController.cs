@@ -21,17 +21,25 @@ namespace CommunityPortal.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Gets the user with all associated roles included.
+        /// When in edit mode, it ensures non-admins can only edit their own profile.
+        /// </summary>
         private async Task<ApplicationUser> GetUserAsync(string userId, bool isEditMode = false)
         {
             if (string.IsNullOrEmpty(userId))
             {
-                return await _userManager.GetUserAsync(User);
+                // Get the current user including role details.
+                return await _userManager.Users
+                    .Include(u => u.Administrator)
+                    .Include(u => u.Staff)
+                    .Include(u => u.Homeowner)
+                    .FirstOrDefaultAsync(u => u.Id == _userManager.GetUserId(User));
             }
 
-            // For edit operations, check permissions
             if (isEditMode)
             {
-                // Admins can edit all profiles
+                // Admins can edit any profile.
                 if (User.IsInRole("admin"))
                 {
                     return await _userManager.Users
@@ -41,7 +49,7 @@ namespace CommunityPortal.Controllers
                         .FirstOrDefaultAsync(u => u.Id == userId);
                 }
 
-                // Staff and Homeowners can only edit their own profiles
+                // Other users can only edit their own profiles.
                 var currentUser = await _userManager.GetUserAsync(User);
                 if (currentUser?.Id != userId)
                 {
@@ -57,6 +65,9 @@ namespace CommunityPortal.Controllers
                 .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
+        /// <summary>
+        /// Returns the correct view and view model depending on the user's role.
+        /// </summary>
         private IActionResult GetProfileView(ApplicationUser user)
         {
             if (user.Administrator != null)
@@ -107,17 +118,11 @@ namespace CommunityPortal.Controllers
         // GET: /Profile/View/{userId?}
         public async Task<IActionResult> ViewProfile(string userId = null)
         {
-            var user = await _userManager.Users
-                .Include(u => u.Administrator)
-                .Include(u => u.Staff)
-                .Include(u => u.Homeowner)
-                .FirstOrDefaultAsync(u => u.Id == (userId ?? _userManager.GetUserId(User)));
-
+            var user = await GetUserAsync(userId);
             if (user == null)
             {
                 return NotFound("User not found.");
             }
-
             return GetProfileView(user);
         }
 
@@ -178,13 +183,65 @@ namespace CommunityPortal.Controllers
             }
         }
 
-        private void RemovePasswordValidationForAdmin(ModelStateDictionary modelState)
+        /// <summary>
+        /// Removes password validation from the model state for admin users.
+        /// </summary>
+        private IActionResult RemovePasswordValidationForAdmin(ModelStateDictionary modelState)
         {
             if (User.IsInRole("admin"))
             {
                 modelState.Remove("Password");
                 modelState.Remove("ConfirmPassword");
             }
+            return null;
+        }
+
+        /// <summary>
+        /// Helper to update the phone number if it has changed.
+        /// Returns an IActionResult with an error view if any issues occur, otherwise null.
+        /// </summary>
+        private async Task<IActionResult> UpdatePhoneNumberIfChanged(ApplicationUser user, string newPhoneNumber, string viewName, object model)
+        {
+            if (user.PhoneNumber != newPhoneNumber)
+            {
+                var existingUser = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == newPhoneNumber);
+                if (existingUser != null)
+                {
+                    ModelState.AddModelError("PhoneNumber", "This phone number is already in use.");
+                    return View(viewName, model);
+                }
+                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, newPhoneNumber);
+                if (!setPhoneResult.Succeeded)
+                {
+                    ModelState.AddModelError("PhoneNumber", "Error updating phone number");
+                    return View(viewName, model);
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Helper to validate the provided password.
+        /// If 'requirePassword' is true and the password is not provided, an error is added.
+        /// Returns an IActionResult with an error view if validation fails, otherwise null.
+        /// </summary>
+        private async Task<IActionResult> ValidatePassword(ApplicationUser user, string password, bool requirePassword, string viewName, object model)
+        {
+            if (requirePassword || !string.IsNullOrEmpty(password))
+            {
+                if (string.IsNullOrEmpty(password))
+                {
+                    ModelState.AddModelError("Password", "Password is required.");
+                    return View(viewName, model);
+                }
+                var isPasswordValid = await _userManager.CheckPasswordAsync(user, password);
+                if (!isPasswordValid)
+                {
+                    ModelState.AddModelError("Password", "Incorrect password.");
+                    return View(viewName, model);
+                }
+            }
+            return null;
         }
 
         // POST: /Profile/EditAdminProfile
@@ -203,44 +260,20 @@ namespace CommunityPortal.Controllers
                 return NotFound("Admin user not found.");
             }
 
-            if (user.PhoneNumber != model.PhoneNumber)
-            {
-                var existingUser = await _userManager.Users
-                    .FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+            // Update phone number (if needed)
+            var phoneResult = await UpdatePhoneNumberIfChanged(user, model.PhoneNumber, "AdminEditProfile", model);
+            if (phoneResult != null) return phoneResult;
 
-                if (existingUser != null)
-                {
-                    ModelState.AddModelError("PhoneNumber", "This phone number is already in use.");
-                    return View("AdminEditProfile", model);
-                }
-
-                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, model.PhoneNumber);
-                if (!setPhoneResult.Succeeded)
-                {
-                    ModelState.AddModelError("PhoneNumber", "Error updating phone number");
-                    return View("AdminEditProfile", model);
-                }
-            }
-
+            // Update admin details
             user.Administrator.FirstName = model.FirstName;
             user.Administrator.LastName = model.LastName;
             user.Administrator.Address = model.Address;
 
-            if (!string.IsNullOrEmpty(model.Password) || !string.IsNullOrEmpty(model.ConfirmPassword))
-            {
-                var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
-                if (!isPasswordValid)
-                {
-                    ModelState.AddModelError("Password", "Incorrect password.");
-                    TempData["ErrorMessage"] = "Incorrect password.";
-                    return View("AdminEditProfile", model);
-                }
-            }
-            else
-            {
-                TempData["SuccessMessage"] = "Profile updated successfully.";
-            }
+            // For admins, password confirmation is optional.
+            var passwordResult = await ValidatePassword(user, model.Password, false, "AdminEditProfile", model);
+            if (passwordResult != null) return passwordResult;
 
+            TempData["SuccessMessage"] = "Profile updated successfully.";
             await _context.SaveChangesAsync();
             return RedirectToAction("ViewProfile", new { userId = user.Id });
         }
@@ -251,7 +284,6 @@ namespace CommunityPortal.Controllers
         public async Task<IActionResult> EditStaffProfile(StaffProfileEditViewModel model)
         {
             RemovePasswordValidationForAdmin(ModelState);
-            
             if (!ModelState.IsValid)
             {
                 return View("StaffEditProfile", model);
@@ -263,57 +295,21 @@ namespace CommunityPortal.Controllers
                 return NotFound("Staff user not found.");
             }
 
-            // Only check password if not admin
-            if (!User.IsInRole("admin"))
-            {
-                var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
-                if (!isPasswordValid)
-                {
-                    ModelState.AddModelError("Password", "Incorrect password.");
-                    return View("StaffEditProfile", model);
-                }
-            }
+            // For non-admins, password is required.
+            var passwordResult = await ValidatePassword(user, model.Password, !User.IsInRole("admin"), "StaffEditProfile", model);
+            if (passwordResult != null) return passwordResult;
 
-            if (user.PhoneNumber != model.PhoneNumber)
-            {
-                var existingUser = await _userManager.Users
-                    .FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+            var phoneResult = await UpdatePhoneNumberIfChanged(user, model.PhoneNumber, "StaffEditProfile", model);
+            if (phoneResult != null) return phoneResult;
 
-                if (existingUser != null)
-                {
-                    ModelState.AddModelError("PhoneNumber", "This phone number is already in use.");
-                    return View("StaffEditProfile", model);
-                }
-
-                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, model.PhoneNumber);
-                if (!setPhoneResult.Succeeded)
-                {
-                    ModelState.AddModelError("PhoneNumber", "Error updating phone number");
-                    return View("StaffEditProfile", model);
-                }
-            }
-
+            // Update staff details.
             user.Staff.FirstName = model.FirstName;
             user.Staff.LastName = model.LastName;
             user.Staff.Department = model.Department;
             user.Staff.Position = model.Position;
             user.Staff.Address = model.Address;
 
-            if (!string.IsNullOrEmpty(model.Password) || !string.IsNullOrEmpty(model.ConfirmPassword))
-            {
-                var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
-                if (!isPasswordValid)
-                {
-                    ModelState.AddModelError("Password", "Incorrect password.");
-                    TempData["ErrorMessage"] = "Incorrect password.";
-                    return View("StaffEditProfile", model);
-                }
-            }
-            else
-            {
-                TempData["SuccessMessage"] = "Profile updated successfully.";
-            }
-
+            TempData["SuccessMessage"] = "Profile updated successfully.";
             await _context.SaveChangesAsync();
             return RedirectToAction("ViewProfile", new { userId = user.Id });
         }
@@ -324,7 +320,6 @@ namespace CommunityPortal.Controllers
         public async Task<IActionResult> EditHomeownerProfile(HomeownerProfileEditViewModel model)
         {
             RemovePasswordValidationForAdmin(ModelState);
-            
             if (!ModelState.IsValid)
             {
                 return View("HomeownerEditProfile", model);
@@ -336,37 +331,14 @@ namespace CommunityPortal.Controllers
                 return NotFound("Homeowner user not found.");
             }
 
-            // Only check password if not admin
-            if (!User.IsInRole("admin"))
-            {
-                var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
-                if (!isPasswordValid)
-                {
-                    ModelState.AddModelError("Password", "Incorrect password.");
-                    return View("HomeownerEditProfile", model);
-                }
+            // For non-admins, require validating the password.
+            var passwordResult = await ValidatePassword(user, model.Password, !User.IsInRole("admin"), "HomeownerEditProfile", model);
+            if (passwordResult != null) return passwordResult;
 
-            }
+            var phoneResult = await UpdatePhoneNumberIfChanged(user, model.PhoneNumber, "HomeownerEditProfile", model);
+            if (phoneResult != null) return phoneResult;
 
-            if (user.PhoneNumber != model.PhoneNumber)
-            {
-                var existingUser = await _userManager.Users
-                    .FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
-
-                if (existingUser != null)
-                {
-                    ModelState.AddModelError("PhoneNumber", "This phone number is already in use.");
-                    return View("HomeownerEditProfile", model);
-                }
-
-                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, model.PhoneNumber);
-                if (!setPhoneResult.Succeeded)
-                {
-                    ModelState.AddModelError("PhoneNumber", "Error updating phone number");
-                    return View("HomeownerEditProfile", model);
-                }
-            }
-
+            // Update homeowner details.
             user.Homeowner.FirstName = model.FirstName;
             user.Homeowner.LastName = model.LastName;
             user.Homeowner.BlockNumber = model.BlockNumber;
@@ -375,21 +347,7 @@ namespace CommunityPortal.Controllers
             user.Homeowner.MoveInDate = model.MoveInDate;
             user.Homeowner.TypeOfResidency = model.TypeOfResidency;
 
-            if (!string.IsNullOrEmpty(model.Password) || !string.IsNullOrEmpty(model.ConfirmPassword))
-            {
-                var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
-                if (!isPasswordValid)
-                {
-                    ModelState.AddModelError("Password", "Incorrect password.");
-                    TempData["ErrorMessage"] = "Incorrect password.";
-                    return View("HomeownerEditProfile", model);
-                }
-            }
-            else
-            {
-                TempData["SuccessMessage"] = "Profile updated successfully.";
-            }
-
+            TempData["SuccessMessage"] = "Profile updated successfully.";
             await _context.SaveChangesAsync();
             return RedirectToAction("ViewProfile", new { userId = user.Id });
         }
@@ -427,7 +385,7 @@ namespace CommunityPortal.Controllers
                 return Forbid();
             }
 
-            // Verify current password
+            // Verify current password.
             var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
             if (!isCurrentPasswordValid)
             {
@@ -435,7 +393,7 @@ namespace CommunityPortal.Controllers
                 return View(model);
             }
 
-            // Change password
+            // Change password.
             var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
             if (result.Succeeded)
             {
@@ -447,7 +405,6 @@ namespace CommunityPortal.Controllers
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
-
             return View(model);
         }
     }

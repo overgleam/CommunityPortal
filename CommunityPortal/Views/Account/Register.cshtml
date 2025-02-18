@@ -47,18 +47,11 @@
                     </div>
 
                     <!-- Third Row -->
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="form-floating">
-                            <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Password" />
-                            <label asp-for="Password" class="text-white"></label>
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-floating">
-                            <input asp-for="ConfirmPassword" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Confirm Password" />
-                            <label asp-for="ConfirmPassword" class="text-white"></label>
-                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            <input asp-for="Address" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Address" />
+                            <label asp-for="Address" class="text-white"></label>
+                            <span asp-validation-for="Address" class="text-danger"></span>
                         </div>
                     </div>
 
@@ -82,8 +75,8 @@
                     <div class="col-md-6">
                         <div class="form-floating position-relative">
                             <select asp-for="TypeOfResidency" class="form-control bg-transparent text-white border-0 border-bottom" style="color: white !important;">
-                                <option value="Tenant" style="color: black;">Tenant</option>
                                 <option value="Homeowner" style="color: black;">Homeowner</option>
+                                <option value="Tenant" style="color: black;">Tenant</option>
                             </select>
                             <label asp-for="TypeOfResidency" class="text-white"></label>
                             <span asp-validation-for="TypeOfResidency" class="text-danger"></span>
@@ -99,11 +92,18 @@
                     </div>
 
                     <!-- Last Row -->
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                         <div class="form-floating">
-                            <input asp-for="Address" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Address" />
-                            <label asp-for="Address" class="text-white"></label>
-                            <span asp-validation-for="Address" class="text-danger"></span>
+                            <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Password" />
+                            <label asp-for="Password" class="text-white"></label>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input asp-for="ConfirmPassword" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Confirm Password" />
+                            <label asp-for="ConfirmPassword" class="text-white"></label>
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                         </div>
                     </div>
                 </div>

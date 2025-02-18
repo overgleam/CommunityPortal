@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
     <link href="~/css/admin/approveusers.css" rel="stylesheet" />
     <link href="~/css/admin/userdetails.css" rel="stylesheet" />
-
 }
 
 <div class="user-management-container">
@@ -18,24 +17,25 @@
         <p class="text-muted">Manage and monitor user accounts</p>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
+    @* Render alerts using pattern matching *@
+    @if (TempData["SuccessMessage"] is string successMessage)
     {
         <div class="alert custom-alert success" role="alert" id="successAlert">
             <i class="material-icons">check_circle</i>
-            <span>@TempData["SuccessMessage"]</span>
+            <span>@successMessage</span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
-    @if (TempData["ErrorMessage"] != null)
+    @if (TempData["ErrorMessage"] is string errorMessage)
     {
         <div class="alert custom-alert error" role="alert" id="errorAlert">
             <i class="material-icons">error</i>
-            <span>@TempData["ErrorMessage"]</span>
+            <span>@errorMessage</span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    @if (Model.Users != null && Model.Users.Any())
+    @if (Model.Users?.Any() == true)
     {
         <div class="table-container">
             <table class="custom-table table" id="usersTable">
@@ -190,7 +190,7 @@
     }
 </div>
 
-<!-- User Details Modal -->
+@* User Details Modal *@
 <div class="modal fade custom-modal" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -212,7 +212,7 @@
     </div>
 </div>
 
-<!-- Remove User Confirmation Modal -->
+@* Remove User Confirmation Modal *@
 <div class="modal fade custom-modal" id="removeUserModal" tabindex="-1" aria-labelledby="removeUserModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -273,19 +273,15 @@
             userDetailsModal.addEventListener('show.bs.modal', function (event) {
                 var button = event.relatedTarget;
                 var userId = button.getAttribute('data-user-id');
-
                 var modalContent = document.getElementById('modalContent');
                 modalContent.innerHTML = `
                     <div class="loading-spinner">
                         <div class="spinner"></div>
                         <p>Loading user details...</p>
                     </div>`;
-
                 fetch('/Admin/GetUserDetails?userId=' + userId)
                     .then(response => response.text())
-                    .then(html => {
-                        modalContent.innerHTML = html;
-                    })
+                    .then(html => { modalContent.innerHTML = html; })
                     .catch(error => {
                         modalContent.innerHTML = `
                             <div class="alert custom-alert error" role="alert">
@@ -296,11 +292,10 @@
                     });
             });
 
-            // Handle Remove User Button Click
-            $('.delete-user-btn').on('click', function () {
+            // Handle Remove User Button Click using event delegation.
+            $(document).on('click', '.delete-user-btn', function () {
                 var userId = $(this).data('user-id');
                 var userEmail = $(this).data('user-email');
-
                 $('#removeUserId').val(userId);
                 $('#removeUserMessage').html(`
                     <div class="text-center mb-3">
@@ -309,11 +304,10 @@
                     <p>Are you sure you want to remove the user with email: <strong>${userEmail}</strong>?</p>
                     <p class="mt-3"><strong>Warning:</strong> This action is permanent and cannot be undone.</p>
                 `);
-                var removeUserModal = new bootstrap.Modal(document.getElementById('removeUserModal'));
-                removeUserModal.show();
+                new bootstrap.Modal(document.getElementById('removeUserModal')).show();
             });
 
-            // Auto-dismiss alerts
+            // Auto-dismiss alerts after 5 seconds.
             setTimeout(function () {
                 $('.custom-alert').fadeOut('slow');
             }, 5000);
