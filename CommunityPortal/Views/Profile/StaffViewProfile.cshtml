@@ -1,7 +1,10 @@
 ﻿@model CommunityPortal.Models.Profile.StaffProfileViewModel
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 
 @{
     ViewData["Title"] = "Staff Profile";
+    var canEdit = (User.IsInRole("admin") || Model.User.Id == UserManager.GetUserId(User));
 }
 
 <h2>@ViewData["Title"]</h2>
@@ -18,5 +21,8 @@
     <p><strong>Department:</strong> @Model.Department</p>
     <p><strong>Position:</strong> @Model.Position</p>
 
-    <a asp-action="Edit" asp-route-userId="@Model.User.Id" class="btn btn-primary mt-3">Edit Profile</a>
+    @if (canEdit)
+    {
+        <a asp-action="Edit" asp-route-userId="@Model.User.Id" class="btn btn-primary mt-3">Edit Profile</a>
+    }
 </div>

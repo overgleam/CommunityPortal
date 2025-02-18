@@ -70,6 +70,7 @@
                                     <i class="material-icons ms-1">expand_more</i>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end">
+                                    <a asp-controller="Profile" asp-action="ViewProfile" class="dropdown-item">Profile</a>
                                     <a asp-controller="Homeowner" asp-action="Settings" class="dropdown-item">Settings</a>
                                     <div class="dropdown-divider"></div>
                                     <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
@@ -84,7 +85,7 @@
             </nav>
 
             <!-- Main Content -->
-            <div class="container-fluid mt-4">
+            <div class="container-fluid my-4">
                 @RenderBody()
             </div>
         </div>

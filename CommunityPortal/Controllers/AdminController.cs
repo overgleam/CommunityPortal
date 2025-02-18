@@ -360,6 +360,16 @@ namespace CommunityPortal.Controllers
         {
             if (ModelState.IsValid)
             {
+
+                var existingUser = await _userManager.Users
+                    .FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+
+                if (existingUser != null)
+                {
+                    ModelState.AddModelError("PhoneNumber", "This phone number is already in use.");
+                    return View(model);
+                }
+
                 var user = new ApplicationUser
                 {
                     UserName = model.Email,

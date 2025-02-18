@@ -45,6 +45,13 @@
 
         connection.on("ReceiveMessage", function (senderFullName, message, timestamp) {
             const messageContainer = document.getElementById("chatMessages");
+            
+            // Remove "Be the first one to message" if it exists
+            const noMessagesDiv = messageContainer.querySelector('.no-messages');
+            if (noMessagesDiv) {
+                noMessagesDiv.remove();
+            }
+
             const messageDiv = document.createElement("div");
             messageDiv.classList.add("message");
             messageDiv.classList.add(senderFullName === currentUserFullName ? "sent" : "received");

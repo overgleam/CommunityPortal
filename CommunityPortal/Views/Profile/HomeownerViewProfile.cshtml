@@ -1,7 +1,10 @@
 ﻿@model CommunityPortal.Models.Profile.HomeownerProfileViewModel
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
 
 @{
     ViewData["Title"] = "Homeowner Profile";
+    var canEdit = (User.IsInRole("admin") || Model.User.Id == UserManager.GetUserId(User));
 }
 
 <h2>@ViewData["Title"]</h2>
@@ -20,6 +23,8 @@
     <p><strong>Move In Date:</strong> @Model.MoveInDate.ToShortDateString()</p>
     <p><strong>Type of Residency:</strong> @Model.TypeOfResidency</p>
 
-
-    <a asp-action="Edit" asp-route-userId="@Model.User.Id" class="btn btn-primary mt-3">Edit Profile</a>
+    @if (canEdit)
+    {
+        <a asp-action="Edit" asp-route-userId="@Model.User.Id" class="btn btn-primary mt-3">Edit Profile</a>
+    }
 </div>

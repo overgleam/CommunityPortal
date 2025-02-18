@@ -56,7 +56,7 @@
             document.querySelectorAll('.user-item').forEach(item => {
                 item.addEventListener('click', function () {
                     const userId = this.getAttribute('data-user-id');
-                    window.location.href = `/Chat/Message?recipientId=${userId}`;
+                    window.location.href = `/Profile/ViewProfile?userId=${userId}`;
                 });
             });
         });
