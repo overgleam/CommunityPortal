@@ -20,7 +20,7 @@
                         <h5 class="mb-0">@category</h5>
                     </div>
                     <div class="card-body">
-                        <ul class="list-group list-group-flush" id="@category.ToLower()List">
+                        <div class="list-group scrollable-chat-list">
                             @foreach (var user in GetUsersByCategory(Model, category))
                             {
                                 <li class="list-group-item d-flex align-items-center user-item" data-user-id="@user.Id">
@@ -46,7 +46,7 @@
                                     </a>
                                 </li>
                             }
-                        </ul>
+                        </div>
                     </div>
                 </div>
             </div>
