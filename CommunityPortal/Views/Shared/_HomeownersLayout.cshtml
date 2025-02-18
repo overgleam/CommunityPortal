@@ -2,6 +2,22 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
+@{
+    ApplicationUser currentUser = null;
+    // Default profile image path (ensure this exists in wwwroot/images/)
+    var profileImageUrl = Url.Content("~/images/default-profile.jpg");
+    
+    if (User.Identity.IsAuthenticated)
+    {
+        // Synchronously get the current user's data.
+        currentUser = UserManager.GetUserAsync(User).GetAwaiter().GetResult();
+        if (currentUser != null && !string.IsNullOrEmpty(currentUser.ProfileImagePath))
+        {
+            profileImageUrl = Url.Content("~/" + currentUser.ProfileImagePath);
+        }
+    }
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,7 +34,7 @@
     <div class="d-flex min-vh-100" id="wrapper">
         <div class="bg-sidebar border-right" id="sidebar-wrapper">
             <div class="sidebar-heading text-center py-4 primary-text mb-3 fs-4 fw-bold text-uppercase border-bottom">
-                <img src="/images/logo.png" alt="Logo" width="169" height="92" class="me-2">
+                <img src="" alt="Logo" width="169" height="92" class="me-2">
             </div>
             <div class="list-group list-group-flush">
                 <a asp-controller="Homeowner" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
@@ -65,7 +81,7 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
                                    aria-haspopup="true" aria-expanded="false">
-                                    <img src="~/images/profile.jpg" alt="Profile" class="rounded-circle me-3" width="30" height="30" />
+                                    <img src="@profileImageUrl" alt="Profile" class="rounded-circle me-3" width="30" height="30" />
                                     <span>@User.Identity.Name</span>
                                     <i class="material-icons ms-1">expand_more</i>
                                 </a>

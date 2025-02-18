@@ -10,6 +10,17 @@
 <h2>@ViewData["Title"]</h2>
 
 <div class="card shadow p-4">
+    <div class="mb-4 text-center">
+        @if (!string.IsNullOrEmpty(Model.User.ProfileImagePath))
+        {
+            <img src="~/@Model.User.ProfileImagePath" alt="Profile Image" class="rounded-circle" width="150" height="150" />
+        }
+        else
+        {
+            <img src="~/images/default-profile.jpg" alt="Default Profile Image" class="rounded-circle" width="150" height="150" />
+        }
+    </div>
+
     <h4>Contact Information</h4>
     <p><strong>Email:</strong> @Model.User.Email</p>
     <p><strong>Phone Number:</strong> @(string.IsNullOrEmpty(Model.User.PhoneNumber) ? "N/A" : Model.User.PhoneNumber)</p>
@@ -17,9 +28,9 @@
     <h4>Profile Details</h4>
     <p><strong>First Name:</strong> @Model.FirstName</p>
     <p><strong>Last Name:</strong> @Model.LastName</p>
-    <p><strong>Address:</strong> @Model.Address</p>
     <p><strong>Department:</strong> @Model.Department</p>
     <p><strong>Position:</strong> @Model.Position</p>
+    <p><strong>Address:</strong> @Model.Address</p>
 
     @if (canEdit)
     {

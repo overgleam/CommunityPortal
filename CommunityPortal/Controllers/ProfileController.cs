@@ -6,6 +6,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
+using System.Threading.Tasks;
+using System;
+using Microsoft.AspNetCore.Http;
 
 namespace CommunityPortal.Controllers
 {
@@ -14,11 +19,13 @@ namespace CommunityPortal.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public ProfileController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        public ProfileController(UserManager<ApplicationUser> userManager, ApplicationDbContext context, IWebHostEnvironment environment)
         {
             _userManager = userManager;
             _context = context;
+            _environment = environment;
         }
 
         /// <summary>
@@ -244,6 +251,54 @@ namespace CommunityPortal.Controllers
             return null;
         }
 
+        /// <summary>
+        /// Helper method to process an uploaded profile image.
+        /// Validates file type and size, saves it to disk, and returns a relative file path.
+        /// </summary>
+        /// <param name="file">The uploaded IFormFile</param>
+        /// <returns>A relative path string for storing in the database</returns>
+        private async Task<string?> ProcessUploadedFile(IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return null;
+            }
+
+            // Validate file extension
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+            {
+                throw new InvalidOperationException("Only JPG, JPEG, PNG, and GIF files are allowed.");
+            }
+
+            // Validate file size (max 2MB)
+            const long maxFileSize = 2 * 1024 * 1024; // 2 MB
+            if (file.Length > maxFileSize)
+            {
+                throw new InvalidOperationException("File size should not exceed 2 MB.");
+            }
+
+            // Build the upload directory path (e.g., wwwroot/uploads/profile_images)
+            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "profile_images");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            // Generate a unique file name
+            var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Return the relative path to be stored in the database.
+            return Path.Combine("uploads", "profile_images", uniqueFileName).Replace("\\", "/");
+        }
+
         // POST: /Profile/EditAdminProfile
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -260,18 +315,39 @@ namespace CommunityPortal.Controllers
                 return NotFound("Admin user not found.");
             }
 
+            // Handle the upload of the profile image using the helper method
+            if (model.ProfileImage != null)
+            {
+                try
+                {
+                    var imagePath = await ProcessUploadedFile(model.ProfileImage);
+                    user.ProfileImagePath = imagePath;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError("ProfileImage", ex.Message);
+                    return View("AdminEditProfile", model);
+                }
+            }
+
             // Update phone number (if needed)
             var phoneResult = await UpdatePhoneNumberIfChanged(user, model.PhoneNumber, "AdminEditProfile", model);
-            if (phoneResult != null) return phoneResult;
+            if (phoneResult != null)
+            {
+                return phoneResult;
+            }
 
-            // Update admin details
+            // Update the admin details
             user.Administrator.FirstName = model.FirstName;
             user.Administrator.LastName = model.LastName;
             user.Administrator.Address = model.Address;
 
-            // For admins, password confirmation is optional.
+            // Validate password if provided (for the admin, password validation can be optional)
             var passwordResult = await ValidatePassword(user, model.Password, false, "AdminEditProfile", model);
-            if (passwordResult != null) return passwordResult;
+            if (passwordResult != null)
+            {
+                return passwordResult;
+            }
 
             TempData["SuccessMessage"] = "Profile updated successfully.";
             await _context.SaveChangesAsync();
@@ -298,6 +374,21 @@ namespace CommunityPortal.Controllers
             // For non-admins, password is required.
             var passwordResult = await ValidatePassword(user, model.Password, !User.IsInRole("admin"), "StaffEditProfile", model);
             if (passwordResult != null) return passwordResult;
+
+            // Handle the upload of the profile image using the helper method
+            if (model.ProfileImage != null)
+            {
+                try
+                {
+                    var imagePath = await ProcessUploadedFile(model.ProfileImage);
+                    user.ProfileImagePath = imagePath;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError("ProfileImage", ex.Message);
+                    return View("StaffEditProfile", model);
+                }
+            }
 
             var phoneResult = await UpdatePhoneNumberIfChanged(user, model.PhoneNumber, "StaffEditProfile", model);
             if (phoneResult != null) return phoneResult;
@@ -334,6 +425,21 @@ namespace CommunityPortal.Controllers
             // For non-admins, require validating the password.
             var passwordResult = await ValidatePassword(user, model.Password, !User.IsInRole("admin"), "HomeownerEditProfile", model);
             if (passwordResult != null) return passwordResult;
+
+            // Handle the upload of the profile image using the helper method
+            if (model.ProfileImage != null)
+            {
+                try
+                {
+                    var imagePath = await ProcessUploadedFile(model.ProfileImage);
+                    user.ProfileImagePath = imagePath;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError("ProfileImage", ex.Message);
+                    return View("HomeownerEditProfile", model);
+                }
+            }
 
             var phoneResult = await UpdatePhoneNumberIfChanged(user, model.PhoneNumber, "HomeownerEditProfile", model);
             if (phoneResult != null) return phoneResult;

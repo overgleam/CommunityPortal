@@ -36,6 +36,10 @@ namespace CommunityPortal.Models.Profile
         [Display(Name = "Phone Number")]
         public string PhoneNumber { get; set; }
 
+        [DataType(DataType.Upload)]
+        [Display(Name = "Profile Image")]
+        public IFormFile? ProfileImage { get; set; }
+
         [Required(ErrorMessage = "Password is required to save changes")]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]

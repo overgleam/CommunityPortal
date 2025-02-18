@@ -7,7 +7,7 @@
 <h2>@ViewData["Title"]</h2>
 
 <div class="card shadow p-4">
-    <form asp-action="EditHomeownerProfile" method="post">
+    <form asp-action="EditHomeownerProfile" method="post" enctype="multipart/form-data">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="User.Id" />
         @Html.AntiForgeryToken()
@@ -61,6 +61,12 @@
                 <option value="Tenant">Tenant</option>
             </select>
             <span asp-validation-for="TypeOfResidency" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ProfileImage" class="form-label"></label>
+            <input asp-for="ProfileImage" type="file" class="form-control" accept="image/*" />
+            <span asp-validation-for="ProfileImage" class="text-danger"></span>
         </div>
 
         <hr />
