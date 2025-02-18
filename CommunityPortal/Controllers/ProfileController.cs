@@ -272,11 +272,11 @@ namespace CommunityPortal.Controllers
                 throw new InvalidOperationException("Only JPG, JPEG, PNG, and GIF files are allowed.");
             }
 
-            // Validate file size (max 2MB)
-            const long maxFileSize = 2 * 1024 * 1024; // 2 MB
+            // Validate file size (max 10MB)
+            const long maxFileSize = 10 * 1024 * 1024; // 10 MB
             if (file.Length > maxFileSize)
             {
-                throw new InvalidOperationException("File size should not exceed 2 MB.");
+                throw new InvalidOperationException("File size should not exceed 10 MB.");
             }
 
             // Build the upload directory path (e.g., wwwroot/uploads/profile_images)
