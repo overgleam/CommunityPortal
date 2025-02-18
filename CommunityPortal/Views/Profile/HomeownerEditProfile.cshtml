@@ -166,14 +166,14 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label asp-for="BlockNumber" class="form-label"></label>
-                                    <input asp-for="BlockNumber" class="form-control" disabled="@(!User.IsInRole("admin"))" />
+                                    <input asp-for="BlockNumber" class="form-control" readonly="@(!User.IsInRole("admin"))" />
                                     <span asp-validation-for="BlockNumber" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label asp-for="HouseNumber" class="form-label"></label>
-                                    <input asp-for="HouseNumber" class="form-control" disabled="@(!User.IsInRole("admin"))" />
+                                    <input asp-for="HouseNumber" class="form-control" readonly="@(!User.IsInRole("admin"))" />
                                     <span asp-validation-for="HouseNumber" class="text-danger"></span>
                                 </div>
                             </div>
