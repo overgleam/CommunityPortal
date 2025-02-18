@@ -2,6 +2,7 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,14 +62,7 @@
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end">
                                     <a asp-controller="Profile" asp-action="ViewProfile" class="dropdown-item">Profile</a>
-                                    @if (User.IsInRole("admin"))
-                                    {
-                                        <a asp-controller="Admin" asp-action="Settings" class="dropdown-item">Settings</a>
-                                    }
-                                    else if (User.IsInRole("staff"))
-                                    {
-                                        <a asp-controller="Staff" asp-action="Settings" class="dropdown-item">Settings</a>
-                                    }
+                                    <a asp-controller="Profile" asp-action="ChangePassword" asp-route-userId="@UserManager.GetUserId(User)" class="dropdown-item">Settings</a>
                                     <div class="dropdown-divider"></div>
                                     <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
@@ -92,7 +86,7 @@
         <div class="container">
             <div class="row g-4 align-items-center">
                 <div class="col-md-4 text-center text-md-start">
-                    @* <img src="/images/logo.png" alt="Logo" class="footer-logo inv" width="150"> *@
+                    <img src="/images/logo.png" alt="Logo" class="footer-logo inv" width="150">
                 </div>
                 <div class="col-md-4 text-center">
                     <p class="mb-0">&copy; 2023 Community Portal</p>

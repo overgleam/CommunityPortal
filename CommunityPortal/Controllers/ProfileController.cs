@@ -393,5 +393,62 @@ namespace CommunityPortal.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("ViewProfile", new { userId = user.Id });
         }
+
+        // GET: /Profile/ChangePassword/{userId?}
+        public async Task<IActionResult> ChangePassword(string userId = null)
+        {
+            var user = await GetUserAsync(userId, true);
+            if (user == null)
+            {
+                return Forbid();
+            }
+
+            var model = new ChangePasswordViewModel
+            {
+                UserId = user.Id
+            };
+
+            return View(model);
+        }
+
+        // POST: /Profile/ChangePassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await GetUserAsync(model.UserId, true);
+            if (user == null)
+            {
+                return Forbid();
+            }
+
+            // Verify current password
+            var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
+            if (!isCurrentPasswordValid)
+            {
+                ModelState.AddModelError("CurrentPassword", "Current password is incorrect.");
+                return View(model);
+            }
+
+            // Change password
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Password changed successfully.";
+                return RedirectToAction("ViewProfile", new { userId = user.Id });
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(model);
+        }
     }
 }
