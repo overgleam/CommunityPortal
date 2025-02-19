@@ -10,6 +10,15 @@
             <div class="card forum-post">
                 <div class="card-header">
                     <h2 class="mb-0 text-center">@ViewData["Title"]</h2>
+                    <p class="text-muted text-center mb-0">
+                        <small>
+                            Created: @Model.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
+                            @if (Model.UpdatedAt.HasValue)
+                            {
+                                <span>| Last edited: @Model.UpdatedAt.Value.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</span>
+                            }
+                        </small>
+                    </p>
                 </div>
                 <div class="card-body p-4">
                     <form asp-action="Edit" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
@@ -18,7 +27,7 @@
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="AuthorId" />
                         <input type="hidden" asp-for="CreatedAt" />
-                        <input type="hidden" asp-for="UpdatedAt" />
+                        <input type="hidden" asp-for="IsDeleted" />
                         <input type="hidden" asp-for="ImagePath" />
                         
                         <div class="mb-4">
@@ -32,9 +41,9 @@
                         <div class="mb-4">
                             <label asp-for="Content" class="form-label h6">Content</label>
                             <textarea asp-for="Content" class="form-control" rows="8" required 
-                                    placeholder="Share your thoughts..."></textarea>
+                                    placeholder="Share your thoughts..." maxlength="5000"></textarea>
                             <span asp-validation-for="Content" class="text-danger"></span>
-                            <div class="form-text">Format your text to make it easy to read</div>
+                            <div class="form-text">Format your text to make it easy to read (maximum 5000 characters)</div>
                         </div>
 
                         @if (!string.IsNullOrEmpty(Model.ImagePath))
@@ -53,11 +62,12 @@
                         <div class="mb-4">
                             <label for="image" class="form-label h6">New Image (optional)</label>
                             <div class="input-group">
-                                <input type="file" id="image" name="image" class="form-control" accept="image/*" />
+                                <input type="file" id="image" name="image" class="form-control" 
+                                       accept=".jpg,.jpeg,.png,.gif" />
                             </div>
                             <div class="form-text">
                                 <i class="bi bi-info-circle me-1"></i>
-                                Leave empty to keep the current image. Supported formats: JPG, PNG, GIF (max 5MB)
+                                Leave empty to keep the current image. Supported formats: JPG, JPEG, PNG, GIF (max 5MB)
                             </div>
                         </div>
 
@@ -77,20 +87,53 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function() {
-            // Disable submit button on form submission
-            $('form').on('submit', function() {
-                $(this).find('button[type="submit"]').prop('disabled', true);
+            // Form submission handling
+            $('form').on('submit', function(e) {
+                const form = $(this);
+                const submitButton = form.find('button[type="submit"]');
+
+                if (!form[0].checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Don't disable button if form is invalid
+                    return;
+                }
+
+                // Only disable the button if the form is valid
+                submitButton.prop('disabled', true);
+                submitButton.html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
             });
 
-            // File size validation
+            // Re-enable submit button when input changes after a failed validation
+            $('input, textarea').on('input', function() {
+                const form = $(this).closest('form');
+                const submitButton = form.find('button[type="submit"]');
+                submitButton.prop('disabled', false);
+                submitButton.html('<i class="bi bi-check-circle me-2"></i>Save Changes');
+            });
+
+            // File size and type validation
             $('input[type="file"]').on('change', function() {
                 if (this.files[0]) {
-                    if (this.files[0].size > 5 * 1024 * 1024) { // 5MB
+                    const file = this.files[0];
+                    const fileSize = file.size;
+                    const fileType = file.type;
+                    const maxSize = 10 * 1024 * 1024; // 10MB
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+
+                    if (fileSize > maxSize) {
                         alert('File size must be less than 5MB');
                         this.value = '';
+                        return;
+                    }
+
+                    if (!allowedTypes.includes(fileType)) {
+                        alert('Only JPG, JPEG, PNG, and GIF files are allowed');
+                        this.value = '';
+                        return;
                     }
                 }
             });
@@ -101,16 +144,35 @@
                 const currentLength = $(this).val().length;
                 const remainingChars = maxLength - currentLength;
                 
-                if (!$('#charCount').length) {
-                    $(this).after('<small id="charCount" class="form-text text-muted"></small>');
+                if (!$('#titleCharCount').length) {
+                    $(this).after('<small id="titleCharCount" class="form-text text-muted"></small>');
                 }
                 
-                $('#charCount').text(`${remainingChars} characters remaining`);
+                $('#titleCharCount').text(`${remainingChars} characters remaining`);
                 
                 if (remainingChars < 20) {
-                    $('#charCount').removeClass('text-muted').addClass('text-warning');
+                    $('#titleCharCount').removeClass('text-muted').addClass('text-warning');
                 } else {
-                    $('#charCount').removeClass('text-warning').addClass('text-muted');
+                    $('#titleCharCount').removeClass('text-warning').addClass('text-muted');
+                }
+            });
+
+            // Character counter for content
+            $('#Content').on('input', function() {
+                const maxLength = 5000;
+                const currentLength = $(this).val().length;
+                const remainingChars = maxLength - currentLength;
+                
+                if (!$('#contentCharCount').length) {
+                    $(this).after('<small id="contentCharCount" class="form-text text-muted"></small>');
+                }
+                
+                $('#contentCharCount').text(`${remainingChars} characters remaining`);
+                
+                if (remainingChars < 100) {
+                    $('#contentCharCount').removeClass('text-muted').addClass('text-warning');
+                } else {
+                    $('#contentCharCount').removeClass('text-warning').addClass('text-muted');
                 }
             });
 
@@ -125,6 +187,10 @@
                     $(this).closest('.mb-4').remove();
                 }
             });
+
+            // Trigger character counters on page load
+            $('#Title').trigger('input');
+            $('#Content').trigger('input');
         });
     </script>
 } 

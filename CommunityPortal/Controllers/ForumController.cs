@@ -39,16 +39,17 @@ namespace CommunityPortal.Controllers
             var posts = await _context.ForumPosts
                 .Include(p => p.Author)
                 .Include(p => p.Likes)
-                .Include(p => p.Comments)
+                .Include(p => p.Comments.Where(c => !c.IsDeleted))
                     .ThenInclude(c => c.Author)
-                .Include(p => p.Comments)
+                .Include(p => p.Comments.Where(c => !c.IsDeleted))
                     .ThenInclude(c => c.Likes)
-                .Include(p => p.Comments)
-                    .ThenInclude(c => c.Replies)
+                .Include(p => p.Comments.Where(c => !c.IsDeleted))
+                    .ThenInclude(c => c.Replies.Where(r => !r.IsDeleted))
                         .ThenInclude(r => r.Author)
-                .Include(p => p.Comments)
-                    .ThenInclude(c => c.Replies)
+                .Include(p => p.Comments.Where(c => !c.IsDeleted))
+                    .ThenInclude(c => c.Replies.Where(r => !r.IsDeleted))
                         .ThenInclude(r => r.Likes)
+                .Where(p => !p.IsDeleted)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
@@ -116,7 +117,6 @@ namespace CommunityPortal.Controllers
 
                 post.AuthorId = user.Id;
                 post.CreatedAt = DateTime.UtcNow;
-                post.UpdatedAt = DateTime.UtcNow;
                 post.Comments = new List<ForumComment>();
                 post.Likes = new List<ForumLike>();
 
@@ -153,7 +153,7 @@ namespace CommunityPortal.Controllers
         {
             var post = await _context.ForumPosts
                 .Include(p => p.Author)
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
             if (post == null)
             {
@@ -187,7 +187,7 @@ namespace CommunityPortal.Controllers
             ModelState.Remove("AuthorId");
 
             var existingPost = await _context.ForumPosts.FindAsync(id);
-            if (existingPost == null)
+            if (existingPost == null || existingPost.IsDeleted)
             {
                 TempData["ErrorMessage"] = "Post not found.";
                 return RedirectToAction(nameof(Index));
@@ -256,13 +256,7 @@ namespace CommunityPortal.Controllers
             try
             {
                 var post = await _context.ForumPosts
-                    .Include(p => p.Likes)
-                    .Include(p => p.Comments)
-                        .ThenInclude(c => c.Likes)
-                    .Include(p => p.Comments)
-                        .ThenInclude(c => c.Replies)
-                            .ThenInclude(r => r.Likes)
-                    .FirstOrDefaultAsync(p => p.Id == id);
+                    .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
                 if (post == null)
                 {
@@ -280,37 +274,9 @@ namespace CommunityPortal.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                // Delete all associated likes (post, comments, and replies)
-                _context.ForumLikes.RemoveRange(post.Likes);
-                
-                foreach (var comment in post.Comments)
-                {
-                    _context.ForumLikes.RemoveRange(comment.Likes);
-                    
-                    foreach (var reply in comment.Replies)
-                    {
-                        _context.ForumLikes.RemoveRange(reply.Likes);
-                    }
-                    
-                    // Delete all replies
-                    _context.ForumComments.RemoveRange(comment.Replies);
-                }
-                
-                // Delete all comments
-                _context.ForumComments.RemoveRange(post.Comments);
-
-                // Delete the image if it exists
-                if (!string.IsNullOrEmpty(post.ImagePath))
-                {
-                    var filePath = Path.Combine(_environment.WebRootPath, post.ImagePath.TrimStart('/'));
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-                }
-
-                // Finally, delete the post
-                _context.ForumPosts.Remove(post);
+                // Soft delete the post
+                post.IsDeleted = true;
+                post.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Post deleted successfully.";
@@ -329,7 +295,7 @@ namespace CommunityPortal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Comment(int postId, string content, int? parentCommentId)
         {
-            var post = await _context.ForumPosts.FindAsync(postId);
+            var post = await _context.ForumPosts.FirstOrDefaultAsync(p => p.Id == postId && !p.IsDeleted);
             if (post == null)
             {
                 return NotFound();
@@ -341,7 +307,8 @@ namespace CommunityPortal.Controllers
                 Content = content,
                 PostId = postId,
                 AuthorId = user.Id,
-                ParentCommentId = parentCommentId
+                ParentCommentId = parentCommentId,
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.ForumComments.Add(comment);
@@ -356,10 +323,7 @@ namespace CommunityPortal.Controllers
         public async Task<IActionResult> DeleteComment(int id)
         {
             var comment = await _context.ForumComments
-                .Include(c => c.Likes)
-                .Include(c => c.Replies)
-                    .ThenInclude(r => r.Likes)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
 
             if (comment == null)
             {
@@ -377,20 +341,22 @@ namespace CommunityPortal.Controllers
 
             try
             {
-                // Delete likes on the comment
-                _context.ForumLikes.RemoveRange(comment.Likes);
+                // Soft delete the comment and its replies
+                comment.IsDeleted = true;
+                comment.UpdatedAt = DateTime.UtcNow;
 
-                // Delete likes on replies and the replies themselves
-                foreach (var reply in comment.Replies)
+                // Also soft delete all replies
+                var replies = await _context.ForumComments
+                    .Where(c => c.ParentCommentId == comment.Id && !c.IsDeleted)
+                    .ToListAsync();
+
+                foreach (var reply in replies)
                 {
-                    _context.ForumLikes.RemoveRange(reply.Likes);
+                    reply.IsDeleted = true;
+                    reply.UpdatedAt = DateTime.UtcNow;
                 }
-                _context.ForumComments.RemoveRange(comment.Replies);
 
-                // Delete the comment
-                _context.ForumComments.Remove(comment);
                 await _context.SaveChangesAsync();
-
                 TempData["SuccessMessage"] = "Comment deleted successfully.";
             }
             catch (Exception ex)
@@ -412,6 +378,25 @@ namespace CommunityPortal.Controllers
             }
 
             var user = await _userManager.GetUserAsync(User);
+
+            // Check if the post/comment exists and is not deleted
+            if (postId.HasValue)
+            {
+                var post = await _context.ForumPosts.FirstOrDefaultAsync(p => p.Id == postId && !p.IsDeleted);
+                if (post == null)
+                {
+                    return NotFound();
+                }
+            }
+            else if (commentId.HasValue)
+            {
+                var comment = await _context.ForumComments.FirstOrDefaultAsync(c => c.Id == commentId && !c.IsDeleted);
+                if (comment == null)
+                {
+                    return NotFound();
+                }
+            }
+
             var existingLike = await _context.ForumLikes
                 .FirstOrDefaultAsync(l => l.UserId == user.Id &&
                     (postId.HasValue ? l.PostId == postId : l.CommentId == commentId));
@@ -426,7 +411,8 @@ namespace CommunityPortal.Controllers
                 {
                     UserId = user.Id,
                     PostId = postId,
-                    CommentId = commentId
+                    CommentId = commentId,
+                    CreatedAt = DateTime.UtcNow
                 };
                 _context.ForumLikes.Add(like);
             }

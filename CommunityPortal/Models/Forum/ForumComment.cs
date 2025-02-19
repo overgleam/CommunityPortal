@@ -9,10 +9,14 @@ namespace CommunityPortal.Models.Forum
         public int Id { get; set; }
 
         [Required]
+        [StringLength(1000)]
         public string Content { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        
+        public DateTime? UpdatedAt { get; set; }
+
+        public bool IsDeleted { get; set; } = false;
 
         [Required]
         public string AuthorId { get; set; }
