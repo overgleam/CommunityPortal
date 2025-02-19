@@ -1,0 +1,213 @@
+﻿@model CommunityPortal.Models.Feedback
+@using CommunityPortal.Models.Enums
+@inject Microsoft.AspNetCore.Identity.UserManager<CommunityPortal.Models.ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Submit Feedback";
+    var userFeedback = ViewBag.UserFeedback as IEnumerable<CommunityPortal.Models.Feedback>;
+}
+
+<div class="container-fluid">
+    <h2 class="mb-4">
+        <i class="material-icons align-middle me-2">feedback</i>Submit Feedback
+    </h2>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form asp-action="Create" method="post" id="feedbackForm">
+                @Html.AntiForgeryToken()
+                <div class="form-group mb-3">
+                    <label asp-for="Message" class="form-label">Your Message</label>
+                    <textarea asp-for="Message" class="form-control" rows="4" maxlength="1500" required oninput="updateCharacterCount()"></textarea>
+                    <small id="charCount" class="text-muted">1500 characters remaining</small>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="material-icons align-middle me-1">send</i> Submit Feedback
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="thankYouMessage" class="alert alert-success d-none" role="alert">
+        <i class="material-icons align-middle me-1 mb-2">check_circle</i> Thank you for your feedback!
+    </div>
+</div>
+
+    @if (userFeedback != null && userFeedback.Any())
+    {
+        <h3 class="mb-3">
+            <i class="material-icons align-middle me-2">history</i>My Feedback History
+        </h3>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 60%">
+                            <i class="material-icons align-middle me-1 small">message</i>Message
+                        </th>
+                        <th style="width: 20%">
+                            <i class="material-icons align-middle me-1 small">calendar_today</i>Submitted At
+                        </th>
+                        <th style="width: 20%">
+                            <i class="material-icons align-middle me-1 small">info</i>Status
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var feedback in userFeedback.OrderByDescending(f => f.CreatedAt))
+                    {
+                        <tr>
+                            <td>
+                                @{
+                                    var truncatedMessage = feedback.Message.Length > 100
+                                    ? feedback.Message.Substring(0, 97) + "..."
+                                    : feedback.Message;
+                                }
+                                <p class="mb-0">@truncatedMessage</p>
+                                @if (feedback.Message.Length > 100)
+                                {
+                                    <button type="button" class="btn btn-link btn-sm p-0"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#feedbackModal-@feedback.Id">
+                                        <i class="material-icons align-middle small">read_more</i> Read More
+                                    </button>
+                                }
+                            </td>
+                            <td>
+                                <i class="material-icons align-middle me-1 text-muted small">schedule</i>
+                                @feedback.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                            </td>
+                            <td>
+                                <span class="badge @(feedback.Status switch {
+                                    FeedbackStatus.New => "bg-primary",
+                                    FeedbackStatus.InReview => "bg-warning text-dark",
+                                    FeedbackStatus.Resolved => "bg-success",
+                                    FeedbackStatus.Rejected => "bg-danger",
+                                    _ => "bg-secondary"
+                                })">
+                                    <i class="material-icons align-middle me-1 small">
+                                        @(feedback.Status switch
+                                        {
+                                            FeedbackStatus.New => "fiber_new",
+                                            FeedbackStatus.InReview => "hourglass_empty",
+                                            FeedbackStatus.Resolved => "check_circle",
+                                            FeedbackStatus.Rejected => "cancel",
+                                            _ => "help"
+                                        })
+                                    </i>
+                                    @feedback.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+<!-- Modals for Full Messages -->
+@foreach (var feedback in userFeedback ?? Enumerable.Empty<Feedback>())
+{
+    <div class="modal fade" id="feedbackModal-@feedback.Id" tabindex="-1" aria-labelledby="feedbackModalLabel-@feedback.Id" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="feedbackModalLabel-@feedback.Id">
+                        <i class="material-icons align-middle me-2">feedback</i>
+                        Feedback Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="material-icons align-middle me-1 small">event</i>
+                            Submitted on @feedback.CreatedAt.ToString("f")
+                        </small>
+                    </div>
+                    <p style="white-space: pre-wrap;">@feedback.Message</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="material-icons align-middle me-1">close</i>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function updateCharacterCount() {
+            var textarea = document.querySelector("textarea");
+            var remaining = 1500 - textarea.value.length;
+            document.getElementById("charCount").textContent = remaining + " characters remaining";
+        }
+
+        document.getElementById("feedbackForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+            this.reset();
+            updateCharacterCount();
+            document.getElementById("thankYouMessage").classList.remove("d-none");
+            setTimeout(() => document.getElementById("thankYouMessage").classList.add("d-none"), 3000);
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        /* Add all the styles from your Index.cshtml here */
+        /* Typography */
+        body {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            color: #2d3748;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        /* Form Styles */
+        .form-control {
+            border-color: #e2e8f0;
+            padding: 0.75rem;
+        }
+
+            .form-control:focus {
+                border-color: #4299e1;
+                box-shadow: 0 0 0 0.2rem rgba(66, 153, 225, 0.25);
+            }
+
+        /* Table Styles */
+        .table-responsive {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+            .table td {
+                vertical-align: middle;
+                padding: 1rem 0.75rem;
+            }
+
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: 12px;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Rest of your existing styles... */
+    </style>
+}

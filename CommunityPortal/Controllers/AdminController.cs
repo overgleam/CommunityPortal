@@ -10,7 +10,7 @@ using CommunityPortal.Models.Enums;
 
 namespace CommunityPortal.Controllers
 {
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,staff")]
     public class AdminController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;

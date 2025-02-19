@@ -1,5 +1,394 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using CommunityPortal.Models.Enums
+@model IEnumerable<CommunityPortal.Models.Feedback>
+@inject Microsoft.AspNetCore.Identity.UserManager<CommunityPortal.Models.ApplicationUser> UserManager
+
 @{
+    ViewData["Title"] = "Feedback List";
+}
+
+<div class="container-fluid">
+    <h2 class="mb-4">
+        <i class="material-icons align-middle me-2">feedback</i>Feedback Management
+    </h2>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 15%">
+                        <i class="material-icons align-middle me-1 small">person</i>User
+                    </th>
+                    <th style="width: 10%">
+                        <i class="material-icons align-middle me-1 small">badge</i>Role
+                    </th>
+                    <th style="width: 35%">
+                        <i class="material-icons align-middle me-1 small">message</i>Message
+                    </th>
+                    <th style="width: 15%">
+                        <i class="material-icons align-middle me-1 small">calendar_today</i>Submitted At
+                    </th>
+                    <th style="width: 10%">
+                        <i class="material-icons align-middle me-1 small">info</i>Status
+                    </th>
+                    <th style="width: 15%">
+                        <i class="material-icons align-middle me-1 small">edit</i>Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var feedback in Model)
+                {
+                    <tr>
+                        <td>
+                            <i class="material-icons align-middle me-1 text-muted small">account_circle</i>
+                            @feedback.User.UserName
+                        </td>
+                        <td>
+                            @{
+                                var roles = UserManager.GetRolesAsync(feedback.User).Result;
+                                var roleName = roles.FirstOrDefault() ?? "Unknown";
+                            }
+                            <span class="badge bg-info">
+                                <i class="material-icons align-middle me-1 small">
+                                    @(roleName.ToLower() switch
+                                    {
+                                        "admin" => "admin_panel_settings",
+                                        "staff" => "support_agent",
+                                        "homeowners" => "home",
+                                        _ => "person"
+                                    })
+                                </i>
+                                @roleName
+                            </span>
+                        </td>
+                        <td>
+                            @{
+                                var truncatedMessage = feedback.Message.Length > 100
+                                ? feedback.Message.Substring(0, 97) + "..."
+                                : feedback.Message;
+                            }
+                            <p class="mb-0">@truncatedMessage</p>
+                            @if (feedback.Message.Length > 100)
+                            {
+                                <button type="button" class="btn btn-link btn-sm p-0"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#feedbackModal-@feedback.Id">
+                                    <i class="material-icons align-middle small">read_more</i> Read More
+                                </button>
+                            }
+                        </td>
+                        <td>
+                            <i class="material-icons align-middle me-1 text-muted small">schedule</i>
+                            @feedback.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                        </td>
+                        <td>
+                            <span class="badge @(feedback.Status switch {
+                                FeedbackStatus.New => "bg-primary",
+                                FeedbackStatus.InReview => "bg-warning text-dark",
+                                FeedbackStatus.Resolved => "bg-success",
+                                FeedbackStatus.Rejected => "bg-danger",
+                                _ => "bg-secondary"
+                            })">
+                                <i class="material-icons align-middle me-1 small">
+                                    @(feedback.Status switch
+                                    {
+                                        FeedbackStatus.New => "fiber_new",
+                                        FeedbackStatus.InReview => "hourglass_empty",
+                                        FeedbackStatus.Resolved => "check_circle",
+                                        FeedbackStatus.Rejected => "cancel",
+                                        _ => "help"
+                                    })
+                                </i>
+                                @feedback.Status
+                            </span>
+                        </td>
+                        <td>
+                            <form asp-action="UpdateStatus" method="post" class="d-flex gap-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@feedback.Id" />
+                                <select name="status" class="form-select form-select-sm" style="width: auto;">
+                                    @foreach (FeedbackStatus status in Enum.GetValues(typeof(FeedbackStatus)))
+                                    {
+                                        <option value="@status" selected="@(feedback.Status == status ? "selected" : null)">
+                                            @status
+                                        </option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="material-icons align-middle small">save</i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modals for Full Messages -->
+@foreach (var feedback in Model)
+{
+    <div class="modal fade" id="feedbackModal-@feedback.Id" tabindex="-1" aria-labelledby="feedbackModalLabel-@feedback.Id" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="feedbackModalLabel-@feedback.Id">
+                        <i class="material-icons align-middle me-2">feedback</i>
+                        Feedback from @feedback.User.UserName
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="material-icons align-middle me-1 small">event</i>
+                            Submitted on @feedback.CreatedAt.ToString("f")
+                        </small>
+                    </div>
+                    <div class="feedback-message">
+                        <p style="white-space: pre-wrap; word-break: break-word;">@feedback.Message</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="material-icons align-middle me-1">close</i>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Styles {
+    <!-- Add Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Typography */
+        body {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            color: #2d3748;
+        }
+
+        h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        /* Table Styles */
+        .table {
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+
+            .table td {
+                vertical-align: middle;
+                padding: 1rem 0.75rem;
+            }
+
+            .table th {
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 0.8rem;
+                letter-spacing: 0.5px;
+            }
+
+        .table-responsive {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .table-dark {
+            background-color: #2d3748;
+        }
+
+        /* Badge Styles */
+        .badge {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 0.5em 0.8em;
+            letter-spacing: 0.3px;
+        }
+
+            .badge .material-icons {
+                font-size: 1em;
+            }
+
+        /* Form Elements */
+        .form-select-sm {
+            font-size: 0.85rem;
+            padding-right: 2rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Buttons */
+        .btn {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-link {
+            text-decoration: none;
+            color: #4299e1;
+            font-size: 0.85rem;
+        }
+
+            .btn-link:hover {
+                text-decoration: underline;
+                color: #2b6cb0;
+            }
+
+        /* Icons */
+        .material-icons {
+            vertical-align: middle;
+        }
+
+            .material-icons.small {
+                font-size: 18px;
+            }
+
+        /* Modal Styles */
+        .modal-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+        }
+
+        .modal .material-icons {
+            vertical-align: text-bottom;
+        }
+
+        .modal-body {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .modal-header {
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modal-footer {
+            border-top: 2px solid #e2e8f0;
+        }
+
+        /* Status Colors */
+        .bg-primary {
+            background-color: #4299e1 !important;
+        }
+
+        .bg-warning {
+            background-color: #ecc94b !important;
+        }
+
+        .bg-success {
+            background-color: #48bb78 !important;
+        }
+
+        .bg-danger {
+            background-color: #f56565 !important;
+        }
+
+        .bg-info {
+            background-color: #4299e1 !important;
+        }
+
+        /* Message Text */
+        .message-text {
+            color: #2d3748;
+            line-height: 1.5;
+        }
+
+        /* Timestamp */
+        .text-muted {
+            color: #718096 !important;
+        }
+
+        /* Container Spacing */
+        .container-fluid {
+            padding: 2rem;
+        }
+
+        /* Table Header Icons */
+        .table th .material-icons {
+            opacity: 0.8;
+        }
+
+        /* Hover Effects */
+        .table-hover tbody tr:hover {
+            background-color: #f7fafc;
+        }
+
+        .btn-primary {
+            background-color: #4299e1;
+            border-color: #4299e1;
+        }
+
+            .btn-primary:hover {
+                background-color: #2b6cb0;
+                border-color: #2b6cb0;
+            }
+
+        /* Custom Scrollbar */
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+
+            .table-responsive::-webkit-scrollbar-thumb:hover {
+                background: #a0aec0;
+            }
+        /* Message Display Styles */
+        .feedback-message {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+            .feedback-message p {
+                margin: 0;
+                padding: 1rem;
+                background-color: #f8fafc;
+                border-radius: 6px;
+                border: 1px solid #e2e8f0;
+            }
+
+        /* Modal Styles Update */
+        .modal-dialog.modal-lg {
+            max-width: 800px;
+        }
+
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        /* Table Message Cell */
+        .table td:nth-child(3) { /* Message column */
+            max-width: 0; /* Forces text truncation */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Read More Button */
+        .btn-link {
+            padding: 0.25rem 0;
+            margin-top: 0.25rem;
+            display: inline-block;
+        }
+    </style>
 }

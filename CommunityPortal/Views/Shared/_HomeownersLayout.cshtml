@@ -34,7 +34,7 @@
     <div class="d-flex min-vh-100" id="wrapper">
         <div class="bg-sidebar border-right" id="sidebar-wrapper">
             <div class="sidebar-heading text-center py-4 primary-text mb-3 fs-4 fw-bold text-uppercase border-bottom">
-                <img src="" alt="Logo" width="169" height="92" class="me-2">
+                <img src="~/images/logo.png" alt="Logo" width="169" height="92" class="me-2">
             </div>
             <div class="list-group list-group-flush">
                 <a asp-controller="Homeowner" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
@@ -64,8 +64,8 @@
                 <a asp-controller="Documents" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">insert_drive_file</i> Documents
                 </a>
-                <a asp-controller="Feedback" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">feedback</i> Feedback and Complaints
+                <a asp-controller="Feedback" asp-action="SubmitFeedBack" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">feedback</i> Submit Feedback
                 </a>
             </div>
         </div>

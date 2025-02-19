@@ -10,6 +10,7 @@ namespace CommunityPortal.Data
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<Homeowner> Homeowners { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

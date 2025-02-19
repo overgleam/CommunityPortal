@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CommunityPortal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250217143342_Init")]
-    partial class Init
+    [Migration("20250219050012_feedBack")]
+    partial class feedBack
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -94,6 +94,9 @@ namespace CommunityPortal.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ProfileImagePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -155,6 +158,35 @@ namespace CommunityPortal.Migrations
                     b.HasIndex("SenderId");
 
                     b.ToTable("ChatMessages");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Feedback", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Feedbacks");
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.Homeowner", b =>
@@ -383,6 +415,17 @@ namespace CommunityPortal.Migrations
                     b.Navigation("Recipient");
 
                     b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Feedback", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.Homeowner", b =>

@@ -51,10 +51,20 @@
                     <a asp-controller="Admin" asp-action="CreateStaff" class="list-group-item list-group-item-action bg-sidebar">
                         <i class="material-icons me-2">account_circle</i> Create Staff Account
                     </a>
+                    <a asp-controller="Feedback" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                        <i class="material-icons me-2">feedback</i> View Feedback
+                    </a>
+                }
+                @if (User.IsInRole("staff"))
+                {
+                    <a asp-controller="Feedback" asp-action="SubmitFeedBack" class="list-group-item list-group-item-action bg-sidebar">
+                        <i class="material-icons me-2">feedback</i> Submit Feedback
+                    </a>
                 }
                 <a asp-controller="Chat" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">chat</i> Chat
                 </a>
+
             </div>
         </div>
 

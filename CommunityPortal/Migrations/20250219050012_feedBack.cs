@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CommunityPortal.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class feedBack : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,6 +33,7 @@ namespace CommunityPortal.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    ProfileImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -208,6 +209,28 @@ namespace CommunityPortal.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Feedbacks",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Feedbacks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Feedbacks_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Homeowners",
                 columns: table => new
                 {
@@ -301,6 +324,11 @@ namespace CommunityPortal.Migrations
                 name: "IX_ChatMessages_SenderId",
                 table: "ChatMessages",
                 column: "SenderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Feedbacks_UserId",
+                table: "Feedbacks",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -326,6 +354,9 @@ namespace CommunityPortal.Migrations
 
             migrationBuilder.DropTable(
                 name: "ChatMessages");
+
+            migrationBuilder.DropTable(
+                name: "Feedbacks");
 
             migrationBuilder.DropTable(
                 name: "Homeowners");
