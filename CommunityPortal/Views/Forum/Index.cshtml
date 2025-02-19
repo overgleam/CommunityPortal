@@ -1,5 +1,461 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
+@model IEnumerable<CommunityPortal.Models.Forum.ForumPost>
 @{
+    ViewData["Title"] = "Community Forum";
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var isAdmin = ViewBag.IsAdmin;
+    var isStaff = ViewBag.IsStaff;
+    var userRoles = ViewBag.UserRoles as Dictionary<string, string>;
+}
+
+<div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>@ViewData["Title"]</h1>
+        <a asp-action="Create" class="btn btn-primary">Create New Post</a>
+    </div>
+
+    <div class="forum-timeline">
+        @foreach (var post in Model)
+        {
+            <div class="card mb-4 forum-post">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        @if (!string.IsNullOrEmpty(post.Author?.ProfileImagePath))
+                        {
+                            <img src="@post.Author.ProfileImagePath" class="rounded-circle me-2" width="40" height="40" alt="Profile picture" />
+                        }
+                        else
+                        {
+                            <div class="rounded-circle bg-secondary me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <span class="material-icons text-white">person</span>
+                            </div>
+                        }
+                        <div>
+                            <h5 class="mb-0">@post.Title</h5>
+                            <small class="text-muted">
+                                Posted by @post.Author?.UserName 
+                                @if (isAdmin || isStaff)
+                                {
+                                    <span class="text-primary">(@(userRoles[post.Author.Id]))</span>
+                                }
+                                - @post.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
+                                @if (post.UpdatedAt > post.CreatedAt)
+                                {
+                                    <span>(Edited)</span>
+                                }
+                            </small>
+                        </div>
+                    </div>
+                    @if (currentUserId == post.AuthorId || isAdmin)
+                    {
+                        <div class="dropdown">
+                            <button class="btn btn-link action-icon" type="button" data-bs-toggle="dropdown">
+                                <span class="material-icons">more_vert</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@post.Id">Edit</a></li>
+                                <li>
+                                    <form asp-controller="Forum" asp-action="Delete" asp-route-id="@post.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this post? This action cannot be undone.');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item text-danger">Delete</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                </div>
+                <div class="card-body">
+                    <p class="card-text">@post.Content</p>
+                    @if (!string.IsNullOrEmpty(post.ImagePath))
+                    {
+                        <img src="@post.ImagePath" class="img-fluid mb-3 forum-post-image" alt="Post image" />
+                    }
+                    <div class="d-flex align-items-center mt-3">
+                        <button class="btn btn-link action-icon like-button @(post.Likes.Any(l => l.UserId == currentUserId) ? "text-primary" : "text-muted")"
+                                data-post-id="@post.Id">
+                            <span class="material-icons">
+                                @(post.Likes.Any(l => l.UserId == currentUserId) ? "favorite" : "favorite_border")
+                            </span>
+                            <span class="like-count">@post.Likes.Count</span> Likes
+                        </button>
+                        <button class="btn btn-link action-icon text-muted ms-2 comment-toggle" data-post-id="@post.Id">
+                            <span class="material-icons">chat_bubble_outline</span>
+                            <span>@post.Comments.Count</span> Comments
+                        </button>
+                    </div>
+                </div>
+                <div class="card-footer comment-section" id="comments-@post.Id" style="display: none;">
+                    <div class="comments-list mb-3">
+                        @foreach (var comment in post.Comments.Where(c => !c.ParentCommentId.HasValue).OrderByDescending(c => c.CreatedAt))
+                        {
+                            <div class="comment mb-2">
+                                <div class="d-flex">
+                                    @if (!string.IsNullOrEmpty(comment.Author?.ProfileImagePath))
+                                    {
+                                        <img src="@comment.Author.ProfileImagePath" class="rounded-circle me-2" width="32" height="32" alt="Profile picture" />
+                                    }
+                                    else
+                                    {
+                                        <div class="rounded-circle bg-secondary me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <span class="material-icons text-white">person</span>
+                                        </div>
+                                    }
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>@comment.Author?.UserName</strong>
+                                                @if (isAdmin || isStaff)
+                                                {
+                                                    <span class="text-primary">(@(userRoles[comment.Author.Id]))</span>
+                                                }
+                                                <small class="text-muted ms-2">@comment.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</small>
+                                            </div>
+                                            @if (currentUserId == comment.AuthorId || isAdmin)
+                                            {
+                                                <div class="action-buttons">
+                                                    <form asp-action="DeleteComment" asp-route-id="@comment.Id" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn action-icon delete-button"
+                                                                onclick="return confirm('Are you sure you want to delete this comment? This action cannot be undone.')">
+                                                            <span class="material-icons md-18">delete_outline</span>
+                                                            <span class="ms-1 d-none d-sm-inline">Delete</span>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            }
+                                        </div>
+                                        <p class="mb-1">@comment.Content</p>
+                                        <div class="d-flex align-items-center">
+                                            <button class="btn btn-link like-button p-0 @(comment.Likes.Any(l => l.UserId == currentUserId) ? "text-primary" : "text-muted")"
+                                                    data-comment-id="@comment.Id">
+                                                <span class="material-icons">
+                                                    @(comment.Likes.Any(l => l.UserId == currentUserId) ? "favorite" : "favorite_border")
+                                                </span>
+                                                <span class="like-count">@comment.Likes.Count</span> Likes
+                                            </button>
+                                            <button class="btn btn-link text-muted p-0 ms-3 reply-toggle"
+                                                    data-comment-id="@comment.Id">
+                                                <span class="material-icons md-18">reply</span>
+                                                Reply
+                                            </button>
+                                        </div>
+
+                                        <!-- Nested replies -->
+                                        @foreach (var reply in comment.Replies.OrderBy(r => r.CreatedAt))
+                                        {
+                                            <div class="reply mt-2 ms-4">
+                                                <div class="d-flex">
+                                                    @if (!string.IsNullOrEmpty(reply.Author?.ProfileImagePath))
+                                                    {
+                                                        <img src="@reply.Author.ProfileImagePath" class="rounded-circle me-2" width="24" height="24" alt="Profile picture" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="rounded-circle bg-secondary me-2 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                                                            <span class="material-icons text-white">person</span>
+                                                        </div>
+                                                    }
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex justify-content-between align-items-start">
+                                                            <div>
+                                                                <strong>@reply.Author?.UserName</strong>
+                                                                @if (isAdmin || isStaff)
+                                                                {
+                                                                    <span class="text-primary">(@(userRoles[reply.Author.Id]))</span>
+                                                                }
+                                                                <small class="text-muted ms-2">@reply.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</small>
+                                                            </div>
+                                                            @if (currentUserId == reply.AuthorId || isAdmin)
+                                                            {
+                                                                <div class="action-buttons">
+                                                                    <form asp-action="DeleteComment" asp-route-id="@reply.Id" method="post" class="d-inline">
+                                                                        @Html.AntiForgeryToken()
+                                                                        <button type="submit" class="btn action-icon delete-button"
+                                                                                onclick="return confirm('Are you sure you want to delete this reply? This action cannot be undone.')">
+                                                                            <span class="material-icons md-18">delete_outline</span>
+                                                                            <span class="ms-1 d-none d-sm-inline">Delete</span>
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                        <p class="mb-1">@reply.Content</p>
+                                                        <button class="btn btn-link like-button p-0 @(reply.Likes.Any(l => l.UserId == currentUserId) ? "text-primary" : "text-muted")"
+                                                                data-comment-id="@reply.Id">
+                                                            <span class="material-icons">
+                                                                @(reply.Likes.Any(l => l.UserId == currentUserId) ? "favorite" : "favorite_border")
+                                                            </span>
+                                                            <span class="like-count">@reply.Likes.Count</span> Likes
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="reply-form mt-2 ms-4" id="reply-form-@comment.Id" style="display: none;">
+                                            <form asp-action="Comment" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="postId" value="@post.Id" />
+                                                <input type="hidden" name="parentCommentId" value="@comment.Id" />
+                                                <div class="input-group">
+                                                    <input type="text" name="content" class="form-control" placeholder="Write a reply..." required />
+                                                    <button type="submit" class="btn btn-primary">Reply</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <form asp-action="Comment" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="postId" value="@post.Id" />
+                        <div class="input-group">
+                            <input type="text" name="content" class="form-control" placeholder="Write a comment..." required />
+                            <button type="submit" class="btn btn-primary">Comment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Material Icons specific styles */
+        .material-icons {
+            font-size: 20px;
+            vertical-align: middle;
+            line-height: 1;
+        }
+
+        .material-icons.md-18 { font-size: 18px; }
+        .material-icons.md-24 { font-size: 24px; }
+
+        .forum-timeline .forum-post {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .forum-timeline .forum-post:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .forum-post-image {
+            border-radius: 8px;
+            max-height: 400px;
+            object-fit: cover;
+        }
+
+        .like-button, .comment-toggle, .reply-toggle {
+            text-decoration: none;
+            transition: color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .like-button:hover, .comment-toggle:hover, .reply-toggle:hover {
+            color: #0d6efd !important;
+        }
+
+        .comment, .reply {
+            position: relative;
+            padding: 8px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            margin-bottom: 8px;
+        }
+
+        .reply {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+        }
+
+        .delete-button {
+            padding: 0;
+            font-size: 0.875rem;
+            color: #dc3545;
+            background: none;
+            border: none;
+            line-height: 1;
+        }
+
+        .delete-button:hover {
+            color: #bb2d3b;
+        }
+
+        .action-buttons {
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .comment:hover .action-buttons,
+        .reply:hover .action-buttons {
+            opacity: 1;
+        }
+
+        .dropdown-menu {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
+            max-width: 500px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @@keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .comment-section {
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .comments-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .input-group .form-control {
+            border-radius: 20px 0 0 20px;
+        }
+
+        .input-group .btn {
+            border-radius: 0 20px 20px 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-header .dropdown-toggle::after {
+            display: none;
+        }
+
+        .bi {
+            vertical-align: middle;
+        }
+
+        .action-buttons .bi {
+            font-size: 1.1rem;
+        }
+
+        .like-button .bi, .comment-toggle .bi {
+            font-size: 1.2rem;
+        }
+
+        .reply-toggle .bi {
+            font-size: 0.9rem;
+            margin-right: 3px;
+        }
+
+        .dropdown-menu li:hover {
+            background-color: #f8f9fa;
+        }
+
+        .forum-post .card-header {
+            background-color: #ffffff;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .action-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .action-icon:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .like-count {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 5000);
+
+            // Toggle comments
+            $('.comment-toggle').click(function () {
+                const postId = $(this).data('post-id');
+                $(`#comments-${postId}`).slideToggle();
+            });
+
+            // Toggle reply form
+            $('.reply-toggle').click(function () {
+                const commentId = $(this).data('comment-id');
+                $(`#reply-form-${commentId}`).slideToggle();
+            });
+
+            // Handle likes
+            $('.like-button').click(function () {
+                const button = $(this);
+                const postId = button.data('post-id');
+                const commentId = button.data('comment-id');
+                
+                $.post('/Forum/Like', {
+                    postId: postId,
+                    commentId: commentId
+                }).done(function () {
+                    const likeCount = button.find('.like-count');
+                    const currentCount = parseInt(likeCount.text());
+                    
+                    if (button.hasClass('text-primary')) {
+                        button.removeClass('text-primary').addClass('text-muted');
+                        likeCount.text(currentCount - 1);
+                    } else {
+                        button.removeClass('text-muted').addClass('text-primary');
+                        likeCount.text(currentCount + 1);
+                    }
+                });
+            });
+        });
+    </script>
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Models;
+using CommunityPortal.Models.Forum;
 
 namespace CommunityPortal.Data
 {
@@ -10,6 +11,9 @@ namespace CommunityPortal.Data
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<Homeowner> Homeowners { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<ForumPost> ForumPosts { get; set; }
+        public DbSet<ForumComment> ForumComments { get; set; }
+        public DbSet<ForumLike> ForumLikes { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -64,6 +68,48 @@ namespace CommunityPortal.Data
                 .HasOne(cm => cm.Recipient)
                 .WithMany()
                 .HasForeignKey(cm => cm.RecipientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ForumPost>()
+                .HasOne(p => p.Author)
+                .WithMany()
+                .HasForeignKey(p => p.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ForumComment>()
+                .HasOne(c => c.Author)
+                .WithMany()
+                .HasForeignKey(c => c.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ForumComment>()
+                .HasOne(c => c.Post)
+                .WithMany(p => p.Comments)
+                .HasForeignKey(c => c.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ForumComment>()
+                .HasOne(c => c.ParentComment)
+                .WithMany(c => c.Replies)
+                .HasForeignKey(c => c.ParentCommentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ForumLike>()
+                .HasOne(l => l.User)
+                .WithMany()
+                .HasForeignKey(l => l.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ForumLike>()
+                .HasOne(l => l.Post)
+                .WithMany(p => p.Likes)
+                .HasForeignKey(l => l.PostId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ForumLike>()
+                .HasOne(l => l.Comment)
+                .WithMany(c => c.Likes)
+                .HasForeignKey(l => l.CommentId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
 

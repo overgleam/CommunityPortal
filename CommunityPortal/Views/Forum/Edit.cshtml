@@ -1,0 +1,130 @@
+@model CommunityPortal.Models.Forum.ForumPost
+
+@{
+    ViewData["Title"] = "Edit Post";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card forum-post">
+                <div class="card-header">
+                    <h2 class="mb-0 text-center">@ViewData["Title"]</h2>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <div asp-validation-summary="All" class="text-danger mb-4"></div>
+                        
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="AuthorId" />
+                        <input type="hidden" asp-for="CreatedAt" />
+                        <input type="hidden" asp-for="UpdatedAt" />
+                        <input type="hidden" asp-for="ImagePath" />
+                        
+                        <div class="mb-4">
+                            <label asp-for="Title" class="form-label h6">Title</label>
+                            <input asp-for="Title" class="form-control form-control-lg" maxlength="200" required 
+                                   placeholder="Enter your post title..." />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                            <div class="form-text">Be clear and descriptive (maximum 200 characters)</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Content" class="form-label h6">Content</label>
+                            <textarea asp-for="Content" class="form-control" rows="8" required 
+                                    placeholder="Share your thoughts..."></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                            <div class="form-text">Format your text to make it easy to read</div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.ImagePath))
+                        {
+                            <div class="mb-4">
+                                <label class="form-label h6">Current Image</label>
+                                <div class="position-relative">
+                                    <img src="@Model.ImagePath" class="img-fluid rounded forum-post-image" alt="Current post image" />
+                                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2" id="removeImage">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="mb-4">
+                            <label for="image" class="form-label h6">New Image (optional)</label>
+                            <div class="input-group">
+                                <input type="file" id="image" name="image" class="form-control" accept="image/*" />
+                            </div>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Leave empty to keep the current image. Supported formats: JPG, PNG, GIF (max 5MB)
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-arrow-left me-2"></i>Back to Forum
+                            </a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Disable submit button on form submission
+            $('form').on('submit', function() {
+                $(this).find('button[type="submit"]').prop('disabled', true);
+            });
+
+            // File size validation
+            $('input[type="file"]').on('change', function() {
+                if (this.files[0]) {
+                    if (this.files[0].size > 5 * 1024 * 1024) { // 5MB
+                        alert('File size must be less than 5MB');
+                        this.value = '';
+                    }
+                }
+            });
+
+            // Character counter for title
+            $('#Title').on('input', function() {
+                const maxLength = 200;
+                const currentLength = $(this).val().length;
+                const remainingChars = maxLength - currentLength;
+                
+                if (!$('#charCount').length) {
+                    $(this).after('<small id="charCount" class="form-text text-muted"></small>');
+                }
+                
+                $('#charCount').text(`${remainingChars} characters remaining`);
+                
+                if (remainingChars < 20) {
+                    $('#charCount').removeClass('text-muted').addClass('text-warning');
+                } else {
+                    $('#charCount').removeClass('text-warning').addClass('text-muted');
+                }
+            });
+
+            // Handle image removal
+            $('#removeImage').click(function() {
+                if (confirm('Are you sure you want to remove the current image? This action cannot be undone.')) {
+                    $('<input>').attr({
+                        type: 'hidden',
+                        name: 'removeImage',
+                        value: 'true'
+                    }).appendTo('form');
+                    $(this).closest('.mb-4').remove();
+                }
+            });
+        });
+    </script>
+} 
