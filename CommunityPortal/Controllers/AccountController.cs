@@ -61,7 +61,8 @@ namespace CommunityPortal.Controllers
                     PhoneNumber = model.PhoneNumber,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
-                    Status = UserStatus.PendingApproval
+                    Status = UserStatus.PendingApproval,
+                    ProfileImagePath = "images/default-profile.jpg"
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
