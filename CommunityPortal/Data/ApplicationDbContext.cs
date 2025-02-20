@@ -13,6 +13,7 @@ namespace CommunityPortal.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<ForumPost> ForumPosts { get; set; }
         public DbSet<ForumComment> ForumComments { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<ForumLike> ForumLikes { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)

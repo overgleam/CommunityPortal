@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Migrations\" />
     <Folder Include="Models\Homeowners\" />
     <Folder Include="Models\Staffs\" />
     <Folder Include="Views\Staff\" />
