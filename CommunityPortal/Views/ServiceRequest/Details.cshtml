@@ -1,0 +1,217 @@
+@model CommunityPortal.Models.ServiceRequest
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Request Details";
+    Layout = User.IsInRole("admin") || User.IsInRole("staff") ? "_AdminLayout" : "_HomeownersLayout";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">Service Request #@Model.Id</h3>
+                    <span class="badge rounded-pill bg-@GetStatusColor(Model.Status)">
+                        @Model.Status
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5>Title</h5>
+                            <p>@Model.Title</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Category</h5>
+                            <p>@Model.ServiceCategory.Name</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <h5>Description</h5>
+                            <p>@Model.Description</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5>Location</h5>
+                            <p>@Model.Location</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Preferred Schedule</h5>
+                            <p>@Model.PreferredSchedule.ToString("MMM dd, yyyy hh:mm tt")</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5>Created By</h5>
+                            <p>@Model.Homeowner.UserName</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Created At</h5>
+                            <p>@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</p>
+                        </div>
+                    </div>
+
+                    @if (Model.AssignedStaff != null)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h5>Assigned Staff</h5>
+                                <p>@Model.AssignedStaff.UserName</p>
+                            </div>
+                            @if (Model.CompletedAt.HasValue)
+                            {
+                                <div class="col-md-6">
+                                    <h5>Completed At</h5>
+                                    <p>@Model.CompletedAt.Value.ToString("MMM dd, yyyy hh:mm tt")</p>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @if (Model.Status == ServiceRequestStatus.Rejected && !string.IsNullOrEmpty(Model.RejectionReason))
+                    {
+                        <div class="alert alert-danger">
+                            <h5>Rejection Reason</h5>
+                            <p>@Model.RejectionReason</p>
+                        </div>
+                    }
+
+                    @if (Model.Feedback != null)
+                    {
+                        <div class="card mt-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Feedback</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h6>Rating</h6>
+                                    <div class="text-warning">
+                                        @for (int i = 0; i < Model.Feedback.Rating; i++)
+                                        {
+                                            <i class="material-icons">star</i>
+                                        }
+                                        @for (int i = Model.Feedback.Rating; i < 5; i++)
+                                        {
+                                            <i class="material-icons">star_border</i>
+                                        }
+                                    </div>
+                                </div>
+                                @if (!string.IsNullOrEmpty(Model.Feedback.Comment))
+                                {
+                                    <div>
+                                        <h6>Comment</h6>
+                                        <p>@Model.Feedback.Comment</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            @if (User.IsInRole("admin") && Model.Status == ServiceRequestStatus.Pending)
+            {
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Assign Staff</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="AssignStaff" method="post">
+                            <input type="hidden" name="requestId" value="@Model.Id" />
+                            <div class="mb-3">
+                                <label class="form-label">Select Staff Member</label>
+                                <select name="staffId" class="form-select" required>
+                                    <option value="">Choose staff member...</option>
+                                    @foreach (var staff in ViewBag.StaffMembers)
+                                    {
+                                        <option value="@staff.Id">@staff.UserName</option>
+                                    }
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="material-icons">person_add</i> Assign
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            @if (User.IsInRole("staff") && Model.AssignedStaffId == UserManager.GetUserId(User) && 
+                 Model.Status != ServiceRequestStatus.Completed && Model.Status != ServiceRequestStatus.Rejected)
+            {
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Update Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="UpdateStatus" method="post">
+                            <input type="hidden" name="requestId" value="@Model.Id" />
+                            <div class="mb-3">
+                                <label class="form-label">New Status</label>
+                                <select name="status" class="form-select" required>
+                                    <option value="">Select status...</option>
+                                    <option value="@ServiceRequestStatus.InProgress">In Progress</option>
+                                    <option value="@ServiceRequestStatus.Completed">Completed</option>
+                                    <option value="@ServiceRequestStatus.Rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div class="mb-3 rejection-reason" style="display: none;">
+                                <label class="form-label">Rejection Reason</label>
+                                <textarea name="rejectionReason" class="form-control" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="material-icons">update</i> Update Status
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="material-icons">arrow_back</i> Back to List
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const statusSelect = document.querySelector('select[name="status"]');
+            const rejectionReasonDiv = document.querySelector('.rejection-reason');
+
+            if (statusSelect && rejectionReasonDiv) {
+                statusSelect.addEventListener('change', function () {
+                    rejectionReasonDiv.style.display = 
+                        this.value === '@ServiceRequestStatus.Rejected' ? 'block' : 'none';
+                });
+            }
+        });
+    </script>
+}
+
+@functions {
+    private string GetStatusColor(ServiceRequestStatus status)
+    {
+        return status switch
+        {
+            ServiceRequestStatus.Pending => "warning",
+            ServiceRequestStatus.Assigned => "info",
+            ServiceRequestStatus.InProgress => "primary",
+            ServiceRequestStatus.Completed => "success",
+            ServiceRequestStatus.Rejected => "danger",
+            _ => "secondary"
+        };
+    }
+} 

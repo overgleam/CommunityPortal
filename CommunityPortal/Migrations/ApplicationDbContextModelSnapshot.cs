@@ -338,6 +338,167 @@ namespace CommunityPortal.Migrations
                     b.ToTable("Homeowners");
                 });
 
+            modelBuilder.Entity("CommunityPortal.Models.ServiceCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ServiceCategories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Water systems, pipes, drains, and related fixtures",
+                            Name = "Plumbing"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Electrical systems, wiring, outlets, and lighting",
+                            Name = "Electrical"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Heating, ventilation, and air conditioning systems",
+                            Name = "HVAC"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Waste management and disposal services",
+                            Name = "Garbage Collection"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Description = "Pest inspection and elimination services",
+                            Name = "Pest Control"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Description = "General repairs and maintenance work",
+                            Name = "General Maintenance"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Description = "Garden maintenance, tree trimming, and lawn care",
+                            Name = "Landscaping"
+                        });
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.ServiceFeedback", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("HomeownerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServiceRequestId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HomeownerId");
+
+                    b.HasIndex("ServiceRequestId")
+                        .IsUnique();
+
+                    b.ToTable("ServiceFeedbacks");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AssignedStaffId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("HomeownerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("PreferredSchedule")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ServiceCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignedStaffId");
+
+                    b.HasIndex("HomeownerId");
+
+                    b.HasIndex("ServiceCategoryId");
+
+                    b.ToTable("ServiceRequests");
+                });
+
             modelBuilder.Entity("CommunityPortal.Models.Staff", b =>
                 {
                     b.Property<string>("UserId")
@@ -615,6 +776,51 @@ namespace CommunityPortal.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("CommunityPortal.Models.ServiceFeedback", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "Homeowner")
+                        .WithMany()
+                        .HasForeignKey("HomeownerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CommunityPortal.Models.ServiceRequest", "ServiceRequest")
+                        .WithOne("Feedback")
+                        .HasForeignKey("CommunityPortal.Models.ServiceFeedback", "ServiceRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Homeowner");
+
+                    b.Navigation("ServiceRequest");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "AssignedStaff")
+                        .WithMany()
+                        .HasForeignKey("AssignedStaffId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "Homeowner")
+                        .WithMany()
+                        .HasForeignKey("HomeownerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CommunityPortal.Models.ServiceCategory", "ServiceCategory")
+                        .WithMany("ServiceRequests")
+                        .HasForeignKey("ServiceCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AssignedStaff");
+
+                    b.Navigation("Homeowner");
+
+                    b.Navigation("ServiceCategory");
+                });
+
             modelBuilder.Entity("CommunityPortal.Models.Staff", b =>
                 {
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "User")
@@ -698,6 +904,16 @@ namespace CommunityPortal.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.ServiceCategory", b =>
+                {
+                    b.Navigation("ServiceRequests");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest", b =>
+                {
+                    b.Navigation("Feedback");
                 });
 #pragma warning restore 612, 618
         }

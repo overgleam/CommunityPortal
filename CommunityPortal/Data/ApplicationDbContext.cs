@@ -15,6 +15,9 @@ namespace CommunityPortal.Data
         public DbSet<ForumComment> ForumComments { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<ForumLike> ForumLikes { get; set; }
+        public DbSet<ServiceRequest> ServiceRequests { get; set; }
+        public DbSet<ServiceCategory> ServiceCategories { get; set; }
+        public DbSet<ServiceFeedback> ServiceFeedbacks { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -112,6 +115,82 @@ namespace CommunityPortal.Data
                 .WithMany(c => c.Likes)
                 .HasForeignKey(l => l.CommentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ServiceRequest>()
+                .HasOne(sr => sr.Homeowner)
+                .WithMany()
+                .HasForeignKey(sr => sr.HomeownerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ServiceRequest>()
+                .HasOne(sr => sr.AssignedStaff)
+                .WithMany()
+                .HasForeignKey(sr => sr.AssignedStaffId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ServiceRequest>()
+                .HasOne(sr => sr.ServiceCategory)
+                .WithMany(sc => sc.ServiceRequests)
+                .HasForeignKey(sr => sr.ServiceCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ServiceFeedback>()
+                .HasOne(sf => sf.ServiceRequest)
+                .WithOne(sr => sr.Feedback)
+                .HasForeignKey<ServiceFeedback>(sf => sf.ServiceRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ServiceFeedback>()
+                .HasOne(sf => sf.Homeowner)
+                .WithMany()
+                .HasForeignKey(sf => sf.HomeownerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Seed Service Categories
+            builder.Entity<ServiceCategory>().HasData(
+                new ServiceCategory 
+                { 
+                    Id = 1, 
+                    Name = "Plumbing",
+                    Description = "Water systems, pipes, drains, and related fixtures"
+                },
+                new ServiceCategory 
+                { 
+                    Id = 2, 
+                    Name = "Electrical",
+                    Description = "Electrical systems, wiring, outlets, and lighting"
+                },
+                new ServiceCategory 
+                { 
+                    Id = 3, 
+                    Name = "HVAC",
+                    Description = "Heating, ventilation, and air conditioning systems"
+                },
+                new ServiceCategory 
+                { 
+                    Id = 4, 
+                    Name = "Garbage Collection",
+                    Description = "Waste management and disposal services"
+                },
+                new ServiceCategory 
+                { 
+                    Id = 5, 
+                    Name = "Pest Control",
+                    Description = "Pest inspection and elimination services"
+                },
+                new ServiceCategory 
+                { 
+                    Id = 6, 
+                    Name = "General Maintenance",
+                    Description = "General repairs and maintenance work"
+                },
+                new ServiceCategory 
+                { 
+                    Id = 7, 
+                    Name = "Landscaping",
+                    Description = "Garden maintenance, tree trimming, and lawn care"
+                }
+            );
         }
 
         public override int SaveChanges()
