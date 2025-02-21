@@ -448,8 +448,11 @@ namespace CommunityPortal.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AssignedStaffId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<string>("CancellationReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("datetime2");
@@ -490,13 +493,44 @@ namespace CommunityPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignedStaffId");
-
                     b.HasIndex("HomeownerId");
 
                     b.HasIndex("ServiceCategoryId");
 
                     b.ToTable("ServiceRequests");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.ServiceStaffAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsAccepted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ServiceRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StaffId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceRequestId");
+
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("ServiceStaffAssignments");
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.Staff", b =>
@@ -797,11 +831,6 @@ namespace CommunityPortal.Migrations
 
             modelBuilder.Entity("CommunityPortal.Models.ServiceRequest", b =>
                 {
-                    b.HasOne("CommunityPortal.Models.ApplicationUser", "AssignedStaff")
-                        .WithMany()
-                        .HasForeignKey("AssignedStaffId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "Homeowner")
                         .WithMany()
                         .HasForeignKey("HomeownerId")
@@ -814,11 +843,28 @@ namespace CommunityPortal.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("AssignedStaff");
-
                     b.Navigation("Homeowner");
 
                     b.Navigation("ServiceCategory");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.ServiceStaffAssignment", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.ServiceRequest", "ServiceRequest")
+                        .WithMany("StaffAssignments")
+                        .HasForeignKey("ServiceRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ServiceRequest");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.Staff", b =>
@@ -914,6 +960,8 @@ namespace CommunityPortal.Migrations
             modelBuilder.Entity("CommunityPortal.Models.ServiceRequest", b =>
                 {
                     b.Navigation("Feedback");
+
+                    b.Navigation("StaffAssignments");
                 });
 #pragma warning restore 612, 618
         }

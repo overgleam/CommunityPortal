@@ -37,7 +37,8 @@ namespace CommunityPortal.Controllers
                 requests = await _context.ServiceRequests
                     .Include(s => s.ServiceCategory)
                     .Include(s => s.Homeowner)
-                    .Include(s => s.AssignedStaff)
+                    .Include(s => s.StaffAssignments)
+                        .ThenInclude(sa => sa.Staff)
                     .OrderByDescending(s => s.CreatedAt)
                     .ToListAsync();
             }
@@ -46,7 +47,8 @@ namespace CommunityPortal.Controllers
                 requests = await _context.ServiceRequests
                     .Include(s => s.ServiceCategory)
                     .Include(s => s.Homeowner)
-                    .Where(s => s.AssignedStaffId == currentUser.Id)
+                    .Include(s => s.StaffAssignments)
+                    .Where(s => s.StaffAssignments.Any(sa => sa.StaffId == currentUser.Id))
                     .OrderByDescending(s => s.CreatedAt)
                     .ToListAsync();
             }
@@ -54,7 +56,8 @@ namespace CommunityPortal.Controllers
             {
                 requests = await _context.ServiceRequests
                     .Include(s => s.ServiceCategory)
-                    .Include(s => s.AssignedStaff)
+                    .Include(s => s.StaffAssignments)
+                        .ThenInclude(sa => sa.Staff)
                     .Where(s => s.HomeownerId == currentUser.Id)
                     .OrderByDescending(s => s.CreatedAt)
                     .ToListAsync();
@@ -132,35 +135,78 @@ namespace CommunityPortal.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> AssignStaff(int requestId, string staffId)
+        public async Task<IActionResult> AssignStaff(int requestId, List<string> staffIds)
         {
-            var request = await _context.ServiceRequests.FindAsync(requestId);
+            var request = await _context.ServiceRequests
+                .Include(s => s.StaffAssignments)
+                .FirstOrDefaultAsync(s => s.Id == requestId);
+
             if (request == null)
             {
                 return NotFound();
             }
 
-            request.AssignedStaffId = staffId;
+            foreach (var staffId in staffIds)
+            {
+                if (!request.StaffAssignments.Any(sa => sa.StaffId == staffId))
+                {
+                    request.StaffAssignments.Add(new ServiceStaffAssignment
+                    {
+                        ServiceRequestId = requestId,
+                        StaffId = staffId,
+                        AssignedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
             request.Status = ServiceRequestStatus.Assigned;
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Details), new { id = requestId });
+        }
+
+        // POST: ServiceRequest/AcceptAssignment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "staff")]
+        public async Task<IActionResult> AcceptAssignment(int requestId)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            var assignment = await _context.ServiceStaffAssignments
+                .FirstOrDefaultAsync(sa => sa.ServiceRequestId == requestId && sa.StaffId == currentUser.Id);
+
+            if (assignment == null)
+            {
+                return NotFound();
+            }
+
+            assignment.IsAccepted = true;
+            assignment.AcceptedAt = DateTime.UtcNow;
+
+            var request = await _context.ServiceRequests.FindAsync(requestId);
+            request.Status = ServiceRequestStatus.InProgress;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Details), new { id = requestId });
         }
 
         // POST: ServiceRequest/UpdateStatus
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "staff")]
+        [Authorize(Roles = "staff,admin")]
         public async Task<IActionResult> UpdateStatus(int requestId, ServiceRequestStatus status, string? rejectionReason = null)
         {
-            var request = await _context.ServiceRequests.FindAsync(requestId);
+            var request = await _context.ServiceRequests
+                .Include(s => s.StaffAssignments)
+                .FirstOrDefaultAsync(s => s.Id == requestId);
+
             if (request == null)
             {
                 return NotFound();
             }
 
             var currentUser = await _userManager.GetUserAsync(User);
-            if (request.AssignedStaffId != currentUser.Id)
+            if (!User.IsInRole("admin") && !request.StaffAssignments.Any(sa => sa.StaffId == currentUser.Id && sa.IsAccepted))
             {
                 return Forbid();
             }
@@ -176,6 +222,57 @@ namespace CommunityPortal.Controllers
             }
 
             await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Details), new { id = requestId });
+        }
+
+        // POST: ServiceRequest/CancelRequest
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "homeowners")]
+        public async Task<IActionResult> CancelRequest(int requestId, string cancellationReason)
+        {
+            var request = await _context.ServiceRequests.FindAsync(requestId);
+            if (request == null)
+            {
+                return NotFound();
+            }
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (request.HomeownerId != currentUser.Id)
+            {
+                return Forbid();
+            }
+
+            if (request.Status != ServiceRequestStatus.Pending)
+            {
+                TempData["ErrorMessage"] = "Only pending requests can be cancelled.";
+                return RedirectToAction(nameof(Details), new { id = requestId });
+            }
+
+            request.Status = ServiceRequestStatus.Cancelled;
+            request.CancellationReason = cancellationReason;
+            request.CancelledAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Service request cancelled successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: ServiceRequest/Delete
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var request = await _context.ServiceRequests.FindAsync(id);
+            if (request == null)
+            {
+                return NotFound();
+            }
+
+            _context.ServiceRequests.Remove(request);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Service request deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -302,7 +399,8 @@ namespace CommunityPortal.Controllers
             var request = await _context.ServiceRequests
                 .Include(s => s.ServiceCategory)
                 .Include(s => s.Homeowner)
-                .Include(s => s.AssignedStaff)
+                .Include(s => s.StaffAssignments)
+                    .ThenInclude(sa => sa.Staff)
                 .Include(s => s.Feedback)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -314,7 +412,7 @@ namespace CommunityPortal.Controllers
             var currentUser = await _userManager.GetUserAsync(User);
             if (!User.IsInRole("admin") && 
                 request.HomeownerId != currentUser.Id && 
-                request.AssignedStaffId != currentUser.Id)
+                !request.StaffAssignments.Any(sa => sa.StaffId == currentUser.Id))
             {
                 return Forbid();
             }

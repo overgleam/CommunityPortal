@@ -18,6 +18,7 @@ namespace CommunityPortal.Data
         public DbSet<ServiceRequest> ServiceRequests { get; set; }
         public DbSet<ServiceCategory> ServiceCategories { get; set; }
         public DbSet<ServiceFeedback> ServiceFeedbacks { get; set; }
+        public DbSet<ServiceStaffAssignment> ServiceStaffAssignments { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -122,10 +123,16 @@ namespace CommunityPortal.Data
                 .HasForeignKey(sr => sr.HomeownerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<ServiceRequest>()
-                .HasOne(sr => sr.AssignedStaff)
+            builder.Entity<ServiceStaffAssignment>()
+                .HasOne(ssa => ssa.ServiceRequest)
+                .WithMany(sr => sr.StaffAssignments)
+                .HasForeignKey(ssa => ssa.ServiceRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ServiceStaffAssignment>()
+                .HasOne(ssa => ssa.Staff)
                 .WithMany()
-                .HasForeignKey(sr => sr.AssignedStaffId)
+                .HasForeignKey(ssa => ssa.StaffId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<ServiceRequest>()

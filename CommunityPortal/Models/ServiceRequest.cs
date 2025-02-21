@@ -30,19 +30,18 @@ namespace CommunityPortal.Models
 
         public string? RejectionReason { get; set; }
 
+        public string? CancellationReason { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? CompletedAt { get; set; }
+
+        public DateTime? CancelledAt { get; set; }
 
         public string HomeownerId { get; set; }
         
         [ForeignKey("HomeownerId")]
         public virtual ApplicationUser? Homeowner { get; set; }
-
-        public string? AssignedStaffId { get; set; }
-        
-        [ForeignKey("AssignedStaffId")]
-        public virtual ApplicationUser? AssignedStaff { get; set; }
 
         [Required(ErrorMessage = "Service category is required")]
         [Display(Name = "Service Category")]
@@ -52,6 +51,8 @@ namespace CommunityPortal.Models
         public virtual ServiceCategory? ServiceCategory { get; set; }
 
         public virtual ServiceFeedback? Feedback { get; set; }
+
+        public virtual ICollection<ServiceStaffAssignment> StaffAssignments { get; set; } = new List<ServiceStaffAssignment>();
     }
 
     public enum ServiceRequestStatus
@@ -65,6 +66,8 @@ namespace CommunityPortal.Models
         [Display(Name = "Completed")]
         Completed,
         [Display(Name = "Rejected")]
-        Rejected
+        Rejected,
+        [Display(Name = "Cancelled")]
+        Cancelled
     }
 } 
