@@ -8,27 +8,6 @@
 }
 
 <div class="forum-container">
-    <!-- Alerts -->
-    @if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
-    {
-        <div class="alert-overlay">
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success" role="alert">
-                    @TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="alert alert-danger" role="alert">
-                    @TempData["ErrorMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-        </div>
-    }
-
     <!-- Header -->
     <header class="forum-header">
         <h1>@ViewData["Title"]</h1>
@@ -561,9 +540,6 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Auto-hide alerts
-            setTimeout(() => $('.alert').alert('close'), 4000);
-
             // Toggle comments
             $('.comment-btn').click(function () {
                 const postId = $(this).data('post-id');

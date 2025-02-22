@@ -17,24 +17,6 @@
         <p class="text-muted">Manage and monitor user accounts</p>
     </div>
 
-    @* Render alerts using pattern matching *@
-    @if (TempData["SuccessMessage"] is string successMessage)
-    {
-        <div class="alert custom-alert success" role="alert" id="successAlert">
-            <i class="material-icons">check_circle</i>
-            <span>@successMessage</span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-    @if (TempData["ErrorMessage"] is string errorMessage)
-    {
-        <div class="alert custom-alert error" role="alert" id="errorAlert">
-            <i class="material-icons">error</i>
-            <span>@errorMessage</span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     @if (Model.Users?.Any() == true)
     {
         <div class="table-container">

@@ -8,14 +8,6 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @TempData["ErrorMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-
             <div class="card shadow">
                 <div class="card-header bg-success text-white">
                     <h3 class="card-title mb-0">@ViewData["Title"]</h3>
@@ -96,7 +88,7 @@
 </style>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function() {
             // Initialize star rating
