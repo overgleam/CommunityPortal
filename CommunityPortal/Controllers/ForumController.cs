@@ -143,7 +143,7 @@ namespace CommunityPortal.Controllers
             catch (Exception ex)
             {
                 // Log the exception
-                ModelState.AddModelError("", "An error occurred while creating the post. Please try again.");
+                ModelState.AddModelError("", ex.Message);
                 return View(post);
             }
         }
@@ -240,7 +240,7 @@ namespace CommunityPortal.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "An error occurred while updating the post.");
+                ModelState.AddModelError("", ex.Message);
                 // Log the exception
             }
 
@@ -285,6 +285,7 @@ namespace CommunityPortal.Controllers
             {
                 TempData["ErrorMessage"] = "An error occurred while deleting the post.";
                 // Log the exception
+                ModelState.AddModelError("", ex.Message);
             }
 
             return RedirectToAction(nameof(Index));
@@ -363,6 +364,7 @@ namespace CommunityPortal.Controllers
             {
                 TempData["ErrorMessage"] = "An error occurred while deleting the comment.";
                 // Log the exception
+                ModelState.AddModelError("", ex.Message);
             }
 
             return RedirectToAction(nameof(Index));

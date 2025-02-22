@@ -172,7 +172,13 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label asp-for="Department" class="form-label">Department</label>
-                                    <input asp-for="Department" class="form-control" placeholder="Enter department" />
+                                    <select asp-for="Department" class="form-control" id="departmentSelect">
+                                        <option value="">Select Department</option>
+                                        @foreach (var department in ViewBag.Departments)
+                                        {
+                                            <option value="@department">@department</option>
+                                        }
+                                    </select>
                                     <span asp-validation-for="Department" class="validation-error"></span>
                                 </div>
                             </div>
@@ -182,7 +188,9 @@
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label asp-for="Position" class="form-label">Position</label>
-                                    <input asp-for="Position" class="form-control" placeholder="Enter position" />
+                                    <select asp-for="Position" class="form-control" id="positionSelect">
+                                        <option value="">Select Department First</option>
+                                    </select>
                                     <span asp-validation-for="Position" class="validation-error"></span>
                                 </div>
                             </div>
@@ -300,8 +308,8 @@
                     $('#previewName').text($('#FirstName').val() + ' ' + $('#LastName').val());
                     $('#previewEmail').text($('#Email').val());
                     $('#previewPhone').text($('#PhoneNumber').val());
-                    $('#previewDepartment').text($('#Department').val());
-                    $('#previewPosition').text($('#Position').val());
+                    $('#previewDepartment').text($('#departmentSelect').val());
+                    $('#previewPosition').text($('#positionSelect').val());
                     $('#previewAddress').text($('#Address').val());
                     
                     modal.show();
@@ -312,6 +320,40 @@
 
             $('#confirmCreate').click(function() {
                 form.submit();
+            });
+
+            $('#departmentSelect').change(function() {
+                var selectedDepartment = $(this).val();
+                var positionSelect = $('#positionSelect');
+                
+                if (selectedDepartment) {
+                    // Clear and disable position dropdown while loading
+                    positionSelect.empty().prop('disabled', true)
+                        .append($('<option></option>').val('').text('Loading...'));
+                    
+                    // Fetch positions for selected department
+                    $.get('/Admin/GetPositionsForDepartment', { department: selectedDepartment })
+                        .done(function(positions) {
+                            // Clear and enable position dropdown
+                            positionSelect.empty().prop('disabled', false)
+                                .append($('<option></option>').val('').text('Select Position'));
+                            
+                            // Add positions to dropdown
+                            positions.forEach(function(position) {
+                                positionSelect.append($('<option></option>')
+                                    .val(position)
+                                    .text(position));
+                            });
+                        })
+                        .fail(function() {
+                            positionSelect.empty().prop('disabled', true)
+                                .append($('<option></option>').val('').text('Error loading positions'));
+                        });
+                } else {
+                    // Reset position dropdown when no department is selected
+                    positionSelect.empty().prop('disabled', true)
+                        .append($('<option></option>').val('').text('Select Department First'));
+                }
             });
         });
     </script>

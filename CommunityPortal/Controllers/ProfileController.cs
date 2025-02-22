@@ -11,6 +11,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 namespace CommunityPortal.Controllers
 {
@@ -166,6 +167,13 @@ namespace CommunityPortal.Controllers
                     Address = user.Staff.Address,
                     PhoneNumber = user.PhoneNumber
                 };
+
+                // Add departments and positions to ViewBag
+                ViewBag.Departments = DepartmentPositions.GetAllDepartments();
+                ViewBag.Positions = !string.IsNullOrEmpty(user.Staff.Department) 
+                    ? DepartmentPositions.GetPositionsForDepartment(user.Staff.Department) 
+                    : new List<string>();
+
                 return View("StaffEditProfile", model);
             }
             else if (user.Homeowner != null)
@@ -362,6 +370,12 @@ namespace CommunityPortal.Controllers
             RemovePasswordValidationForAdmin(ModelState);
             if (!ModelState.IsValid)
             {
+                // Add departments and positions to ViewBag when validation fails
+                ViewBag.Departments = DepartmentPositions.GetAllDepartments();
+                ViewBag.Positions = !string.IsNullOrEmpty(model.Department)
+                    ? DepartmentPositions.GetPositionsForDepartment(model.Department)
+                    : new List<string>();
+                    
                 return View("StaffEditProfile", model);
             }
 
@@ -400,9 +414,11 @@ namespace CommunityPortal.Controllers
             user.Staff.Position = model.Position;
             user.Staff.Address = model.Address;
 
-            TempData["SuccessMessage"] = "Profile updated successfully.";
+            // Save changes to the database
             await _context.SaveChangesAsync();
-            return RedirectToAction("ViewProfile", new { userId = user.Id });
+
+            // Redirect to view profile
+            return RedirectToAction(nameof(ViewProfile), new { userId = user.Id });
         }
 
         // POST: /Profile/EditHomeownerProfile
@@ -512,6 +528,13 @@ namespace CommunityPortal.Controllers
                 ModelState.AddModelError(string.Empty, error.Description);
             }
             return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult GetPositionsForDepartment(string department)
+        {
+            var positions = DepartmentPositions.GetPositionsForDepartment(department);
+            return Json(positions);
         }
     }
 }

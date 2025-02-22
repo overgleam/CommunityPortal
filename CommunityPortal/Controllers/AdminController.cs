@@ -171,6 +171,7 @@ namespace CommunityPortal.Controllers
         [Authorize(Policy = "AdminOnly")]
         public IActionResult CreateStaff()
         {
+            ViewBag.Departments = DepartmentPositions.GetAllDepartments();
             return View();
         }
 
@@ -216,17 +217,19 @@ namespace CommunityPortal.Controllers
 
                     _context.Staffs.Add(staff);
                     await _context.SaveChangesAsync();
-
                     return RedirectToAction("ApproveUsers");
                 }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
+                ModelState.AddModelError(string.Empty, result.Errors.First().Description);
             }
-
             return View(model);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "AdminOnly")]
+        public IActionResult GetPositionsForDepartment(string department)
+        {
+            var positions = DepartmentPositions.GetPositionsForDepartment(department);
+            return Json(positions);
         }
 
         // GET: Admin/ServiceCategories

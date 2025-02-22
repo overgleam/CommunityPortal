@@ -170,14 +170,24 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label asp-for="Department" class="form-label"></label>
-                                    <input asp-for="Department" class="form-control" placeholder="Enter department" />
+                                    <select asp-for="Department" class="form-control" id="departmentSelect" disabled="@(!User.IsInRole("admin"))">
+                                        @foreach (var department in ViewBag.Departments)
+                                        {
+                                            <option value="@department" selected="@(department == Model.Department)">@department</option>
+                                        }
+                                    </select>
                                     <span asp-validation-for="Department" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label asp-for="Position" class="form-label"></label>
-                                    <input asp-for="Position" class="form-control" placeholder="Enter position" />
+                                    <select asp-for="Position" class="form-control" id="positionSelect" disabled="@(!User.IsInRole("admin"))">
+                                        @foreach (var position in ViewBag.Positions)
+                                        {
+                                            <option value="@position" selected="@(position == Model.Position)">@position</option>
+                                        }
+                                    </select>
                                     <span asp-validation-for="Position" class="text-danger"></span>
                                 </div>
                             </div>
@@ -196,7 +206,7 @@
 
                         <div class="mb-3">
                             <label asp-for="PhoneNumber" class="form-label"></label>
-                            <input asp-for="PhoneNumber" class="form-control" type="tel" placeholder="Enter phone number" readonly/>
+                            <input asp-for="PhoneNumber" class="form-control" type="tel" placeholder="Enter phone number" maxlength="11"/>
                             <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                         </div>
                     </div>
@@ -254,5 +264,41 @@
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        $(document).ready(function() {
+            $('#departmentSelect').change(function() {
+                var selectedDepartment = $(this).val();
+                var positionSelect = $('#positionSelect');
+                
+                if (selectedDepartment) {
+                    // Clear and disable position dropdown while loading
+                    positionSelect.empty().prop('disabled', true)
+                        .append($('<option></option>').val('').text('Loading...'));
+                    
+                    // Fetch positions for selected department
+                    $.get('/Profile/GetPositionsForDepartment', { department: selectedDepartment })
+                        .done(function(positions) {
+                            // Clear and enable position dropdown
+                            positionSelect.empty().prop('disabled', false)
+                                .append($('<option></option>').val('').text('Select Position'));
+                            
+                            // Add positions to dropdown
+                            positions.forEach(function(position) {
+                                positionSelect.append($('<option></option>')
+                                    .val(position)
+                                    .text(position));
+                            });
+                        })
+                        .fail(function() {
+                            positionSelect.empty().prop('disabled', true)
+                                .append($('<option></option>').val('').text('Error loading positions'));
+                        });
+                } else {
+                    // Reset position dropdown when no department is selected
+                    positionSelect.empty().prop('disabled', true)
+                        .append($('<option></option>').val('').text('Select Department First'));
+                }
+            });
+        });
     </script>
 }

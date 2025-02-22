@@ -89,6 +89,79 @@
         color: #ffd700;
         font-size: 1.25rem;
     }
+
+    .accordion-item {
+        border: 1px solid rgba(0, 0, 0, 0.125);
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    .accordion-button {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background-color: #e9ecef;
+        color: #212529;
+        box-shadow: none;
+    }
+
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0, 0, 0, 0.125);
+    }
+
+    .accordion-button::after {
+        background-size: 1.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 0.75em;
+    }
+
+    .list-group-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .list-group-item .form-check-input {
+        margin-top: 0;
+    }
+
+    .list-group-item div {
+        margin-left: 0.5rem;
+    }
+
+    .list-group-item small {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+    }
+
+    #staffAssignmentAccordion .accordion-body {
+        padding: 0;
+    }
+
+    #staffAssignmentAccordion .list-group {
+        border-radius: 0;
+    }
 </style>
 
 <div class="container py-4">
@@ -139,75 +212,101 @@
                     {
                         <div class="mt-4">
                             <div class="info-label mb-3">Assigned Staff Members</div>
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Staff Member</th>
-                                            <th>Assigned At</th>
-                                            <th>Status</th>
-                                            @if (User.IsInRole("admin"))
-                                            {
-                                                <th class="text-end">Actions</th>
-                                            }
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var assignment in Model.StaffAssignments)
-                                        {
-                                            <tr>
-                                                <td>@assignment.Staff.UserName</td>
-                                                <td>@assignment.AssignedAt.ToString("MMM dd, yyyy hh:mm tt")</td>
-                                                <td>
-                                                    @if (assignment.IsAccepted)
-                                                    {
-                                                        <span class="badge rounded-pill bg-success">Accepted</span>
-                                                    }
-                                                    else if (assignment.IsUnavailable)
-                                                    {
-                                                        <span class="badge rounded-pill bg-danger">Unavailable</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge rounded-pill bg-warning">Pending</span>
-                                                        @if (assignment.StaffId == currentUser.Id)
-                                                        {
-                                                            <div class="btn-group ms-2">
-                                                                <form asp-action="AcceptAssignment" method="post" class="d-inline me-1">
-                                                                    @Html.AntiForgeryToken()
-                                                                    <input type="hidden" name="requestId" value="@Model.Id" />
-                                                                    <button type="submit" class="btn btn-sm btn-success">
-                                                                        <i class="material-icons">check</i> Accept
-                                                                    </button>
-                                                                </form>
-                                                                <form asp-action="MarkUnavailable" method="post" class="d-inline">
-                                                                    @Html.AntiForgeryToken()
-                                                                    <input type="hidden" name="requestId" value="@Model.Id" />
-                                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to mark yourself as unavailable for this request?')">
-                                                                        <i class="material-icons">block</i> Unavailable
-                                                                    </button>
-                                                                </form>
-                                                            </div>
-                                                        }
-                                                    }
-                                                </td>
-                                                @if (User.IsInRole("admin"))
-                                                {
-                                                    <td class="text-end">
-                                                        <form asp-action="RemoveStaffAssignment" method="post" class="d-inline">
-                                                            @Html.AntiForgeryToken()
-                                                            <input type="hidden" name="requestId" value="@Model.Id" />
-                                                            <input type="hidden" name="staffId" value="@assignment.StaffId" />
-                                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this staff member from the request?')">
-                                                                <i class="material-icons">person_remove</i>
-                                                            </button>
-                                                        </form>
-                                                    </td>
-                                                }
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                            <div class="accordion" id="departmentAccordion">
+                                @{
+                                    var staffByDepartment = Model.StaffAssignments
+                                        .Where(sa => sa.Staff.Staff != null)
+                                        .GroupBy(sa => sa.Staff.Staff.Department)
+                                        .OrderBy(g => g.Key);
+                                }
+                                @foreach (var departmentGroup in staffByDepartment)
+                                {
+                                    <div class="accordion-item mb-3">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                                    data-bs-target="#department-@departmentGroup.Key.Replace(" ", "")" aria-expanded="true">
+                                                @departmentGroup.Key
+                                                <span class="badge bg-secondary ms-2">@departmentGroup.Count() staff</span>
+                                            </button>
+                                        </h2>
+                                        <div id="department-@departmentGroup.Key.Replace(" ", "")" class="accordion-collapse collapse show">
+                                            <div class="accordion-body p-0">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover mb-0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Staff Member</th>
+                                                                <th>Position</th>
+                                                                <th>Assigned At</th>
+                                                                <th>Status</th>
+                                                                @if (User.IsInRole("admin"))
+                                                                {
+                                                                    <th class="text-end">Actions</th>
+                                                                }
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach (var assignment in departmentGroup)
+                                                            {
+                                                                <tr>
+                                                                    <td>@assignment.Staff.UserName</td>
+                                                                    <td>@assignment.Staff.Staff.Position</td>
+                                                                    <td>@assignment.AssignedAt.ToString("MMM dd, yyyy hh:mm tt")</td>
+                                                                    <td>
+                                                                        @if (assignment.IsAccepted)
+                                                                        {
+                                                                            <span class="badge rounded-pill bg-success">Accepted</span>
+                                                                        }
+                                                                        else if (assignment.IsUnavailable)
+                                                                        {
+                                                                            <span class="badge rounded-pill bg-danger">Unavailable</span>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <span class="badge rounded-pill bg-warning">Pending</span>
+                                                                            @if (assignment.StaffId == currentUser.Id)
+                                                                            {
+                                                                                <div class="btn-group ms-2">
+                                                                                    <form asp-action="AcceptAssignment" method="post" class="d-inline me-1">
+                                                                                        @Html.AntiForgeryToken()
+                                                                                        <input type="hidden" name="requestId" value="@Model.Id" />
+                                                                                        <button type="submit" class="btn btn-sm btn-success">
+                                                                                            <i class="material-icons">check</i> Accept
+                                                                                        </button>
+                                                                                    </form>
+                                                                                    <form asp-action="MarkUnavailable" method="post" class="d-inline">
+                                                                                        @Html.AntiForgeryToken()
+                                                                                        <input type="hidden" name="requestId" value="@Model.Id" />
+                                                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to mark yourself as unavailable for this request?')">
+                                                                                            <i class="material-icons">block</i> Unavailable
+                                                                                        </button>
+                                                                                    </form>
+                                                                                </div>
+                                                                            }
+                                                                        }
+                                                                    </td>
+                                                                    @if (User.IsInRole("admin"))
+                                                                    {
+                                                                        <td class="text-end">
+                                                                            <form asp-action="RemoveStaffAssignment" method="post" class="d-inline">
+                                                                                @Html.AntiForgeryToken()
+                                                                                <input type="hidden" name="requestId" value="@Model.Id" />
+                                                                                <input type="hidden" name="staffId" value="@assignment.StaffId" />
+                                                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this staff member from the request?')">
+                                                                                    <i class="material-icons">person_remove</i>
+                                                                                </button>
+                                                                            </form>
+                                                                        </td>
+                                                                    }
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         </div>
                     }
@@ -285,19 +384,45 @@
                             <input type="hidden" name="requestId" value="@Model.Id" />
                             <div class="mb-3">
                                 <label class="info-label">Assign Staff Members</label>
-                                <select name="staffIds" class="form-select" multiple required>
-                                    @foreach (var staff in ViewBag.StaffMembers)
+                                <div class="accordion" id="staffAssignmentAccordion">
+                                    @foreach (var department in ViewBag.StaffByDepartment)
                                     {
-                                        if (!Model.StaffAssignments.Any(sa => sa.StaffId == staff.Id))
-                                        {
-                                            <option value="@staff.Id">@staff.UserName</option>
-                                        }
+                                        var departmentId = department.Key.Replace(" ", "");
+                                        <div class="accordion-item mb-2">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button" 
+                                                        data-bs-toggle="collapse" 
+                                                        data-bs-target="#department-assign-@departmentId">
+                                                    @department.Key
+                                                    <span class="badge bg-secondary ms-2">@department.Value.Count staff available</span>
+                                                </button>
+                                            </h2>
+                                            <div id="department-assign-@departmentId" 
+                                                 class="accordion-collapse collapse" 
+                                                 data-bs-parent="#staffAssignmentAccordion">
+                                                <div class="accordion-body">
+                                                    <div class="list-group">
+                                                        @foreach (var staff in department.Value)
+                                                        {
+                                                            <label class="list-group-item">
+                                                                <input type="checkbox" name="staffIds" 
+                                                                       value="@staff.Id" 
+                                                                       class="form-check-input me-2">
+                                                                <div>
+                                                                    <div>@staff.UserName</div>
+                                                                    <small class="text-muted">@staff.Staff.Position</small>
+                                                                </div>
+                                                            </label>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     }
-                                </select>
-                                <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple staff members</small>
+                                </div>
                             </div>
                             <button type="submit" class="btn btn-primary w-100">
-                                <i class="material-icons">person_add</i> Assign Staff
+                                <i class="material-icons">person_add</i> Assign Selected Staff
                             </button>
                         </form>
                     </div>
@@ -312,26 +437,43 @@
                         <h5 class="card-title fw-bold mb-0">Update Status</h5>
                     </div>
                     <div class="card-body">
-                        <form asp-action="UpdateStatus" method="post">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="requestId" value="@Model.Id" />
-                            <div class="mb-3">
-                                <label class="info-label">New Status</label>
-                                <select name="status" class="form-select" required>
-                                    <option value="">Select status...</option>
-                                    <option value="@ServiceRequestStatus.InProgress">In Progress</option>
-                                    <option value="@ServiceRequestStatus.Completed">Completed</option>
-                                    <option value="@ServiceRequestStatus.Rejected">Rejected</option>
-                                </select>
+                        @if (Model.Status == ServiceRequestStatus.Completed)
+                        {
+                            <div class="alert alert-info">
+                                <i class="material-icons align-middle me-2">info</i>
+                                This service request has been completed. No further status updates are allowed.
                             </div>
-                            <div class="mb-3 rejection-reason" style="display: none;">
-                                <label class="info-label">Rejection Reason</label>
-                                <textarea name="rejectionReason" class="form-control" rows="3"></textarea>
+                        }
+                        else if (Model.Status == ServiceRequestStatus.Rejected)
+                        {
+                            <div class="alert alert-danger">
+                                <i class="material-icons align-middle me-2">info</i>
+                                This service request has been rejected. No further status updates are allowed.
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="material-icons">update</i> Update Status
-                            </button>
-                        </form>
+                        }
+                        else
+                        {
+                            <form asp-action="UpdateStatus" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="requestId" value="@Model.Id" />
+                                <div class="mb-3">
+                                    <label class="info-label">New Status</label>
+                                    <select name="status" class="form-select" required>
+                                        <option value="">Select status...</option>
+                                        <option value="@ServiceRequestStatus.InProgress">In Progress</option>
+                                        <option value="@ServiceRequestStatus.Completed">Completed</option>
+                                        <option value="@ServiceRequestStatus.Rejected">Rejected</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3 rejection-reason" style="display: none;">
+                                    <label class="info-label">Rejection Reason</label>
+                                    <textarea name="rejectionReason" class="form-control" rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="material-icons">update</i> Update Status
+                                </button>
+                            </form>
+                        }
                     </div>
                 </div>
             }

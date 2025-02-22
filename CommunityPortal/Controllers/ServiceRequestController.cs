@@ -320,13 +320,42 @@ namespace CommunityPortal.Controllers
             {
                 request.RejectionReason = rejectionReason;
                 request.RejectedAt = DateTime.UtcNow;
+                
+                // Mark all non-accepted staff as unavailable
+                foreach (var assignment in request.StaffAssignments.Where(sa => !sa.IsAccepted))
+                {
+                    assignment.IsUnavailable = true;
+                }
             }
             else if (status == ServiceRequestStatus.Completed)
             {
                 request.CompletedAt = DateTime.UtcNow;
+                
+                // Get the current user's assignment
+                var currentUserAssignment = request.StaffAssignments
+                    .FirstOrDefault(sa => sa.StaffId == currentUser.Id);
+
+                // Mark all other staff assignments as unavailable
+                foreach (var assignment in request.StaffAssignments)
+                {
+                    if (assignment != currentUserAssignment)
+                    {
+                        assignment.IsUnavailable = true;
+                    }
+                }
             }
 
             await _context.SaveChangesAsync();
+            
+            if (status == ServiceRequestStatus.Completed)
+            {
+                TempData["SuccessMessage"] = "Service request marked as completed. Other staff assignments have been marked as unavailable.";
+            }
+            else if (status == ServiceRequestStatus.Rejected)
+            {
+                TempData["SuccessMessage"] = "Service request has been rejected. Pending staff assignments have been marked as unavailable.";
+            }
+            
             return RedirectToAction(nameof(Details), new { id = requestId });
         }
 
@@ -506,6 +535,7 @@ namespace CommunityPortal.Controllers
                 .Include(s => s.Homeowner)
                 .Include(s => s.StaffAssignments)
                     .ThenInclude(sa => sa.Staff)
+                        .ThenInclude(s => s.Staff)
                 .Include(s => s.Feedback)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -524,7 +554,28 @@ namespace CommunityPortal.Controllers
 
             if (User.IsInRole("admin"))
             {
-                ViewBag.StaffMembers = await _userManager.GetUsersInRoleAsync("staff");
+                // Get all staff members first
+                var staffUsers = await _userManager.GetUsersInRoleAsync("staff");
+                var staffUserIds = staffUsers.Select(u => u.Id).ToList();
+                
+                // Get assigned staff IDs
+                var assignedStaffIds = request.StaffAssignments.Select(sa => sa.StaffId).ToList();
+                
+                // Get available staff with their details
+                var staffWithDetails = await _context.Users
+                    .Include(u => u.Staff)
+                    .Where(u => staffUserIds.Contains(u.Id))
+                    .Where(u => !assignedStaffIds.Contains(u.Id))
+                    .ToListAsync();
+
+                // Group staff by department
+                ViewBag.StaffByDepartment = staffWithDetails
+                    .Where(s => s.Staff != null)
+                    .GroupBy(s => s.Staff.Department)
+                    .OrderBy(g => g.Key)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                ViewBag.Departments = DepartmentPositions.GetAllDepartments();
             }
 
             return View(request);
