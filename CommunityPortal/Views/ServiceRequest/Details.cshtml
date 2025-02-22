@@ -387,7 +387,7 @@
                                 <div class="accordion" id="staffAssignmentAccordion">
                                     @foreach (var department in ViewBag.StaffByDepartment)
                                     {
-                                        var departmentId = department.Key.Replace(" ", "");
+                                        var departmentId = department.Key.Replace(" ", "").Replace("&", "And").Replace("-", "").Replace(".", "");
                                         <div class="accordion-item mb-2">
                                             <h2 class="accordion-header">
                                                 <button class="accordion-button collapsed" type="button" 
