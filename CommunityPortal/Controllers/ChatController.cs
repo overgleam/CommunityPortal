@@ -30,7 +30,7 @@ namespace CommunityPortal.Controllers
                 .Include(u => u.Administrator)
                 .Include(u => u.Staff)
                 .Include(u => u.Homeowner)
-                .Where(u => u.Id != currentUser.Id)
+                .Where(u => u.Id != currentUser.Id && !u.IsDeleted)
                 .ToListAsync();
 
             return View(users);
@@ -55,17 +55,22 @@ namespace CommunityPortal.Controllers
                 .Include(u => u.Administrator)
                 .Include(u => u.Staff)
                 .Include(u => u.Homeowner)
-                .FirstOrDefaultAsync(u => u.Id == recipientId);
+                .FirstOrDefaultAsync(u => u.Id == recipientId && !u.IsDeleted);
 
             if (recipient == null)
             {
-                return NotFound("Recipient not found.");
+                TempData["ErrorMessage"] = "User not found.";
+                return RedirectToAction("Index");
             }
 
             // Retrieve the latest 20 messages
             var messages = await _context.ChatMessages
-                .Where(m => (m.SenderId == currentUser.Id && m.RecipientId == recipientId) ||
-                            (m.SenderId == recipientId && m.RecipientId == currentUser.Id))
+                .Include(m => m.Sender)
+                .Include(m => m.Recipient)
+                .Where(m => 
+                    ((m.SenderId == currentUser.Id && m.RecipientId == recipientId) ||
+                    (m.SenderId == recipientId && m.RecipientId == currentUser.Id)) &&
+                    !m.Sender.IsDeleted && !m.Recipient.IsDeleted)
                 .OrderByDescending(m => m.Timestamp)
                 .Take(20)
                 .OrderBy(m => m.Timestamp) 
@@ -79,7 +84,7 @@ namespace CommunityPortal.Controllers
                 Messages = messages.Select(m => new ChatMessageViewModel
                 {
                     Id = m.Id,
-                    SenderUsername = m.Sender.UserName, 
+                    SenderUsername = m.Sender.UserName,
                     SenderFullName = GetFullName(m.Sender),
                     Message = m.Message,
                     Timestamp = m.Timestamp.ToLocalTime().ToString("g")
@@ -102,8 +107,11 @@ namespace CommunityPortal.Controllers
 
             var messages = await _context.ChatMessages
                 .Include(m => m.Sender)
-                .Where(m => (m.SenderId == currentUserId && m.RecipientId == recipientId) ||
-                            (m.SenderId == recipientId && m.RecipientId == currentUserId))
+                .Include(m => m.Recipient)
+                .Where(m => 
+                    ((m.SenderId == currentUserId && m.RecipientId == recipientId) ||
+                    (m.SenderId == recipientId && m.RecipientId == currentUserId)) &&
+                    !m.Sender.IsDeleted && !m.Recipient.IsDeleted)
                 .OrderByDescending(m => m.Timestamp)
                 .Skip(skip)
                 .Take(take)
@@ -113,7 +121,7 @@ namespace CommunityPortal.Controllers
             var messageViewModels = messages.Select(m => new ChatMessageViewModel
             {
                 Id = m.Id,
-                SenderUsername = m.Sender != null ? m.Sender.UserName : "Unknown",
+                SenderUsername = m.Sender.UserName,
                 SenderFullName = GetFullName(m.Sender),
                 Message = m.Message,
                 Timestamp = m.Timestamp.ToLocalTime().ToString("g")

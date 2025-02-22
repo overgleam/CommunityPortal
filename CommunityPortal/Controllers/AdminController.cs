@@ -33,7 +33,7 @@ namespace CommunityPortal.Controllers
         {
             var users = await _userManager.Users
                 .Include(u => u.Administrator)
-                .Where(u => u.Administrator == null)
+                .Where(u => u.Administrator == null && !u.IsDeleted)
                 .ToListAsync();
 
             var model = new ApproveUsersViewModel
@@ -151,19 +151,20 @@ namespace CommunityPortal.Controllers
                 return RedirectToAction("ApproveUsers");
             }
 
-            // Remove associated chat messages.
-            await RemoveUserChatMessages(userId);
+            // Soft delete the user
+            user.IsDeleted = true;
+            user.DeletedAt = DateTime.UtcNow;
+            user.Status = UserStatus.Disabled;
 
-            // Remove the user's roles.
-            var roles = await _userManager.GetRolesAsync(user);
-            var removeRolesResult = await _userManager.RemoveFromRolesAsync(user, roles);
-            if (!removeRolesResult.Succeeded)
+            // Update the user
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
             {
+                TempData["ErrorMessage"] = "Failed to remove user.";
                 return RedirectToAction("ApproveUsers");
             }
 
-            // Delete the user.
-            await _userManager.DeleteAsync(user);
+            TempData["SuccessMessage"] = "User has been successfully removed.";
             return RedirectToAction("ApproveUsers");
         }
 
@@ -390,6 +391,70 @@ namespace CommunityPortal.Controllers
         private bool ServiceCategoryExists(int id)
         {
             return _context.ServiceCategories.Any(e => e.Id == id);
+        }
+
+        // GET: /Admin/DeletedUsers
+        [HttpGet]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> DeletedUsers()
+        {
+            var users = await _userManager.Users
+                .Include(u => u.Administrator)
+                .Include(u => u.Staff)
+                .Include(u => u.Homeowner)
+                .Where(u => u.IsDeleted)
+                .ToListAsync();
+
+            var model = new ApproveUsersViewModel
+            {
+                Users = new List<UserWithRoleViewModel>()
+            };
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                var role = roles.FirstOrDefault() ?? "Unknown";
+
+                model.Users.Add(new UserWithRoleViewModel
+                {
+                    User = user,
+                    Role = role
+                });
+            }
+
+            return View(model);
+        }
+
+        // POST: /Admin/RestoreUser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> RestoreUser(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return RedirectToAction("DeletedUsers");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return RedirectToAction("DeletedUsers");
+            }
+
+            user.IsDeleted = false;
+            user.DeletedAt = null;
+            user.Status = UserStatus.PendingApproval;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                TempData["ErrorMessage"] = "Failed to restore user.";
+                return RedirectToAction("DeletedUsers");
+            }
+
+            TempData["SuccessMessage"] = "User has been successfully restored.";
+            return RedirectToAction("DeletedUsers");
         }
     }
 }

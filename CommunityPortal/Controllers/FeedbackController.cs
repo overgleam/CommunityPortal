@@ -25,7 +25,11 @@ namespace CommunityPortal.Controllers
         [Authorize(Roles = "admin")] // Only admins can view feedback
         public IActionResult Index()
         {
-            var feedbacks = _context.Feedbacks.Include(f => f.User).ToList();
+            var feedbacks = _context.Feedbacks
+                .Include(f => f.User)
+                .Where(f => !f.User.IsDeleted)
+                .ToList();
+
             return View(feedbacks);
         }
 
@@ -35,7 +39,7 @@ namespace CommunityPortal.Controllers
         {
             // Retrieve the current user
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            if (user == null || user.IsDeleted)
             {
                 return Challenge();
             }

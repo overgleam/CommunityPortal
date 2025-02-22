@@ -1,0 +1,101 @@
+@model CommunityPortal.Models.Admin.ApproveUsersViewModel
+
+@{
+    ViewData["Title"] = "Deleted Users";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="~/css/admin/userdetails.css" asp-append-version="true" />
+}
+
+<div class="container mt-4">
+    <h2>Deleted Users</h2>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Role</th>
+                    <th>Deleted At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var userWithRole in Model.Users)
+                {
+                    <tr>
+                        <td>@userWithRole.User.Email</td>
+                        <td>@userWithRole.User.PhoneNumber</td>
+                        <td>@userWithRole.Role</td>
+                        <td>@userWithRole.User.DeletedAt?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>
+                            <form asp-action="RestoreUser" asp-route-userId="@userWithRole.User.Id" method="post" style="display: inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you want to restore this user?')">
+                                    Restore
+                                </button>
+                            </form>
+                            <button type="button" class="btn custom-btn info" data-bs-toggle="modal"
+                                    data-bs-target="#userDetailsModal" data-user-id="@userWithRole.User.Id">
+                                <i class="material-icons">info</i> Details
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* User Details Modal *@
+<div class="modal fade custom-modal" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="material-icons">person_search</i> User Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modalContent">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading user details...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Handle User Details Modal
+            var userDetailsModal = document.getElementById('userDetailsModal');
+            userDetailsModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var userId = button.getAttribute('data-user-id');
+                var modalContent = document.getElementById('modalContent');
+                modalContent.innerHTML = `
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading user details...</p>
+                    </div>`;
+                fetch('/Admin/GetUserDetails?userId=' + userId)
+                    .then(response => response.text())
+                    .then(html => { modalContent.innerHTML = html; })
+                    .catch(error => {
+                        modalContent.innerHTML = `
+                            <div class="alert custom-alert error" role="alert">
+                                <i class="material-icons">error</i>
+                                <span>Failed to load user details.</span>
+                            </div>`;
+                        console.error('Error fetching user details:', error);
+                    });
+            });
+    </script>
+} 

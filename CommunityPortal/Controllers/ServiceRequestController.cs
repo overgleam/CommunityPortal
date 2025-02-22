@@ -40,8 +40,17 @@ namespace CommunityPortal.Controllers
                     .Include(s => s.StaffAssignments)
                         .ThenInclude(sa => sa.Staff)
                     .Include(s => s.Feedback)
+                    .Where(s => !s.Homeowner.IsDeleted)
                     .OrderByDescending(s => s.CreatedAt)
                     .ToListAsync();
+
+                // Filter out assignments with deleted staff
+                foreach (var request in requests)
+                {
+                    request.StaffAssignments = request.StaffAssignments
+                        .Where(sa => !sa.Staff.IsDeleted)
+                        .ToList();
+                }
             }
             else if (User.IsInRole("staff"))
             {
@@ -51,6 +60,7 @@ namespace CommunityPortal.Controllers
                     .Include(s => s.StaffAssignments)
                     .Include(s => s.Feedback)
                     .Where(s => s.StaffAssignments.Any(sa => sa.StaffId == currentUser.Id))
+                    .Where(s => !s.Homeowner.IsDeleted)
                     .OrderByDescending(s => s.CreatedAt)
                     .ToListAsync();
             }
@@ -64,6 +74,14 @@ namespace CommunityPortal.Controllers
                     .Where(s => s.HomeownerId == currentUser.Id)
                     .OrderByDescending(s => s.CreatedAt)
                     .ToListAsync();
+
+                // Filter out assignments with deleted staff
+                foreach (var request in requests)
+                {
+                    request.StaffAssignments = request.StaffAssignments
+                        .Where(sa => !sa.Staff.IsDeleted)
+                        .ToList();
+                }
             }
 
             return View(requests);
@@ -535,7 +553,6 @@ namespace CommunityPortal.Controllers
                 .Include(s => s.Homeowner)
                 .Include(s => s.StaffAssignments)
                     .ThenInclude(sa => sa.Staff)
-                        .ThenInclude(s => s.Staff)
                 .Include(s => s.Feedback)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -566,6 +583,7 @@ namespace CommunityPortal.Controllers
                     .Include(u => u.Staff)
                     .Where(u => staffUserIds.Contains(u.Id))
                     .Where(u => !assignedStaffIds.Contains(u.Id))
+                    .Where(u => !u.IsDeleted)
                     .ToListAsync();
 
                 // Group staff by department

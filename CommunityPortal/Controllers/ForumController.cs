@@ -38,23 +38,19 @@ namespace CommunityPortal.Controllers
 
             var posts = await _context.ForumPosts
                 .Include(p => p.Author)
-                .Include(p => p.Likes)
-                .Include(p => p.Comments.Where(c => !c.IsDeleted))
+                .Include(p => p.Comments.Where(c => !c.Author.IsDeleted))
                     .ThenInclude(c => c.Author)
-                .Include(p => p.Comments.Where(c => !c.IsDeleted))
-                    .ThenInclude(c => c.Likes)
-                .Include(p => p.Comments.Where(c => !c.IsDeleted))
-                    .ThenInclude(c => c.Replies.Where(r => !r.IsDeleted))
+                .Include(p => p.Comments.Where(c => !c.Author.IsDeleted))
+                    .ThenInclude(c => c.Replies.Where(r => !r.Author.IsDeleted))
                         .ThenInclude(r => r.Author)
-                .Include(p => p.Comments.Where(c => !c.IsDeleted))
-                    .ThenInclude(c => c.Replies.Where(r => !r.IsDeleted))
-                        .ThenInclude(r => r.Likes)
-                .Where(p => !p.IsDeleted)
+                .Include(p => p.Likes.Where(l => !l.User.IsDeleted))
+                .Where(p => !p.Author.IsDeleted)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
-            // Get roles for all users in the posts
+            // Create a dictionary to store user roles
             var userRoles = new Dictionary<string, string>();
+
             foreach (var post in posts)
             {
                 if (post.Author != null && !userRoles.ContainsKey(post.Author.Id))
