@@ -38,6 +38,8 @@ namespace CommunityPortal.Models
 
         public DateTime? CancelledAt { get; set; }
 
+        public DateTime? RejectedAt { get; set; }
+
         public string HomeownerId { get; set; }
         
         [ForeignKey("HomeownerId")]

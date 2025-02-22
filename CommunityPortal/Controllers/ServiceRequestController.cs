@@ -146,6 +146,17 @@ namespace CommunityPortal.Controllers
                 return NotFound();
             }
 
+            // Remove any unaccepted assignments
+            var unacceptedAssignments = request.StaffAssignments
+                .Where(sa => !sa.IsAccepted)
+                .ToList();
+
+            foreach (var assignment in unacceptedAssignments)
+            {
+                _context.ServiceStaffAssignments.Remove(assignment);
+            }
+
+            // Add new assignments
             foreach (var staffId in staffIds)
             {
                 if (!request.StaffAssignments.Any(sa => sa.StaffId == staffId))
@@ -162,6 +173,38 @@ namespace CommunityPortal.Controllers
             request.Status = ServiceRequestStatus.Assigned;
             await _context.SaveChangesAsync();
 
+            return RedirectToAction(nameof(Details), new { id = requestId });
+        }
+
+        // POST: ServiceRequest/RemoveStaffAssignment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> RemoveStaffAssignment(int requestId, string staffId)
+        {
+            var assignment = await _context.ServiceStaffAssignments
+                .FirstOrDefaultAsync(sa => sa.ServiceRequestId == requestId && sa.StaffId == staffId);
+
+            if (assignment == null)
+            {
+                return NotFound();
+            }
+
+            _context.ServiceStaffAssignments.Remove(assignment);
+
+            var request = await _context.ServiceRequests
+                .Include(s => s.StaffAssignments)
+                .FirstOrDefaultAsync(s => s.Id == requestId);
+
+            // If no staff members are assigned or accepted, set status back to Pending
+            if (!request.StaffAssignments.Any(sa => sa.StaffId != staffId) || 
+                !request.StaffAssignments.Any(sa => sa.StaffId != staffId && sa.IsAccepted))
+            {
+                request.Status = ServiceRequestStatus.Pending;
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Staff member removed successfully.";
             return RedirectToAction(nameof(Details), new { id = requestId });
         }
 
@@ -215,6 +258,7 @@ namespace CommunityPortal.Controllers
             if (status == ServiceRequestStatus.Rejected)
             {
                 request.RejectionReason = rejectionReason;
+                request.RejectedAt = DateTime.UtcNow;
             }
             else if (status == ServiceRequestStatus.Completed)
             {
