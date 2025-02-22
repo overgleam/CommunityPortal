@@ -85,7 +85,7 @@ using (var scope = app.Services.CreateScope())
 
     // Create an admin user if it doesn't exist
     string adminEmail = "admin@gmail.com";
-    string adminPassword = "5202013"; // Use a strong password in production
+    string adminPassword = "123123"; // Use a strong password in production
 
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
     if (adminUser == null)

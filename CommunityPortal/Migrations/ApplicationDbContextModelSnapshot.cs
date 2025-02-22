@@ -346,10 +346,16 @@ namespace CommunityPortal.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -364,44 +370,30 @@ namespace CommunityPortal.Migrations
                         new
                         {
                             Id = 1,
-                            Description = "Water systems, pipes, drains, and related fixtures",
-                            Name = "Plumbing"
+                            Description = "Power outages, malfunctioning streetlights, faulty wiring, outlets, circuit breakers, and installation of additional outdoor lighting",
+                            IsDeleted = false,
+                            Name = "Electrical Issues"
                         },
                         new
                         {
                             Id = 2,
-                            Description = "Electrical systems, wiring, outlets, and lighting",
-                            Name = "Electrical"
+                            Description = "Low or no water pressure, leaking pipes, faucets, toilets, clogged drainage, sewage backups, and water supply interruptions",
+                            IsDeleted = false,
+                            Name = "Plumbing & Water Supply Issues"
                         },
                         new
                         {
                             Id = 3,
-                            Description = "Heating, ventilation, and air conditioning systems",
-                            Name = "HVAC"
+                            Description = "Cracks in walls, sidewalks, or roads, broken gates, fences, perimeter walls, roof leaks, damaged ceilings, and pest infestation",
+                            IsDeleted = false,
+                            Name = "Structural & Property Repairs"
                         },
                         new
                         {
                             Id = 4,
-                            Description = "Waste management and disposal services",
-                            Name = "Garbage Collection"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Description = "Pest inspection and elimination services",
-                            Name = "Pest Control"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Description = "General repairs and maintenance work",
-                            Name = "General Maintenance"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Description = "Garden maintenance, tree trimming, and lawn care",
-                            Name = "Landscaping"
+                            Description = "Missed garbage collection, request for additional trash bins, flooding or stagnant water after heavy rains, and cleaning of community spaces",
+                            IsDeleted = false,
+                            Name = "Waste Management & Cleaning"
                         });
                 });
 

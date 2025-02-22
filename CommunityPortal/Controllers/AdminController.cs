@@ -228,5 +228,165 @@ namespace CommunityPortal.Controllers
 
             return View(model);
         }
+
+        // GET: Admin/ServiceCategories
+        public async Task<IActionResult> ServiceCategories()
+        {
+            var categories = await _context.ServiceCategories
+                .Where(c => !c.IsDeleted)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+            return View(categories);
+        }
+
+        // GET: Admin/DeletedServiceCategories
+        public async Task<IActionResult> DeletedServiceCategories()
+        {
+            var categories = await _context.ServiceCategories
+                .Where(c => c.IsDeleted)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+            return View(categories);
+        }
+
+        // GET: Admin/CreateServiceCategory
+        public IActionResult CreateServiceCategory()
+        {
+            return View();
+        }
+
+        // POST: Admin/CreateServiceCategory
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateServiceCategory(ServiceCategory category)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(category);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Service category created successfully.";
+                return RedirectToAction(nameof(ServiceCategories));
+            }
+            return View(category);
+        }
+
+        // GET: Admin/EditServiceCategory/5
+        public async Task<IActionResult> EditServiceCategory(int id)
+        {
+            var category = await _context.ServiceCategories
+                .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
+
+        // POST: Admin/EditServiceCategory/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditServiceCategory(int id, ServiceCategory category)
+        {
+            if (id != category.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var existingCategory = await _context.ServiceCategories
+                        .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
+
+                    if (existingCategory == null)
+                    {
+                        return NotFound();
+                    }
+
+                    existingCategory.Name = category.Name;
+                    existingCategory.Description = category.Description;
+
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Service category updated successfully.";
+                    return RedirectToAction(nameof(ServiceCategories));
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ServiceCategoryExists(category.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            return View(category);
+        }
+
+        // POST: Admin/DeleteServiceCategory/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteServiceCategory(int id)
+        {
+            var category = await _context.ServiceCategories
+                .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            // Check if there are any active service requests using this category
+            var hasActiveRequests = await _context.ServiceRequests
+                .AnyAsync(sr => sr.ServiceCategoryId == id && 
+                    (sr.Status == ServiceRequestStatus.Pending || 
+                     sr.Status == ServiceRequestStatus.Assigned || 
+                     sr.Status == ServiceRequestStatus.InProgress));
+
+            if (hasActiveRequests)
+            {
+                TempData["ErrorMessage"] = "Cannot delete category with active service requests.";
+                return RedirectToAction(nameof(ServiceCategories));
+            }
+
+            // Soft delete
+            category.IsDeleted = true;
+            category.DeletedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Service category deleted successfully.";
+            return RedirectToAction(nameof(ServiceCategories));
+        }
+
+        // POST: Admin/RestoreServiceCategory/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RestoreServiceCategory(int id)
+        {
+            var category = await _context.ServiceCategories
+                .FirstOrDefaultAsync(c => c.Id == id && c.IsDeleted);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            category.IsDeleted = false;
+            category.DeletedAt = null;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Service category restored successfully.";
+            return RedirectToAction(nameof(DeletedServiceCategories));
+        }
+
+        private bool ServiceCategoryExists(int id)
+        {
+            return _context.ServiceCategories.Any(e => e.Id == id);
+        }
     }
 }

@@ -14,6 +14,10 @@ namespace CommunityPortal.Models
         [StringLength(500)]
         public string Description { get; set; }
 
+        public bool IsDeleted { get; set; } = false;
+        
+        public DateTime? DeletedAt { get; set; }
+
         public virtual ICollection<ServiceRequest> ServiceRequests { get; set; } = new List<ServiceRequest>();
     }
 } 

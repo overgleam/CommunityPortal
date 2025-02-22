@@ -85,7 +85,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input asp-for="MoveInDate" type="date" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Move In Date" value="">
+                            <input asp-for="MoveInDate" type="date" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Move In Date" value="" id="MoveInDate">
                             <label asp-for="MoveInDate" class="text-white"></label>
                             <span asp-validation-for="MoveInDate" class="text-danger"></span>
                         </div>
@@ -124,4 +124,29 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Set maximum date to today
+            var now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            var maxDateTime = now.toISOString().slice(0, 10); // Only date part
+            document.getElementById('MoveInDate').setAttribute('max', maxDateTime);
+            
+            // Remove the default value setting, not needed
+            // No default value needed
+
+            // Add custom validation for past dates
+            $('#MoveInDate').on('change', function() {
+                var selectedDate = new Date(this.value);
+                var now = new Date();
+                now.setHours(0, 0, 0, 0); // Remove time part for comparison
+                
+                if (selectedDate > now) {
+                    this.setCustomValidity('Please select a past or current date.');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        });
+    </script>
 }

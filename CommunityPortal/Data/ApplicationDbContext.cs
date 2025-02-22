@@ -158,44 +158,26 @@ namespace CommunityPortal.Data
                 new ServiceCategory 
                 { 
                     Id = 1, 
-                    Name = "Plumbing",
-                    Description = "Water systems, pipes, drains, and related fixtures"
+                    Name = "Electrical Issues",
+                    Description = "Power outages, malfunctioning streetlights, faulty wiring, outlets, circuit breakers, and installation of additional outdoor lighting"
                 },
                 new ServiceCategory 
                 { 
                     Id = 2, 
-                    Name = "Electrical",
-                    Description = "Electrical systems, wiring, outlets, and lighting"
+                    Name = "Plumbing & Water Supply Issues",
+                    Description = "Low or no water pressure, leaking pipes, faucets, toilets, clogged drainage, sewage backups, and water supply interruptions"
                 },
                 new ServiceCategory 
                 { 
                     Id = 3, 
-                    Name = "HVAC",
-                    Description = "Heating, ventilation, and air conditioning systems"
+                    Name = "Structural & Property Repairs",
+                    Description = "Cracks in walls, sidewalks, or roads, broken gates, fences, perimeter walls, roof leaks, damaged ceilings, and pest infestation"
                 },
                 new ServiceCategory 
                 { 
                     Id = 4, 
-                    Name = "Garbage Collection",
-                    Description = "Waste management and disposal services"
-                },
-                new ServiceCategory 
-                { 
-                    Id = 5, 
-                    Name = "Pest Control",
-                    Description = "Pest inspection and elimination services"
-                },
-                new ServiceCategory 
-                { 
-                    Id = 6, 
-                    Name = "General Maintenance",
-                    Description = "General repairs and maintenance work"
-                },
-                new ServiceCategory 
-                { 
-                    Id = 7, 
-                    Name = "Landscaping",
-                    Description = "Garden maintenance, tree trimming, and lawn care"
+                    Name = "Waste Management & Cleaning",
+                    Description = "Missed garbage collection, request for additional trash bins, flooding or stagnant water after heavy rains, and cleaning of community spaces"
                 }
             );
         }

@@ -73,7 +73,10 @@ namespace CommunityPortal.Controllers
         [Authorize(Roles = "homeowners")]
         public async Task<IActionResult> Create()
         {
-            ViewBag.Categories = await _context.ServiceCategories.ToListAsync();
+            ViewBag.Categories = await _context.ServiceCategories
+                .Where(c => !c.IsDeleted)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
             return View();
         }
 

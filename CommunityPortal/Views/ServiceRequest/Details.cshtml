@@ -107,7 +107,7 @@
                 <div class="card-body">
                     <div class="row g-4">
                         <div class="col-12">
-                            <div class="info-label">Title</div>
+                            <div class="info-label">Subject</div>
                             <div class="info-value">@Model.Title</div>
                             
                             <div class="info-label">Description</div>
@@ -115,7 +115,7 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="info-label">Location</div>
+                            <div class="info-label">House/Unit Number</div>
                             <div class="info-value">@Model.Location</div>
                         </div>
                         
@@ -125,12 +125,12 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="info-label">Created By</div>
+                            <div class="info-label">Requested By</div>
                             <div class="info-value">@Model.Homeowner.UserName</div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="info-label">Created At</div>
+                            <div class="info-label">Requested At</div>
                             <div class="info-value">@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</div>
                         </div>
                     </div>
