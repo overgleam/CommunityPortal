@@ -11,25 +11,110 @@
     var isHomeowner = User.IsInRole("homeowners");
 }
 
-<div class="container">
-    <div class="row mb-4">
-        <div class="col">
-            <h2>@ViewData["Title"]</h2>
-        </div>
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+    
+    .service-request-card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+    
+    .service-request-card:hover {
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        border-bottom: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        padding: 1rem;
+    }
+    
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+    
+    .table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .status-badge {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50rem;
+        font-weight: 500;
+    }
+    
+    .btn {
+        border-radius: 50rem;
+        padding: 0.5rem 1.25rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .btn i {
+        font-size: 1.1rem;
+    }
+    
+    .btn-action {
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .alert {
+        border-radius: 1rem;
+        border: none;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <h1 class="page-title">@ViewData["Title"]</h1>
         @if (isHomeowner)
         {
-            <div class="col-auto">
-                <a asp-controller="ServiceRequest" asp-action="Create" class="btn btn-primary">
-                    <i class="material-icons">add</i> New Request
-                </a>
-            </div>
+            <a asp-controller="ServiceRequest" asp-action="Create" class="btn btn-primary">
+                <i class="material-icons">add</i> New Request
+            </a>
         }
     </div>
 
     @if (!Model.Any())
     {
         <div class="alert alert-info">
-            No service requests found.
+            <div class="d-flex align-items-center">
+                <i class="material-icons me-2">info</i>
+                <span>No service requests found.</span>
+            </div>
             @if (User.Identity.IsAuthenticated)
             {
                 <div class="mt-2">
@@ -46,54 +131,58 @@
     }
     else
     {
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Category</th>
-                        @if (User.IsInRole("admin") || User.IsInRole("staff"))
-                        {
-                            <th>Homeowner</th>
-                        }
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
+        <div class="card service-request-card">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
                         <tr>
-                            <td>@item.Id</td>
-                            <td>@item.Title</td>
-                            <td>@item.ServiceCategory.Name</td>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
                             @if (User.IsInRole("admin") || User.IsInRole("staff"))
                             {
-                                <td>@item.Homeowner.UserName</td>
+                                <th>Homeowner</th>
                             }
-                            <td>
-                                <span class="badge rounded-pill bg-@GetStatusColor(item.Status)">
-                                    @item.Status
-                                </span>
-                            </td>
-                            <td>@item.CreatedAt.ToString("MMM dd, yyyy")</td>
-                            <td>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
-                                    <i class="material-icons">visibility</i>
-                                </a>
-                                @if (isHomeowner && item.Status == ServiceRequestStatus.Completed && item.Feedback == null)
-                                {
-                                    <a asp-action="SubmitFeedback" asp-route-id="@item.Id" class="btn btn-sm btn-success">
-                                        <i class="material-icons">rate_review</i>
-                                    </a>
-                                }
-                            </td>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th class="text-end">Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>#@item.Id</td>
+                                <td>@item.Title</td>
+                                <td>@item.ServiceCategory.Name</td>
+                                @if (User.IsInRole("admin") || User.IsInRole("staff"))
+                                {
+                                    <td>@item.Homeowner.UserName</td>
+                                }
+                                <td>
+                                    <span class="status-badge bg-@GetStatusColor(item.Status)">
+                                        @item.Status
+                                    </span>
+                                </td>
+                                <td>@item.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-action btn-info" title="View Details">
+                                            <i class="material-icons">visibility</i>
+                                        </a>
+                                        @if (isHomeowner && item.Status == ServiceRequestStatus.Completed && item.Feedback == null)
+                                        {
+                                            <a asp-action="SubmitFeedback" asp-route-id="@item.Id" class="btn btn-action btn-success" title="Submit Feedback">
+                                                <i class="material-icons">rate_review</i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
 </div>

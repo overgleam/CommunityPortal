@@ -7,113 +7,168 @@
     var userFeedback = ViewBag.UserFeedback as IEnumerable<CommunityPortal.Models.Feedback>;
 }
 
-<div class="container-fluid ">
-    <h2 class="mb-4 ms-3">
-        <i class="material-icons align-middle me-2">feedback</i>Submit Feedback
-    </h2>
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <h2 class="mb-4">
+                <i class="material-icons align-middle me-2">feedback</i>Submit Feedback
+            </h2>
 
-    <div class="card shadow-sm m-3">
-        <div class="card-body">
-            <form asp-action="Create" method="post" id="feedbackForm">
-                @Html.AntiForgeryToken()
-                <div class="form-group mb-3">
-                    <label asp-for="Message" class="form-label">Your Message</label>
-                    <textarea asp-for="Message" class="form-control" rows="4" maxlength="1500" required oninput="updateCharacterCount()"></textarea>
-                    <small id="charCount" class="text-muted">1500 characters remaining</small>
+            <div class="card shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" id="feedbackForm">
+                        @Html.AntiForgeryToken()
+                        <div class="form-group mb-4">
+                            <label asp-for="Message" class="form-label h6">Your Message</label>
+                            <textarea asp-for="Message" class="form-control" rows="4" maxlength="1500" required 
+                                    oninput="updateCharacterCount()" 
+                                    placeholder="Share your thoughts, suggestions, or concerns..."></textarea>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small id="charCount" class="text-muted">1500 characters remaining</small>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="material-icons align-middle me-1">send</i> Submit Feedback
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="material-icons align-middle me-1">send</i> Submit Feedback
-                </button>
-            </form>
+            </div>
+
+            <div id="thankYouMessage" class="alert alert-success d-none" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="material-icons align-middle me-2 mb-0">check_circle</i>
+                    <span>Thank you for your feedback! Your submission has been received.</span>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <h3 class="mb-4">
+                    <i class="material-icons align-middle me-2">history</i>My Feedback History
+                </h3>
+
+                @if (!userFeedback?.Any() ?? true)
+                {
+                    <div class="empty-state text-center py-5">
+                        <i class="material-icons empty-state-icon mb-3">history</i>
+                        <h4>No Previous Feedback</h4>
+                        <p class="text-muted mb-0">You haven't submitted any feedback yet. Your feedback helps us improve!</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive rounded-3 shadow-sm">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width: 60%">
+                                        <i class="material-icons align-middle me-1 small">message</i>Message
+                                    </th>
+                                    <th style="width: 20%">
+                                        <i class="material-icons align-middle me-1 small">calendar_today</i>Submitted At
+                                    </th>
+                                    <th style="width: 20%">
+                                        <i class="material-icons align-middle me-1 small">info</i>Status
+                                    </th>
+                                    <th style="width: 10%">
+                                        <i class="material-icons align-middle me-1 small">delete</i>Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var feedback in userFeedback.OrderByDescending(f => f.CreatedAt))
+                                {
+                                    <tr>
+                                        <td class="align-middle">
+                                            @{
+                                                var truncatedMessage = feedback.Message.Length > 100
+                                                ? feedback.Message.Substring(0, 97) + "..."
+                                                : feedback.Message;
+                                            }
+                                            <div class="d-flex flex-column">
+                                                <span class="message-text">@truncatedMessage</span>
+                                                @if (feedback.Message.Length > 100)
+                                                {
+                                                    <button type="button" class="btn btn-link btn-sm text-start p-0 mt-1"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#feedbackModal-@feedback.Id">
+                                                        <i class="material-icons align-middle small">read_more</i> Read More
+                                                    </button>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td class="align-middle">
+                                            <span class="text-muted">
+                                                <i class="material-icons align-middle me-1 small">schedule</i>
+                                                @feedback.CreatedAt.ToString("MMM dd, yyyy")
+                                            </span>
+                                        </td>
+                                        <td class="align-middle">
+                                            <span class="badge @(feedback.Status switch {
+                                                    FeedbackStatus.New => "bg-primary",
+                                                    FeedbackStatus.InReview => "bg-warning text-dark",
+                                                    FeedbackStatus.Resolved => "bg-success",
+                                                    FeedbackStatus.Rejected => "bg-danger",
+                                                    _ => "bg-secondary"
+                                                })">
+                                                <i class="material-icons align-middle me-1 small">
+                                                    @(feedback.Status switch
+                                                    {
+                                                        FeedbackStatus.New => "fiber_new",
+                                                        FeedbackStatus.InReview => "hourglass_empty",
+                                                        FeedbackStatus.Resolved => "check_circle",
+                                                        FeedbackStatus.Rejected => "cancel",
+                                                        _ => "help"
+                                                    })
+                                                </i>
+                                                @feedback.Status
+                                            </span>
+                                        </td>
+                                        <td class="align-middle">
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                    onclick="deleteFeedback(@feedback.Id)"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Feedback">
+                                                <i class="material-icons align-middle small">delete</i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mt-5 mt-lg-0">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">
+                        <i class="material-icons align-middle me-2">tips_and_updates</i>
+                        Feedback Guidelines
+                    </h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3">
+                            <i class="material-icons align-middle me-2 text-primary">check_circle</i>
+                            Be specific and constructive
+                        </li>
+                        <li class="mb-3">
+                            <i class="material-icons align-middle me-2 text-primary">check_circle</i>
+                            Share both positive and negative experiences
+                        </li>
+                        <li class="mb-3">
+                            <i class="material-icons align-middle me-2 text-primary">check_circle</i>
+                            Keep it respectful and professional
+                        </li>
+                        <li>
+                            <i class="material-icons align-middle me-2 text-primary">check_circle</i>
+                            Suggest improvements when possible
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div id="thankYouMessage" class="alert alert-success d-none" role="alert">
-        <i class="material-icons align-middle me-1 mb-2">check_circle</i> Thank you for your feedback!
-    </div>
 </div>
-
-@if (userFeedback != null && userFeedback.Any())
-{
-    <h3 class="mb-4 ms-4">
-        <i class="material-icons align-middle me-2">history</i>My Feedback History
-    </h3>
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th style="width: 60%">
-                        <i class="material-icons align-middle me-1 small">message</i>Message
-                    </th>
-                    <th style="width: 20%">
-                        <i class="material-icons align-middle me-1 small">calendar_today</i>Submitted At
-                    </th>
-                    <th style="width: 20%">
-                        <i class="material-icons align-middle me-1 small">info</i>Status
-                    </th>
-                    <th style="width: 10%">
-                        <i class="material-icons align-middle me-1 small">delete</i>Remove
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var feedback in userFeedback.OrderByDescending(f => f.CreatedAt))
-                {
-                    <tr>
-                        <td>
-                            @{
-                                var truncatedMessage = feedback.Message.Length > 100
-                                ? feedback.Message.Substring(0, 97) + "..."
-                                : feedback.Message;
-                            }
-                            <p class="mb-0">@truncatedMessage</p>
-                            @if (feedback.Message.Length > 100)
-                            {
-                                <button type="button" class="btn btn-link btn-sm p-0"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#feedbackModal-@feedback.Id">
-                                    <i class="material-icons align-middle small">read_more</i> Read More
-                                </button>
-                            }
-                        </td>
-                        <td>
-                            <i class="material-icons align-middle me-1 text-muted small">schedule</i>
-                            @feedback.CreatedAt.ToString("MMM dd, yyyy HH:mm")
-                        </td>
-                        <td>
-                            <span class="badge @(feedback.Status switch {
-                                    FeedbackStatus.New => "bg-primary",
-                                    FeedbackStatus.InReview => "bg-warning text-dark",
-                                    FeedbackStatus.Resolved => "bg-success",
-                                    FeedbackStatus.Rejected => "bg-danger",
-                                    _ => "bg-secondary"
-                                })">
-                                <i class="material-icons align-middle me-1 small">
-                                    @(feedback.Status switch
-                                    {
-                                        FeedbackStatus.New => "fiber_new",
-                                        FeedbackStatus.InReview => "hourglass_empty",
-                                        FeedbackStatus.Resolved => "check_circle",
-                                        FeedbackStatus.Rejected => "cancel",
-                                        _ => "help"
-                                    })
-                                </i>
-                                @feedback.Status
-                            </span>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger btn-sm px-3 py-2 d-flex align-items-center"
-                                    onclick="deleteFeedback(@feedback.Id)"
-                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Feedback">
-                                <i class="material-icons align-middle small me-1">delete</i> Delete
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
 
 <!-- Modals for Full Messages -->
 @foreach (var feedback in userFeedback ?? Enumerable.Empty<Feedback>())
@@ -135,7 +190,9 @@
                             Submitted on @feedback.CreatedAt.ToString("f")
                         </small>
                     </div>
-                    <p style="white-space: pre-wrap;">@feedback.Message</p>
+                    <div class="feedback-message">
+                        <p class="mb-0">@feedback.Message</p>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -156,7 +213,7 @@
             document.getElementById("charCount").textContent = remaining + " characters remaining";
         }
 
-            document.getElementById("feedbackForm").addEventListener("submit", async function (event) {
+        document.getElementById("feedbackForm").addEventListener("submit", async function (event) {
             event.preventDefault();
 
             try {
@@ -175,7 +232,7 @@
                     document.getElementById("thankYouMessage").classList.remove("d-none");
                     setTimeout(() => {
                         document.getElementById("thankYouMessage").classList.add("d-none");
-                        window.location.reload(); // Reload to show updated feedback list
+                        window.location.reload();
                     }, 3000);
                 } else {
                     console.error('Submission failed');
@@ -185,7 +242,7 @@
             }
         });
 
-         async function deleteFeedback(id) {
+        async function deleteFeedback(id) {
             if (!confirm('Are you sure you want to delete this feedback?')) {
                 return;
             }
@@ -209,7 +266,7 @@
             }
         }
 
-            document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function () {
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
@@ -220,9 +277,7 @@
 
 @section Styles {
     <style>
-        /* Add all the styles from your Index.cshtml here */
         /* Typography */
-
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
@@ -231,68 +286,159 @@
 
         /* Form Styles */
         .form-control {
-            border-color: #e2e8f0;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
             padding: 0.75rem;
+            transition: all 0.2s ease;
         }
 
-            .form-control:focus {
-                border-color: #4299e1;
-                box-shadow: 0 0 0 0.2rem rgba(66, 153, 225, 0.25);
-            }
+        .form-control:focus {
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+        }
 
         /* Table Styles */
         .table-responsive {
-            margin-left: 1.5rem;
-            margin-right: 1.5rem;
+            background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
         .table {
             margin-bottom: 0;
         }
 
-            .table td {
-                vertical-align: middle;
-                padding: 1rem 0.75rem;
-            }
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .table th {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            color: #4a5568;
+            padding: 1rem;
+        }
 
         /* Card Styles */
         .card {
             border: none;
             border-radius: 12px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .card-body {
-            padding: 2rem;
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         }
 
-        .modal-body p {
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            white-space: normal;
+        /* Empty State Styles */
+        .empty-state {
+            background: #fff;
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        .btn-link {
-            padding: 0.25rem 0;
-            margin-top: 0.25rem;
-            display: inline-block;
+        .empty-state-icon {
+            font-size: 4rem;
+            color: #a0aec0;
+        }
+
+        .empty-state h4 {
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Badge Styles */
+        .badge {
+            padding: 0.5em 1em;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            border-radius: 6px;
+        }
+
+        /* Button Styles */
+        .btn {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: #4299e1;
+            border-color: #4299e1;
+        }
+
+        .btn-primary:hover {
+            background-color: #2b6cb0;
+            border-color: #2b6cb0;
+            transform: translateY(-1px);
         }
 
         .btn-danger {
-            background-color: #e53e3e;
-            border: none;
-            transition: background 0.3s ease, transform 0.2s ease;
+            background-color: #f56565;
+            border-color: #f56565;
         }
 
-            .btn-danger:hover {
-                background-color: #c53030;
-                transform: scale(1.05);
-            }
+        .btn-danger:hover {
+            background-color: #e53e3e;
+            border-color: #e53e3e;
+            transform: translateY(-1px);
+        }
 
-            .btn-danger:active {
-                background-color: #9b2c2c;
-                transform: scale(0.95);
-            }
+        /* Message Text */
+        .message-text {
+            color: #2d3748;
+            line-height: 1.5;
+        }
+
+        /* Alert Styles */
+        .alert {
+            border: none;
+            border-radius: 8px;
+        }
+
+        .alert-success {
+            background-color: #c6f6d5;
+            color: #2f855a;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border: none;
+            border-radius: 12px;
+        }
+
+        .modal-header {
+            border-bottom: 2px solid #e2e8f0;
+            padding: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: 2px solid #e2e8f0;
+            padding: 1.5rem;
+        }
+
+        .feedback-message p {
+            background-color: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* Container Spacing */
+        .container-fluid {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
     </style>
 }

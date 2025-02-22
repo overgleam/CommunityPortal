@@ -6,135 +6,153 @@
     ViewData["Title"] = "Feedback List";
 }
 
-<div class="container-fluid">
-    <h2 class="mb-4">
-        <i class="material-icons align-middle me-2">feedback</i>Feedback Management
-    </h2>
-
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th style="width: 15%">
-                        <i class="material-icons align-middle me-1 small">person</i>User
-                    </th>
-                    <th style="width: 10%">
-                        <i class="material-icons align-middle me-1 small">badge</i>Role
-                    </th>
-                    <th style="width: 35%">
-                        <i class="material-icons align-middle me-1 small">message</i>Message
-                    </th>
-                    <th style="width: 15%">
-                        <i class="material-icons align-middle me-1 small">calendar_today</i>Submitted At
-                    </th>
-                    <th style="width: 10%">
-                        <i class="material-icons align-middle me-1 small">info</i>Status
-                    </th>
-                    <th style="width: 15%">
-                        <i class="material-icons align-middle me-1 small">edit</i>Actions
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var feedback in Model)
-                {
-                    <tr>
-                        <td>
-                            <i class="material-icons align-middle me-1 text-muted small">account_circle</i>
-                            @feedback.User.UserName
-                        </td>
-                        <td>
-                            @{
-                                var roles = UserManager.GetRolesAsync(feedback.User).Result;
-                                var roleName = roles.FirstOrDefault() ?? "Unknown";
-                            }
-                            <span class="badge bg-info">
-                                <i class="material-icons align-middle me-1 small">
-                                    @(roleName.ToLower() switch
-                                    {
-                                        "admin" => "admin_panel_settings",
-                                        "staff" => "support_agent",
-                                        "homeowners" => "home",
-                                        _ => "person"
-                                    })
-                                </i>
-                                @roleName
-                            </span>
-                        </td>
-                        <td>
-                            @{
-                                var truncatedMessage = feedback.Message.Length > 100
-                                ? feedback.Message.Substring(0, 97) + "..."
-                                : feedback.Message;
-                            }
-                            <p class="mb-0">@truncatedMessage</p>
-                            @if (feedback.Message.Length > 100)
-                            {
-                                <button type="button" class="btn btn-link btn-sm p-0"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#feedbackModal-@feedback.Id">
-                                    <i class="material-icons align-middle small">read_more</i> Read More
-                                </button>
-                            }
-                        </td>
-                        <td>
-                            <i class="material-icons align-middle me-1 text-muted small">schedule</i>
-                            @feedback.CreatedAt.ToString("MMM dd, yyyy HH:mm")
-                        </td>
-                        <td>
-                            <span class="badge @(feedback.Status switch {
-                                FeedbackStatus.New => "bg-primary",
-                                FeedbackStatus.InReview => "bg-warning text-dark",
-                                FeedbackStatus.Resolved => "bg-success",
-                                FeedbackStatus.Rejected => "bg-danger",
-                                _ => "bg-secondary"
-                            })">
-                                <i class="material-icons align-middle me-1 small">
-                                    @(feedback.Status switch
-                                    {
-                                        FeedbackStatus.New => "fiber_new",
-                                        FeedbackStatus.InReview => "hourglass_empty",
-                                        FeedbackStatus.Resolved => "check_circle",
-                                        FeedbackStatus.Rejected => "cancel",
-                                        _ => "help"
-                                    })
-                                </i>
-                                @feedback.Status
-                            </span>
-                        </td>
-                        <td class="d-flex align-items-center gap-2">
-                            <!-- Update Status Form -->
-                            <form asp-action="UpdateStatus" method="post" class="d-flex align-items-center gap-2">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@feedback.Id" />
-                                <select name="status" class="form-select form-select-sm" style="width: auto;">
-                                    @foreach (FeedbackStatus status in Enum.GetValues(typeof(FeedbackStatus)))
-                                    {
-                                        <option value="@status" selected="@(feedback.Status == status ? "selected" : null)">
-                                            @status
-                                        </option>
-                                    }
-                                </select>
-                                <button type="submit" class="btn btn-primary btn-sm">
-                                    <i class="material-icons align-middle small">save</i>
-                                </button>
-                            </form>
-
-                            <!-- Delete Button -->
-                            <form asp-action="Delete" method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@feedback.Id" />
-                                <button type="submit" class="btn btn-danger btn-sm delete-feedback-btn">
-                                    <i class="material-icons align-middle small">delete</i>
-                                </button>
-                            </form>
-                        </td>
-
-                    </tr>
-                }
-            </tbody>
-        </table>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="material-icons align-middle me-2">feedback</i>Feedback Management
+        </h2>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" id="refreshBtn">
+                <i class="material-icons align-middle me-1">refresh</i> Refresh
+            </button>
+        </div>
     </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state text-center py-5">
+            <i class="material-icons empty-state-icon mb-3">inbox</i>
+            <h3>No Feedback Yet</h3>
+            <p class="text-muted mb-0">There are currently no feedback submissions to display.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive rounded-3 shadow-sm">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 15%">
+                            <i class="material-icons align-middle me-1 small">person</i>User
+                        </th>
+                        <th style="width: 10%">
+                            <i class="material-icons align-middle me-1 small">badge</i>Role
+                        </th>
+                        <th style="width: 35%">
+                            <i class="material-icons align-middle me-1 small">message</i>Message
+                        </th>
+                        <th style="width: 15%">
+                            <i class="material-icons align-middle me-1 small">calendar_today</i>Submitted At
+                        </th>
+                        <th style="width: 10%">
+                            <i class="material-icons align-middle me-1 small">info</i>Status
+                        </th>
+                        <th style="width: 15%">
+                            <i class="material-icons align-middle me-1 small">edit</i>Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var feedback in Model)
+                    {
+                        <tr>
+                            <td>
+                                <i class="material-icons align-middle me-1 text-muted small">account_circle</i>
+                                @feedback.User.UserName
+                            </td>
+                            <td>
+                                @{
+                                    var roles = UserManager.GetRolesAsync(feedback.User).Result;
+                                    var roleName = roles.FirstOrDefault() ?? "Unknown";
+                                }
+                                <span class="badge bg-info">
+                                    <i class="material-icons align-middle me-1 small">
+                                        @(roleName.ToLower() switch
+                                        {
+                                            "admin" => "admin_panel_settings",
+                                            "staff" => "support_agent",
+                                            "homeowners" => "home",
+                                            _ => "person"
+                                        })
+                                    </i>
+                                    @roleName
+                                </span>
+                            </td>
+                            <td>
+                                @{
+                                    var truncatedMessage = feedback.Message.Length > 100
+                                    ? feedback.Message.Substring(0, 97) + "..."
+                                    : feedback.Message;
+                                }
+                                <p class="mb-0">@truncatedMessage</p>
+                                @if (feedback.Message.Length > 100)
+                                {
+                                    <button type="button" class="btn btn-link btn-sm p-0"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#feedbackModal-@feedback.Id">
+                                        <i class="material-icons align-middle small">read_more</i> Read More
+                                    </button>
+                                }
+                            </td>
+                            <td>
+                                <i class="material-icons align-middle me-1 text-muted small">schedule</i>
+                                @feedback.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                            </td>
+                            <td>
+                                <span class="badge @(feedback.Status switch {
+                                    FeedbackStatus.New => "bg-primary",
+                                    FeedbackStatus.InReview => "bg-warning text-dark",
+                                    FeedbackStatus.Resolved => "bg-success",
+                                    FeedbackStatus.Rejected => "bg-danger",
+                                    _ => "bg-secondary"
+                                })">
+                                    <i class="material-icons align-middle me-1 small">
+                                        @(feedback.Status switch
+                                        {
+                                            FeedbackStatus.New => "fiber_new",
+                                            FeedbackStatus.InReview => "hourglass_empty",
+                                            FeedbackStatus.Resolved => "check_circle",
+                                            FeedbackStatus.Rejected => "cancel",
+                                            _ => "help"
+                                        })
+                                    </i>
+                                    @feedback.Status
+                                </span>
+                            </td>
+                            <td class="d-flex align-items-center gap-2">
+                                <!-- Update Status Form -->
+                                <form asp-action="UpdateStatus" method="post" class="d-flex align-items-center gap-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@feedback.Id" />
+                                    <select name="status" class="form-select form-select-sm" style="width: auto;">
+                                        @foreach (FeedbackStatus status in Enum.GetValues(typeof(FeedbackStatus)))
+                                        {
+                                            <option value="@status" selected="@(feedback.Status == status ? "selected" : null)">
+                                                @status
+                                            </option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="material-icons align-middle small">save</i>
+                                    </button>
+                                </form>
+
+                                <!-- Delete Button -->
+                                <form asp-action="Delete" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@feedback.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm delete-feedback-btn">
+                                        <i class="material-icons align-middle small">delete</i>
+                                    </button>
+                                </form>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>
 
 <!-- Modals for Full Messages -->
@@ -199,8 +217,6 @@
         });
     });
 </script>
-
-
 
 @section Styles {
     <!-- Add Google Fonts -->
@@ -421,6 +437,76 @@
             padding: 0.25rem 0;
             margin-top: 0.25rem;
             display: inline-block;
+        }
+
+        /* Empty State Styles */
+        .empty-state {
+            background: #fff;
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            color: #a0aec0;
+        }
+
+        .empty-state h3 {
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Enhanced Container Styles */
+        .container-fluid {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Enhanced Button Styles */
+        .btn {
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-secondary {
+            border-color: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #f7fafc;
+            border-color: #cbd5e0;
+            color: #2d3748;
+        }
+
+        /* Enhanced Table Styles */
+        .table-responsive {
+            background: white;
+            padding: 1rem;
+        }
+
+        .table th {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .table td {
+            font-size: 0.95rem;
+            color: #2d3748;
+        }
+
+        /* Status Badge Enhancements */
+        .badge {
+            padding: 0.5em 1em;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            border-radius: 6px;
         }
     </style>
 }
