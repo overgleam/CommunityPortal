@@ -553,6 +553,7 @@ namespace CommunityPortal.Controllers
                 .Include(s => s.Homeowner)
                 .Include(s => s.StaffAssignments)
                     .ThenInclude(sa => sa.Staff)
+                        .ThenInclude(s => s.Staff)
                 .Include(s => s.Feedback)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -560,6 +561,11 @@ namespace CommunityPortal.Controllers
             {
                 return NotFound();
             }
+
+            // Filter out assignments with deleted staff
+            request.StaffAssignments = request.StaffAssignments
+                .Where(sa => !sa.Staff.IsDeleted)
+                .ToList();
 
             var currentUser = await _userManager.GetUserAsync(User);
             if (!User.IsInRole("admin") && 
