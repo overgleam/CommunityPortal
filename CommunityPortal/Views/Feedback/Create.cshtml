@@ -40,106 +40,9 @@
                     <span>Thank you for your feedback! Your submission has been received.</span>
                 </div>
             </div>
-
-            <div class="mt-5">
-                <h3 class="mb-4">
-                    <i class="material-icons align-middle me-2">history</i>My Feedback History
-                </h3>
-
-                @if (!userFeedback?.Any() ?? true)
-                {
-                    <div class="empty-state text-center py-5">
-                        <i class="material-icons empty-state-icon mb-3">history</i>
-                        <h4>No Previous Feedback</h4>
-                        <p class="text-muted mb-0">You haven't submitted any feedback yet. Your feedback helps us improve!</p>
-                    </div>
-                }
-                else
-                {
-                    <div class="table-responsive rounded-3 shadow-sm">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th style="width: 60%">
-                                        <i class="material-icons align-middle me-1 small">message</i>Message
-                                    </th>
-                                    <th style="width: 20%">
-                                        <i class="material-icons align-middle me-1 small">calendar_today</i>Submitted At
-                                    </th>
-                                    <th style="width: 20%">
-                                        <i class="material-icons align-middle me-1 small">info</i>Status
-                                    </th>
-                                    <th style="width: 10%">
-                                        <i class="material-icons align-middle me-1 small">delete</i>Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var feedback in userFeedback.OrderByDescending(f => f.CreatedAt))
-                                {
-                                    <tr>
-                                        <td class="align-middle">
-                                            @{
-                                                var truncatedMessage = feedback.Message.Length > 100
-                                                ? feedback.Message.Substring(0, 97) + "..."
-                                                : feedback.Message;
-                                            }
-                                            <div class="d-flex flex-column">
-                                                <span class="message-text">@truncatedMessage</span>
-                                                @if (feedback.Message.Length > 100)
-                                                {
-                                                    <button type="button" class="btn btn-link btn-sm text-start p-0 mt-1"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#feedbackModal-@feedback.Id">
-                                                        <i class="material-icons align-middle small">read_more</i> Read More
-                                                    </button>
-                                                }
-                                            </div>
-                                        </td>
-                                        <td class="align-middle">
-                                            <span class="text-muted">
-                                                <i class="material-icons align-middle me-1 small">schedule</i>
-                                                @feedback.CreatedAt.ToString("MMM dd, yyyy")
-                                            </span>
-                                        </td>
-                                        <td class="align-middle">
-                                            <span class="badge @(feedback.Status switch {
-                                                    FeedbackStatus.New => "bg-primary",
-                                                    FeedbackStatus.InReview => "bg-warning text-dark",
-                                                    FeedbackStatus.Resolved => "bg-success",
-                                                    FeedbackStatus.Rejected => "bg-danger",
-                                                    _ => "bg-secondary"
-                                                })">
-                                                <i class="material-icons align-middle me-1 small">
-                                                    @(feedback.Status switch
-                                                    {
-                                                        FeedbackStatus.New => "fiber_new",
-                                                        FeedbackStatus.InReview => "hourglass_empty",
-                                                        FeedbackStatus.Resolved => "check_circle",
-                                                        FeedbackStatus.Rejected => "cancel",
-                                                        _ => "help"
-                                                    })
-                                                </i>
-                                                @feedback.Status
-                                            </span>
-                                        </td>
-                                        <td class="align-middle">
-                                            <button type="button" class="btn btn-danger btn-sm"
-                                                    onclick="deleteFeedback(@feedback.Id)"
-                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Feedback">
-                                                <i class="material-icons align-middle small">delete</i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
-            </div>
         </div>
 
-        <div class="col-lg-4">
+        <div class="col-lg-4 d-flex justify-content-center align-items-center">
             <div class="card shadow-sm mt-5 mt-lg-0">
                 <div class="card-body p-4">
                     <h5 class="card-title mb-3">
@@ -166,6 +69,103 @@
                     </ul>
                 </div>
             </div>
+        </div>
+
+        <div class="mt-5">
+            <h3 class="mb-4">
+                <i class="material-icons align-middle me-2">history</i>My Feedback History
+            </h3>
+
+            @if (!userFeedback?.Any() ?? true)
+            {
+                <div class="empty-state text-center py-5">
+                    <i class="material-icons empty-state-icon mb-3">history</i>
+                    <h4>No Previous Feedback</h4>
+                    <p class="text-muted mb-0">You haven't submitted any feedback yet. Your feedback helps us improve!</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive rounded-3 shadow-sm">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 60%">
+                                    <i class="material-icons align-middle me-1 small">message</i>Message
+                                </th>
+                                <th style="width: 20%">
+                                    <i class="material-icons align-middle me-1 small">calendar_today</i>Submitted At
+                                </th>
+                                <th style="width: 20%">
+                                    <i class="material-icons align-middle me-1 small">info</i>Status
+                                </th>
+                                <th style="width: 10%">
+                                    <i class="material-icons align-middle me-1 small">delete</i>Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var feedback in userFeedback.OrderByDescending(f => f.CreatedAt))
+                            {
+                                <tr>
+                                    <td class="align-middle">
+                                        @{
+                                            var truncatedMessage = feedback.Message.Length > 100
+                                            ? feedback.Message.Substring(0, 97) + "..."
+                                            : feedback.Message;
+                                        }
+                                        <div class="d-flex flex-column">
+                                            <span class="message-text">@truncatedMessage</span>
+                                            @if (feedback.Message.Length > 100)
+                                            {
+                                                <button type="button" class="btn btn-link btn-sm text-start p-0 mt-1"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#feedbackModal-@feedback.Id">
+                                                    <i class="material-icons align-middle small">read_more</i> Read More
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="text-muted">
+                                            <i class="material-icons align-middle me-1 small">schedule</i>
+                                            @feedback.CreatedAt.ToString("MMM dd, yyyy")
+                                        </span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="badge @(feedback.Status switch {
+                                                    FeedbackStatus.New => "bg-primary",
+                                                    FeedbackStatus.InReview => "bg-warning text-dark",
+                                                    FeedbackStatus.Resolved => "bg-success",
+                                                    FeedbackStatus.Rejected => "bg-danger",
+                                                    _ => "bg-secondary"
+                                                })">
+                                            <i class="material-icons align-middle me-1 small">
+                                                @(feedback.Status switch
+                                                {
+                                                    FeedbackStatus.New => "fiber_new",
+                                                    FeedbackStatus.InReview => "hourglass_empty",
+                                                    FeedbackStatus.Resolved => "check_circle",
+                                                    FeedbackStatus.Rejected => "cancel",
+                                                    _ => "help"
+                                                })
+                                            </i>
+                                            @feedback.Status
+                                        </span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                onclick="deleteFeedback(@feedback.Id)"
+                                                data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Feedback">
+                                            <i class="material-icons align-middle small">delete</i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>
