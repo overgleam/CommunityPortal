@@ -84,18 +84,31 @@
                                                         {
                                                             <span class="badge bg-success">Accepted</span>
                                                         }
+                                                        else if (assignment.IsUnavailable)
+                                                        {
+                                                            <span class="badge bg-danger">Unavailable</span>
+                                                        }
                                                         else
                                                         {
                                                             <span class="badge bg-warning">Pending</span>
                                                             @if (assignment.StaffId == currentUser.Id)
                                                             {
-                                                                <form asp-action="AcceptAssignment" method="post" class="d-inline">
-                                                                    @Html.AntiForgeryToken()
-                                                                    <input type="hidden" name="requestId" value="@Model.Id" />
-                                                                    <button type="submit" class="btn btn-sm btn-success">
-                                                                        <i class="material-icons">check</i> Accept
-                                                                    </button>
-                                                                </form>
+                                                                <div class="btn-group ms-2">
+                                                                    <form asp-action="AcceptAssignment" method="post" class="d-inline me-1">
+                                                                        @Html.AntiForgeryToken()
+                                                                        <input type="hidden" name="requestId" value="@Model.Id" />
+                                                                        <button type="submit" class="btn btn-sm btn-success">
+                                                                            <i class="material-icons">check</i> Accept
+                                                                        </button>
+                                                                    </form>
+                                                                    <form asp-action="MarkUnavailable" method="post" class="d-inline">
+                                                                        @Html.AntiForgeryToken()
+                                                                        <input type="hidden" name="requestId" value="@Model.Id" />
+                                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to mark yourself as unavailable for this request?')">
+                                                                            <i class="material-icons">block</i> Unavailable
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
                                                             }
                                                         }
                                                     </td>

@@ -233,6 +233,55 @@ namespace CommunityPortal.Controllers
             return RedirectToAction(nameof(Details), new { id = requestId });
         }
 
+        // POST: ServiceRequest/MarkUnavailable
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "staff,admin")]
+        public async Task<IActionResult> MarkUnavailable(int requestId)
+        {
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var assignment = await _context.ServiceStaffAssignments
+                .FirstOrDefaultAsync(sa => sa.ServiceRequestId == requestId && sa.StaffId == currentUser.Id);
+
+            if (assignment == null)
+            {
+                TempData["ErrorMessage"] = "You are not assigned to this service request.";
+                return RedirectToAction(nameof(Details), new { id = requestId });
+            }
+
+            if (assignment.IsAccepted)
+            {
+                TempData["ErrorMessage"] = "Cannot mark as unavailable after accepting the request.";
+                return RedirectToAction(nameof(Details), new { id = requestId });
+            }
+
+            assignment.IsUnavailable = true;
+
+            var request = await _context.ServiceRequests
+                .Include(s => s.StaffAssignments)
+                .FirstOrDefaultAsync(s => s.Id == requestId);
+
+            if (request == null)
+            {
+                return NotFound("Service request not found.");
+            }
+
+            // If all assigned staff members are unavailable, set status back to Pending
+            if (!request.StaffAssignments.Any(sa => sa.StaffId != currentUser.Id && !sa.IsUnavailable))
+            {
+                request.Status = ServiceRequestStatus.Pending;
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "You have been marked as unavailable for this request.";
+            return RedirectToAction(nameof(Details), new { id = requestId });
+        }
+
         // POST: ServiceRequest/UpdateStatus
         [HttpPost]
         [ValidateAntiForgeryToken]

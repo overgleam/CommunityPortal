@@ -22,6 +22,8 @@ namespace CommunityPortal.Models
 
         public bool IsAccepted { get; set; }
 
+        public bool IsUnavailable { get; set; }
+
         public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? AcceptedAt { get; set; }
