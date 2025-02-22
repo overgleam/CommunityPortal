@@ -90,14 +90,58 @@
         align-items: center;
         justify-content: center;
     }
-    
+
+    .alert-overlay {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1050;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
     .alert {
-        border-radius: 1rem;
-        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
     }
 </style>
 
 <div class="container py-4">
+
+    @if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
+    {
+        <div class="alert-overlay">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+        </div>
+    }
+
     <div class="page-header d-flex justify-content-between align-items-center">
         <h1 class="page-title">@ViewData["Title"]</h1>
         @if (isHomeowner)
@@ -170,13 +214,22 @@
                                         <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-action btn-info" title="View Details">
                                             <i class="material-icons">visibility</i>
                                         </a>
-                                        @if (isHomeowner && item.Status == ServiceRequestStatus.Completed && item.Feedback == null)
+                                    </div>
+                                    @if (isHomeowner && item.Status == ServiceRequestStatus.Completed)
+                                    {
+                                        @if (item.Feedback == null)
                                         {
                                             <a asp-action="SubmitFeedback" asp-route-id="@item.Id" class="btn btn-action btn-success" title="Submit Feedback">
                                                 <i class="material-icons">rate_review</i>
                                             </a>
                                         }
-                                    </div>
+                                        else
+                                        {
+                                            <span class="btn btn-action btn-warning" title="Feedback Already Submitted">
+                                                <i class="material-icons">star_rate</i>
+                                            </span>
+                                        }
+                                    }
                                 </td>
                             </tr>
                         }

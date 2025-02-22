@@ -151,10 +151,6 @@ namespace CommunityPortal.Controllers
                     }
                     else if (await _userManager.IsInRoleAsync(user, "homeowners"))
                     {
-                        return RedirectToAction("Index", "Homeowner");
-                    }
-                    else
-                    {
                         return RedirectToAction("Index", "Home");
                     }
                 }

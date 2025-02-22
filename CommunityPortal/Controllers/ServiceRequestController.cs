@@ -39,6 +39,7 @@ namespace CommunityPortal.Controllers
                     .Include(s => s.Homeowner)
                     .Include(s => s.StaffAssignments)
                         .ThenInclude(sa => sa.Staff)
+                    .Include(s => s.Feedback)
                     .OrderByDescending(s => s.CreatedAt)
                     .ToListAsync();
             }
@@ -48,6 +49,7 @@ namespace CommunityPortal.Controllers
                     .Include(s => s.ServiceCategory)
                     .Include(s => s.Homeowner)
                     .Include(s => s.StaffAssignments)
+                    .Include(s => s.Feedback)
                     .Where(s => s.StaffAssignments.Any(sa => sa.StaffId == currentUser.Id))
                     .OrderByDescending(s => s.CreatedAt)
                     .ToListAsync();
@@ -58,6 +60,7 @@ namespace CommunityPortal.Controllers
                     .Include(s => s.ServiceCategory)
                     .Include(s => s.StaffAssignments)
                         .ThenInclude(sa => sa.Staff)
+                    .Include(s => s.Feedback)
                     .Where(s => s.HomeownerId == currentUser.Id)
                     .OrderByDescending(s => s.CreatedAt)
                     .ToListAsync();
@@ -86,6 +89,12 @@ namespace CommunityPortal.Controllers
                 ModelState.Remove("Homeowner");
                 ModelState.Remove("ServiceCategory");
                 ModelState.Remove("HomeownerId");
+
+                // Validate that PreferredSchedule is in the future
+                if (serviceRequest.PreferredSchedule <= DateTime.UtcNow)
+                {
+                    ModelState.AddModelError("PreferredSchedule", "Please select a future date and time.");
+                }
 
                 if (!ModelState.IsValid)
                 {
@@ -146,9 +155,9 @@ namespace CommunityPortal.Controllers
                 return NotFound();
             }
 
-            // Remove any unaccepted assignments
+            // Only remove unaccepted assignments for staff members being reassigned
             var unacceptedAssignments = request.StaffAssignments
-                .Where(sa => !sa.IsAccepted)
+                .Where(sa => !sa.IsAccepted && staffIds.Contains(sa.StaffId))
                 .ToList();
 
             foreach (var assignment in unacceptedAssignments)
@@ -156,7 +165,7 @@ namespace CommunityPortal.Controllers
                 _context.ServiceStaffAssignments.Remove(assignment);
             }
 
-            // Add new assignments
+            // Add new assignments only for staff members who aren't already assigned
             foreach (var staffId in staffIds)
             {
                 if (!request.StaffAssignments.Any(sa => sa.StaffId == staffId))

@@ -7,6 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\Homeowners\**" />
+    <Compile Remove="Models\Staffs\**" />
+    <Compile Remove="Views\Staff\**" />
+    <Content Remove="Models\Homeowners\**" />
+    <Content Remove="Models\Staffs\**" />
+    <Content Remove="Views\Staff\**" />
+    <EmbeddedResource Remove="Models\Homeowners\**" />
+    <EmbeddedResource Remove="Models\Staffs\**" />
+    <EmbeddedResource Remove="Views\Staff\**" />
+    <None Remove="Models\Homeowners\**" />
+    <None Remove="Models\Staffs\**" />
+    <None Remove="Views\Staff\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />
@@ -19,9 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Homeowners\" />
-    <Folder Include="Models\Staffs\" />
-    <Folder Include="Views\Staff\" />
     <Folder Include="wwwroot\css\staff\" />
   </ItemGroup>
 </Project>

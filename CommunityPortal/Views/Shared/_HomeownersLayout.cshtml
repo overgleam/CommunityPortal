@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/swifted-demo" >
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" />
     <link rel="stylesheet" href="~/css/homeowner.css" asp-append-version="true" />
 
     @RenderSection("Styles", required: false)
@@ -38,7 +39,7 @@
                 <img src="~/images/logo.png" alt="Logo" width="169" height="92" class="me-2">
             </div>
             <div class="list-group list-group-flush">
-                <a asp-controller="Homeowner" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                <a asp-controller="Home" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">dashboard</i> Dashboard
                 </a>
                 <a asp-controller="Chat" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
