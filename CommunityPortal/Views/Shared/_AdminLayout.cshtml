@@ -34,6 +34,28 @@
 
 
 <body>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
+    {
+        <div class="alert-overlay">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+        </div>
+    }
+
     <div class="d-flex min-vh-100" id="wrapper">
         <div class="bg-sidebar border-right" id="sidebar-wrapper">
             <div class="sidebar-heading text-center py-4 primary-text mb-3 fs-4 fw-bold text-uppercase border-bottom">

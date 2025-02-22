@@ -218,3 +218,31 @@ h1, h2, h3, h4, h5, h6 {
         rgba(255, 255, 255, 0.2), 
         rgba(255, 255, 255, 0));
 }
+
+.alert-overlay {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.alert {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

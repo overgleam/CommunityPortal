@@ -10,15 +10,19 @@
     <Compile Remove="Models\Homeowners\**" />
     <Compile Remove="Models\Staffs\**" />
     <Compile Remove="Views\Staff\**" />
+    <Compile Remove="wwwroot\css\staff\**" />
     <Content Remove="Models\Homeowners\**" />
     <Content Remove="Models\Staffs\**" />
     <Content Remove="Views\Staff\**" />
+    <Content Remove="wwwroot\css\staff\**" />
     <EmbeddedResource Remove="Models\Homeowners\**" />
     <EmbeddedResource Remove="Models\Staffs\**" />
     <EmbeddedResource Remove="Views\Staff\**" />
+    <EmbeddedResource Remove="wwwroot\css\staff\**" />
     <None Remove="Models\Homeowners\**" />
     <None Remove="Models\Staffs\**" />
     <None Remove="Views\Staff\**" />
+    <None Remove="wwwroot\css\staff\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,6 +39,5 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="wwwroot\css\staff\" />
   </ItemGroup>
 </Project>
