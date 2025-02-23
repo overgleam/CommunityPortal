@@ -163,6 +163,166 @@ namespace CommunityPortal.Migrations
                     b.ToTable("ChatMessages");
                 });
 
+            modelBuilder.Entity("CommunityPortal.Models.Facility.BlackoutDate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("FacilityId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FacilityId");
+
+                    b.ToTable("BlackoutDates");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Facility.Facility", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<TimeSpan>("ClosingTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaximumOccupancy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<TimeSpan>("OpeningTime")
+                        .HasColumnType("time");
+
+                    b.Property<decimal>("PricePerHour")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Facilities");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Facility.FacilityReservation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<int?>("FacilityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GuestCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PaymentTransactionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ReservationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SpecialRequests")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FacilityId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FacilityReservations");
+                });
+
             modelBuilder.Entity("CommunityPortal.Models.Feedback", b =>
                 {
                     b.Property<int>("Id")
@@ -730,6 +890,33 @@ namespace CommunityPortal.Migrations
                     b.Navigation("Sender");
                 });
 
+            modelBuilder.Entity("CommunityPortal.Models.Facility.BlackoutDate", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.Facility.Facility", "Facility")
+                        .WithMany("BlackoutDates")
+                        .HasForeignKey("FacilityId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Facility");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Facility.FacilityReservation", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.Facility.Facility", "Facility")
+                        .WithMany("Reservations")
+                        .HasForeignKey("FacilityId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Facility");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("CommunityPortal.Models.Feedback", b =>
                 {
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "User")
@@ -940,6 +1127,13 @@ namespace CommunityPortal.Migrations
                     b.Navigation("Homeowner");
 
                     b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Facility.Facility", b =>
+                {
+                    b.Navigation("BlackoutDates");
+
+                    b.Navigation("Reservations");
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.Forum.ForumComment", b =>

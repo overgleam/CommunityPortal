@@ -82,6 +82,13 @@
                     <a asp-controller="Admin" asp-action="ServiceCategories" class="list-group-item list-group-item-action bg-sidebar">
                         <i class="material-icons me-2">category</i> Service Categories
                     </a>
+                    <a asp-controller="Facility" asp-action="Manage" class="list-group-item list-group-item-action bg-sidebar">
+                        <i class="material-icons me-2">event_available</i> Manage Facilities
+                    </a>
+                    <a asp-controller="Facility" asp-action="ManageReservations" class="list-group-item list-group-item-action bg-sidebar">
+                        <i class="material-icons me-2">event_available</i> Manage Reservations
+                    </a>
+
                 }
                 @if (User.IsInRole("staff"))
                 {

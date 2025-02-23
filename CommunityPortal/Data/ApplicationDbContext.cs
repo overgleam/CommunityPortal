@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Models;
 using CommunityPortal.Models.Forum;
+using CommunityPortal.Models.Facility;
 
 namespace CommunityPortal.Data
 {
@@ -19,6 +20,9 @@ namespace CommunityPortal.Data
         public DbSet<ServiceCategory> ServiceCategories { get; set; }
         public DbSet<ServiceFeedback> ServiceFeedbacks { get; set; }
         public DbSet<ServiceStaffAssignment> ServiceStaffAssignments { get; set; }
+        public DbSet<Facility> Facilities { get; set; }
+        public DbSet<FacilityReservation> FacilityReservations { get; set; }
+        public DbSet<BlackoutDate> BlackoutDates { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -180,6 +184,37 @@ namespace CommunityPortal.Data
                     Description = "Missed garbage collection, request for additional trash bins, flooding or stagnant water after heavy rains, and cleaning of community spaces"
                 }
             );
+
+            // Facility configurations
+            builder.Entity<Facility>()
+                .HasQueryFilter(f => !f.IsDeleted);
+
+            builder.Entity<FacilityReservation>()
+                .HasQueryFilter(fr => !fr.IsDeleted && !fr.Facility.IsDeleted);
+
+            builder.Entity<BlackoutDate>()
+                .HasQueryFilter(bd => !bd.IsDeleted && !bd.Facility.IsDeleted);
+
+            builder.Entity<FacilityReservation>()
+                .HasOne(fr => fr.Facility)
+                .WithMany(f => f.Reservations)
+                .HasForeignKey(fr => fr.FacilityId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            builder.Entity<FacilityReservation>()
+                .HasOne(fr => fr.User)
+                .WithMany()
+                .HasForeignKey(fr => fr.UserId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            builder.Entity<BlackoutDate>()
+                .HasOne(bd => bd.Facility)
+                .WithMany(f => f.BlackoutDates)
+                .HasForeignKey(bd => bd.FacilityId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired(false);
         }
 
         public override int SaveChanges()

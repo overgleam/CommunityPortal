@@ -1,0 +1,242 @@
+@model CommunityPortal.Models.Facility.Facility
+@{
+    ViewData["Title"] = Model.Name;
+    var blackoutDates = Model.BlackoutDates.Select(bd => new { start = bd.StartDate.ToString("yyyy-MM-dd"), end = bd.EndDate.ToString("yyyy-MM-dd"), reason = bd.Reason }).ToList();
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name" style="height: 400px; object-fit: cover;">
+                }
+                else
+                {
+                    <img src="/images/default-facility.jpg" class="card-img-top" alt="Default Facility Image" style="height: 400px; object-fit: cover;">
+                }
+                <div class="card-body">
+                    <h1 class="card-title">@Model.Name</h1>
+                    <p class="card-text">@Model.Description</p>
+                    <hr />
+                    <div class="facility-details">
+                        <p><strong>Type:</strong> @Model.Type</p>
+                        <p><strong>Operating Hours:</strong> @Model.OpeningTime.ToString("hh\\:mm") - @Model.ClosingTime.ToString("hh\\:mm")</p>
+                        <p><strong>Maximum Occupancy:</strong> @Model.MaximumOccupancy persons</p>
+                        <p><strong>Price:</strong> $@Model.PricePerHour/hour</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Make a Reservation</h5>
+                    <form asp-action="Reserve" method="post" id="reservationForm">
+                        <input type="hidden" name="FacilityId" value="@Model.Id" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" name="ReservationDate" id="reservationDate" class="form-control" required 
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <small class="text-muted">Blackout dates are disabled in the calendar</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Start Time</label>
+                            <input type="time" name="StartTime" id="startTime" class="form-control" required 
+                                   min="@Model.OpeningTime.ToString("hh\\:mm")" 
+                                   max="@Model.ClosingTime.ToString("hh\\:mm")" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">End Time</label>
+                            <input type="time" name="EndTime" id="endTime" class="form-control" required 
+                                   min="@Model.OpeningTime.ToString("hh\\:mm")" 
+                                   max="@Model.ClosingTime.ToString("hh\\:mm")" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Number of Guests</label>
+                            <input type="number" name="GuestCount" id="guestCount" class="form-control" required 
+                                   min="1" max="@Model.MaximumOccupancy" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Special Requests</label>
+                            <textarea name="SpecialRequests" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <button type="button" class="btn btn-primary w-100" onclick="validateAndShowConfirmation()">Submit Reservation</button>
+                    </form>
+                </div>
+            </div>
+
+            @if (Model.BlackoutDates.Any())
+            {
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title text-danger">Unavailable Dates</h5>
+                        <ul class="list-unstyled">
+                            @foreach (var blackout in Model.BlackoutDates.OrderBy(bd => bd.StartDate))
+                            {
+                                <li>
+                                    <i class="fas fa-calendar-times text-danger"></i>
+                                    @blackout.StartDate.ToShortDateString() - @blackout.EndDate.ToShortDateString()
+                                    <br />
+                                    <small class="text-muted">@blackout.Reason</small>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Validation Modal -->
+<div class="modal fade" id="validationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Validation Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="validationMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Reservation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Please confirm your reservation details:</h6>
+                <p><strong>Facility:</strong> @Model.Name</p>
+                <p><strong>Date:</strong> <span id="confirmDate"></span></p>
+                <p><strong>Time:</strong> <span id="confirmTime"></span></p>
+                <p><strong>Number of Guests:</strong> <span id="confirmGuests"></span></p>
+                <p><strong>Estimated Price:</strong> <span id="confirmPrice"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitReservation()">Confirm Reservation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const blackoutDates = @Html.Raw(Json.Serialize(blackoutDates));
+        const pricePerHour = @Model.PricePerHour;
+        
+        document.addEventListener('DOMContentLoaded', function () {
+            const startTimeInput = document.querySelector('#startTime');
+            const endTimeInput = document.querySelector('#endTime');
+            const dateInput = document.querySelector('#reservationDate');
+            const validationModal = new bootstrap.Modal(document.getElementById('validationModal'));
+            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+
+            // Disable blackout dates
+            dateInput.addEventListener('input', function() {
+                const selectedDate = this.value;
+                const isBlackout = blackoutDates.some(bd => 
+                    selectedDate >= bd.start && selectedDate <= bd.end
+                );
+
+                if (isBlackout) {
+                    const blackout = blackoutDates.find(bd => 
+                        selectedDate >= bd.start && selectedDate <= bd.end
+                    );
+                    showValidationError(`This date is not available: ${blackout.reason}`);
+                    this.value = '';
+                }
+            });
+
+            // Ensure end time is after start time
+            startTimeInput.addEventListener('change', function() {
+                if (endTimeInput.value && endTimeInput.value <= startTimeInput.value) {
+                    endTimeInput.value = '';
+                }
+                endTimeInput.min = startTimeInput.value;
+            });
+
+            // Disable past dates
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.min = today;
+
+            // Add validation before form submission
+            document.querySelector('#reservationForm').addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent default form submission
+            });
+        });
+
+        function showValidationError(message) {
+            document.getElementById('validationMessage').textContent = message;
+            new bootstrap.Modal(document.getElementById('validationModal')).show();
+        }
+
+        function validateAndShowConfirmation() {
+            const form = document.getElementById('reservationForm');
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const guestCount = document.getElementById('guestCount').value;
+            const date = document.getElementById('reservationDate').value;
+
+            // Validation checks
+            if (!date) {
+                showValidationError('Please select a date');
+                return;
+            }
+            if (!startTime) {
+                showValidationError('Please select a start time');
+                return;
+            }
+            if (!endTime) {
+                showValidationError('Please select an end time');
+                return;
+            }
+            if (endTime <= startTime) {
+                showValidationError('End time must be after start time');
+                return;
+            }
+            if (!guestCount || guestCount < 1) {
+                showValidationError('Please enter a valid number of guests');
+                return;
+            }
+
+            // Calculate duration and price
+            const start = new Date(`2000-01-01T${startTime}`);
+            const end = new Date(`2000-01-01T${endTime}`);
+            const durationHours = (end - start) / (1000 * 60 * 60);
+            const totalPrice = durationHours * pricePerHour;
+
+            // Update confirmation modal
+            document.getElementById('confirmDate').textContent = new Date(date).toLocaleDateString();
+            document.getElementById('confirmTime').textContent = `${startTime} - ${endTime}`;
+            document.getElementById('confirmGuests').textContent = guestCount;
+            document.getElementById('confirmPrice').textContent = `$${totalPrice.toFixed(2)}`;
+
+            // Show confirmation modal
+            new bootstrap.Modal(document.getElementById('confirmationModal')).show();
+        }
+
+        function submitReservation() {
+            document.getElementById('reservationForm').submit();
+        }
+    </script>
+} 

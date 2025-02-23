@@ -1,0 +1,112 @@
+@model CommunityPortal.Models.Facility.Facility
+@{
+    ViewData["Title"] = "Edit Facility";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Edit Facility</h2>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="CreatedAt" />
+                        <input type="hidden" asp-for="IsDeleted" />
+                        <input type="hidden" asp-for="DeletedAt" />
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Name</label>
+                            <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Type" class="form-label">Type</label>
+                            <select asp-for="Type" class="form-select" required>
+                                @foreach (var type in Enum.GetValues(typeof(CommunityPortal.Models.Facility.FacilityType)))
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Type" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="OpeningTime" class="form-label">Opening Time</label>
+                                <input asp-for="OpeningTime" type="time" class="form-control" required />
+                                <span asp-validation-for="OpeningTime" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="ClosingTime" class="form-label">Closing Time</label>
+                                <input asp-for="ClosingTime" type="time" class="form-control" required />
+                                <span asp-validation-for="ClosingTime" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="MaximumOccupancy" class="form-label">Maximum Occupancy</label>
+                                <input asp-for="MaximumOccupancy" type="number" class="form-control" min="1" required />
+                                <span asp-validation-for="MaximumOccupancy" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PricePerHour" class="form-label">Price Per Hour ($)</label>
+                                <input asp-for="PricePerHour" type="number" class="form-control" min="0" step="0.01" required />
+                                <span asp-validation-for="PricePerHour" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <div class="mb-2">
+                                    <label class="form-label">Current Image</label>
+                                    <img src="@Model.ImageUrl" class="img-fluid rounded" style="max-height: 200px;" alt="@Model.Name" />
+                                </div>
+                            }
+                            <label for="image" class="form-label">New Facility Image</label>
+                            <input type="file" name="image" id="image" class="form-control" accept="image/*" />
+                            <small class="form-text text-muted">Upload a new image to replace the current one (optional)</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Manage" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            const openingTimeInput = document.querySelector('#OpeningTime');
+            const closingTimeInput = document.querySelector('#ClosingTime');
+
+            form.addEventListener('submit', function(e) {
+                const openingTime = openingTimeInput.value;
+                const closingTime = closingTimeInput.value;
+
+                if (closingTime <= openingTime) {
+                    e.preventDefault();
+                    alert('Closing time must be after opening time');
+                }
+            });
+        });
+    </script>
+} 
