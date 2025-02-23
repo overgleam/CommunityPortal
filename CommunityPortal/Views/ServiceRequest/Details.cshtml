@@ -98,6 +98,69 @@
         border-top: none;
         padding: 1.5rem;
     }
+
+    .feedback-card {
+        display: flex;
+        align-items: flex-start;
+        background: #fff;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #ddd;
+        transition: all 0.3s ease-in-out;
+    }
+
+        .feedback-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 6px 14px rgba(0, 0, 0, 0.15);
+        }
+
+    .feedback-icon {
+        font-size: 32px;
+        margin-right: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .feedback-content h5 {
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+
+    .feedback-reason {
+        background: #f8f9fa;
+        border-left: 4px solid #dc3545;
+        padding: 10px;
+        border-radius: 6px;
+        font-style: italic;
+    }
+
+    .feedback-details {
+        padding-left: 0;
+        list-style: none;
+    }
+
+        .feedback-details li {
+            margin-bottom: 4px;
+        }
+
+    .feedback-rejected {
+        border-left-color: #dc3545;
+    }
+
+        .feedback-rejected .feedback-icon {
+            color: #dc3545;
+        }
+
+    .feedback-cancelled {
+        border-left-color: #ffc107;
+    }
+
+        .feedback-cancelled .feedback-icon {
+            color: #ffc107;
+        }
+
 </style>
 
 <div class="container">
@@ -261,23 +324,40 @@
 
     @if (Model.Status == ServiceRequestStatus.Rejected && !string.IsNullOrEmpty(Model.RejectionReason))
     {
-        <div class="alert alert-danger mt-4">
-            <h5 class="alert-heading fw-bold mb-2">Rejection Reason</h5>
-            <p class="mb-0">@Model.RejectionReason</p>
+        <div class="feedback-card feedback-rejected">
+            <div class="feedback-icon">
+                <i class="bi bi-x-circle"></i>
+            </div>
+            <div class="feedback-content">
+                <h5>Request Rejected</h5>
+                <p class="text-muted">Unfortunately, your request was rejected for the following reason:</p>
+                <div class="feedback-reason">
+                    <p>@Model.RejectionReason</p>
+                </div>
+            </div>
         </div>
     }
 
     @if (Model.Status == ServiceRequestStatus.Cancelled)
     {
-        <div class="alert alert-warning mt-4">
-            <h5 class="alert-heading fw-bold mb-2">Cancellation Details</h5>
-            <p class="mb-2"><strong>Cancelled At:</strong> @Model.CancelledAt?.ToString("MMM dd, yyyy hh:mm tt")</p>
-            @if (!string.IsNullOrEmpty(Model.CancellationReason))
-            {
-                <p class="mb-0"><strong>Reason:</strong> @Model.CancellationReason</p>
-            }
+        <div class="feedback-card feedback-cancelled">
+            <div class="feedback-icon">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="feedback-content">
+                <h5>Request Cancelled</h5>
+                <p class="text-muted">This request has been cancelled.</p>
+                <ul class="feedback-details">
+                    <li><strong>Cancelled At:</strong> @Model.CancelledAt?.ToString("MMM dd, yyyy hh:mm tt")</li>
+                    @if (!string.IsNullOrEmpty(Model.CancellationReason))
+                    {
+                        <li><strong>Reason:</strong> @Model.CancellationReason</li>
+                    }
+                </ul>
+            </div>
         </div>
     }
+
 
     @if (Model.Feedback != null)
     {
@@ -389,6 +469,20 @@
                 <p class="text-danger mb-3">Once you delete a service request, there is no going back. Please be certain.</p>
                 <button type="button" class="btn btn-danger w-100" onclick="showDeleteRequestModal()">
                     <i class="material-icons">delete_forever</i> Delete Service Request
+                </button>
+            </div>
+        </div>
+    }
+
+    @if (User.IsInRole("homeowners") && Model.Status == ServiceRequestStatus.Pending)
+    {
+        <div class="card service-request-card mt-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title fw-bold mb-0">Manage Request</h5>
+            </div>
+            <div class="card-body">
+                <button type="button" class="btn btn-warning w-100" onclick="showCancelRequestModal()">
+                    <i class="material-icons">cancel</i> Cancel Request
                 </button>
             </div>
         </div>
@@ -549,6 +643,32 @@
     </div>
 </div>
 
+<!-- Cancel Request Modal -->
+<div class="modal fade" id="cancelRequestModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancel Service Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="CancelRequest" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <p>Please provide a reason for cancelling this service request:</p>
+                    <div class="mb-3">
+                        <textarea name="cancellationReason" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <input type="hidden" name="requestId" value="@Model.Id" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+                    <button type="submit" class="btn btn-warning">Cancel Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         function showAssignStaffModal() {
@@ -611,6 +731,10 @@
 
         function showInProgressModal() {
             new bootstrap.Modal(document.getElementById('inProgressModal')).show();
+        }
+
+        function showCancelRequestModal() {
+            new bootstrap.Modal(document.getElementById('cancelRequestModal')).show();
         }
 
         // Enable/disable delete button based on confirmation text
