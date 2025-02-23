@@ -17,7 +17,19 @@ namespace CommunityPortal.Controllers
             _userManager = userManager;
         }
 
+        [Authorize(Roles = "homeowners")]
         public async Task<IActionResult> Index()
+        {
+            return View();
+        }
+
+        public IActionResult Dashboard()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> Landing()
         {
             if (User.Identity.IsAuthenticated)
             {
@@ -30,30 +42,13 @@ namespace CommunityPortal.Controllers
                     }
                     else if (await _userManager.IsInRoleAsync(user, "homeowners"))
                     {
-                        return RedirectToAction("HomeownerLanding","Home");
+                        return RedirectToAction("Index", "Home");
                     }
                 }
             }
 
             return View();
         }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [Authorize(Roles = "homeowners")]
-        public IActionResult HomeownerLanding()
-        {
-            return View();
-        }
-        public IActionResult Dashboard()
-        {
-            return View();
-        }
-
-
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

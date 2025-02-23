@@ -5,7 +5,6 @@ using CommunityPortal.Data;
 using CommunityPortal.Models.Chat;
 using CommunityPortal.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace CommunityPortal.Controllers
 {

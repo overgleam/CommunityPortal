@@ -6,12 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
-using System.Threading.Tasks;
-using System;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
 
 namespace CommunityPortal.Controllers
 {

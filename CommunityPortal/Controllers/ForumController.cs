@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Data;
 using CommunityPortal.Models;
 using CommunityPortal.Models.Forum;
-using System.Security.Claims;
 
 namespace CommunityPortal.Controllers
 {

@@ -35,6 +35,7 @@ builder.Services.AddAuthorizationBuilder()
 //Access Denied
 builder.Services.ConfigureApplicationCookie(options =>
 {
+    options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied"; // Make sure this matches the view path
 });
 
@@ -69,7 +70,7 @@ app.MapHub<ChatHub>("/chatHub");
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Landing}/{id?}");
 
 // Initialize Roles and Admin User
 using (var scope = app.Services.CreateScope())
@@ -101,6 +102,7 @@ using (var scope = app.Services.CreateScope())
             UserName = adminEmail,
             Email = adminEmail,
             Status = UserStatus.Approved, // Admins are approved by default
+            ProfileImagePath = "images/default-profile.jpg",
             PhoneNumber = "09123456789",
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
