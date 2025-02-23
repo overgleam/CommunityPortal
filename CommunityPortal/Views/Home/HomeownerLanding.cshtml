@@ -1,0 +1,283 @@
+﻿@{
+    ViewData["Title"] = "Welcome Homeowner";
+    Layout = "~/Views/Shared/_EmptyLayout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Lovelace:wght@400;700&display=swap" rel="stylesheet">
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+    <style>
+        /* Homeowner Landing Page Styles */
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Hides any scrollbar */
+            height: 100%;
+            width: 100%;
+        }
+
+        #hero {
+            width: 100vw;
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 0.5s ease-in-out;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .navbar {
+            width: 95%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 10;
+            padding-top: 25px;
+            padding-left: 5rem;
+        }
+
+            .navbar .logo {
+                height: 100px; /* Adjust the size as needed */
+                width: auto;
+            }
+
+        .user {
+            display: flex;
+            align-items: center;
+        }
+
+            .user img {
+                width: 80px;
+                margin-left: 50px;
+                cursor: pointer;
+            }
+
+        button {
+            padding: 8px 25px;
+            background: #2b2e34;
+            outline: none;
+            border: 2px solid #fff;
+            border-radius: 20px;
+            color: #efe7d4;
+            border-color: #efe7d4;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .container {
+            width: 50%;
+            height: 100vh;
+            background: rgba(86, 86, 86, 0.3);
+            backdrop-filter: blur(10px);
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .info {
+            width: 550px;
+            color: #fff;
+            position: absolute;
+            right: 0%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+            .info h1 {
+                font-size: 60px;
+                letter-spacing: 10px;
+            }
+
+            .info p {
+                color: #efe7d4;
+                font-size: 15px;
+                margin: 20px 0;
+                line-height: 18px;
+            }
+
+            .info input {
+                width: 50%;
+                padding: 8px 10px;
+                outline: none;
+                border: 2px solid #efe7d4;
+                border-radius: 20px;
+                background: transparent;
+                color: #fff;
+                font-size: 12px;
+            }
+
+        ::placeholder {
+            color: #ccc;
+        }
+
+        .slider {
+            display: flex;
+            align-items: center;
+            position: absolute;
+            right: 30px;
+            bottom: 50px;
+        }
+
+        #prev, #next {
+            width: 20px;
+            cursor: pointer;
+        }
+
+        .preview {
+            display: flex;
+            align-items: center;
+            margin: 0 60px;
+        }
+
+            .preview img {
+                width: 60px;
+                margin: 0 10px;
+                opacity: 0.4;
+            }
+
+            .preview .active {
+                display: block;
+                border: 3px solid #fff;
+                width: 100px;
+                opacity: 1;
+            }
+
+        .hidden {
+            display: none;
+        }
+
+        #getStarted {
+            padding: 10px 20px;
+            background: #efe7d4;
+            color: #333;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+            #getStarted:hover {
+                transform: scale(1.1);
+            }
+
+        #suggestions {
+            max-height: 200px;
+            overflow-y: auto;
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            width: 50%;
+            z-index: 1000;
+            border-radius: 10px;
+            margin-top: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #fff;
+            transition: background-color 0.2s ease;
+        }
+
+            .suggestion-item:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+
+        #suggestions::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #suggestions::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        #suggestions::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .thumbnail {
+            cursor: pointer;
+        }
+
+        .fade-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        h1 {
+            font-family: Lovelace Text;
+            font-size: 60px;
+            font-weight: bold;
+        }
+
+        .dash {
+            transition: 0.3s;
+        }
+
+            .dash:hover {
+                transform: scale(1.1);
+            }
+    </style>
+    <title>Homepage</title>
+</head>
+<body>
+    <div id="hero">
+        <div class="fade-bg"></div>
+        <div class="navbar">
+            <img src="~/images/logo.png" class="logo">
+            <div class="user">
+                <button type="button" class="dash">Dashboard</button>
+                <img src="~/images/user.png">
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="info">
+                <h1>Community Portal</h1>
+                <p>
+                    Your gateway to a seamless community experience—stay connected, informed, <br>
+                    and engaged with everything happening in The Rise at Monterrazas.
+                </p>
+                <input type="text" id="search" placeholder="Search">
+                <div id="suggestions" class="hidden"></div>
+                <button id="getStarted" class="hidden">Get Started</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="slider">
+        <img src="/images/left-arrow.png" id="prev">
+        <div class="preview">
+            <img src="/images/bbg1.jpg" class="active thumbnail">
+            <img src="/images/bbg2.jpg" class="thumbnail">
+            <img src="/images/bbg3.jpg" class="thumbnail">
+            <img src="/images/bbg4.jpg" class="thumbnail">
+            <img src="/images/bbg5.jpg" class="thumbnail">
+        </div>
+        <img src="/images/right-arrow.png" id="next">
+    </div>
+</body>
+</html>

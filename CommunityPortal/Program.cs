@@ -32,6 +32,12 @@ builder.Services.AddAuthorizationBuilder()
         policy.RequireRole("admin");
     });
 
+//Access Denied
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.AccessDeniedPath = "/Account/AccessDenied"; // Make sure this matches the view path
+});
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

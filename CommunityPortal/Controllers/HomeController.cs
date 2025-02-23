@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using CommunityPortal.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +30,7 @@ namespace CommunityPortal.Controllers
                     }
                     else if (await _userManager.IsInRoleAsync(user, "homeowners"))
                     {
-                        return View();
+                        return RedirectToAction("HomeownerLanding","Home");
                     }
                 }
             }
@@ -41,6 +42,18 @@ namespace CommunityPortal.Controllers
         {
             return View();
         }
+
+        [Authorize(Roles = "homeowners")]
+        public IActionResult HomeownerLanding()
+        {
+            return View();
+        }
+        public IActionResult Dashboard()
+        {
+            return View();
+        }
+
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
