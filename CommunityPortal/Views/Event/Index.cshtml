@@ -121,10 +121,16 @@
     }
 
     .status-scheduled { border-left-color: #007bff; }
-    .status-in-progress { border-left-color: #28a745; }
+    .status-inprogress { border-left-color: #28a745; }
     .status-completed { border-left-color: #17a2b8; }
     .status-cancelled { border-left-color: #dc3545; }
     .status-postponed { border-left-color: #ffc107; }
+
+    .badge-scheduled { background-color: #007bff; color: white; }
+    .badge-inprogress { background-color: #28a745; color: white; }
+    .badge-completed { background-color: #17a2b8; color: white; }
+    .badge-cancelled { background-color: #dc3545; color: white; }
+    .badge-postponed { background-color: #ffc107; color: black; }
 
     .legend-container {
         margin-bottom: 20px;
@@ -347,12 +353,13 @@
 
                 // Status information
                 var statusBadge = document.getElementById('eventStatus');
+                var status = event.extendedProps.status.toLowerCase().replace(/\s+/g, '-');
                 statusBadge.textContent = event.extendedProps.status;
-                statusBadge.className = 'badge ' + event.extendedProps.statusBadgeClass;
+                statusBadge.className = 'badge badge-' + status;
 
                 var statusInfo = document.getElementById('statusInfo');
                 statusInfo.className = 'status-info status-' + event.extendedProps.status.toLowerCase().replace('_', '-');
-                
+
                 document.getElementById('eventStatusText').textContent = event.extendedProps.statusText;
 
                 // Priority badge

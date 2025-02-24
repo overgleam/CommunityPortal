@@ -333,8 +333,8 @@
         function toggleCancellationReason() {
             var status = document.getElementById('Status').value;
             var cancellationSection = document.getElementById('cancellationReasonSection');
-            
-            if (status === '@EventStatus.Cancelled.ToString()') {
+
+            if (status === '@((int)EventStatus.Cancelled)') {
                 cancellationSection.classList.remove('d-none');
             } else {
                 cancellationSection.classList.add('d-none');
@@ -366,7 +366,10 @@
             toggleRegistrationFields();
             toggleCancellationReason();
 
-            $('#Status').on('change', toggleCancellationReason);
+            $('#Status').on('change', function() {
+                console.log(`Status changed to: ${$(this).val()}`);
+                toggleCancellationReason();
+            });
 
             $('form').on('submit', function (e) {
                 if (!$(this).valid()) {
