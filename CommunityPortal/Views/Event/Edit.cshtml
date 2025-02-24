@@ -1,0 +1,405 @@
+@model CommunityPortal.Models.Event.EventViewModel
+@using CommunityPortal.Models.Event
+
+@{
+    ViewData["Title"] = "Edit Event";
+}
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<style>
+    .form-container {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        font-weight: 500;
+        margin-bottom: 0.75rem;
+        color: #495057;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 0.75rem;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.15);
+    }
+
+    .custom-checkbox .custom-control-label::before {
+        border-radius: 4px;
+    }
+
+    .registration-section {
+        background: linear-gradient(to right, #f8f9fa, #ffffff);
+        padding: 25px;
+        border-radius: 12px;
+        margin: 1.5rem 0;
+        border-left: 4px solid #007bff;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .btn .material-icons {
+        margin-right: 8px;
+        font-size: 20px;
+    }
+
+    .preview-image {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 8px;
+        margin-top: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .current-image {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .validation-error-list {
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 1rem;
+    }
+
+    .validation-error-list li {
+        color: #dc3545;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .validation-error-list li .material-icons {
+        margin-right: 8px;
+        font-size: 18px;
+    }
+
+    .modal-content {
+        border-radius: 12px;
+        border: none;
+    }
+
+    .modal-header {
+        background: linear-gradient(45deg, #dc3545, #c82333);
+        color: white;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .image-upload-container {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.2s;
+    }
+
+    .image-upload-container:hover {
+        border-color: #007bff;
+        background-color: #f8f9fa;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #495057;
+        display: flex;
+        align-items: center;
+    }
+
+    .section-title .material-icons {
+        margin-right: 8px;
+        color: #007bff;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="form-container">
+                <h2 class="mb-4">
+                    <span class="material-icons">edit_calendar</span>
+                    Edit Event
+                </h2>
+                <hr class="mb-4" />
+                
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="section-title">
+                        <span class="material-icons">info</span>
+                        Basic Information
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Title">Event Title</label>
+                        <input asp-for="Title" class="form-control" placeholder="Enter a descriptive title" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Description">Event Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" 
+                                 placeholder="Provide detailed information about the event"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="section-title mt-4">
+                        <span class="material-icons">schedule</span>
+                        Date and Time
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="StartDateTime">Start Date & Time</label>
+                                <input asp-for="StartDateTime" class="form-control" type="datetime-local" />
+                                <span asp-validation-for="StartDateTime" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="EndDateTime">End Date & Time</label>
+                                <input asp-for="EndDateTime" class="form-control" type="datetime-local" />
+                                <span asp-validation-for="EndDateTime" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title mt-4">
+                        <span class="material-icons">place</span>
+                        Location & Details
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Location">Event Location</label>
+                        <input asp-for="Location" class="form-control" placeholder="Enter the venue or location" />
+                        <span asp-validation-for="Location" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="ImageFile">Event Image</label>
+                        <div class="image-upload-container">
+                            @if (!string.IsNullOrEmpty(Model.ExistingImageUrl))
+                            {
+                                <img src="@Model.ExistingImageUrl" alt="Current event image" class="current-image" />
+                                <p class="text-muted">Current image</p>
+                            }
+                            <input asp-for="ImageFile" type="file" class="form-control-file" 
+                                   accept="image/*" onchange="previewImage(event)" />
+                            <img id="preview" class="preview-image d-none" />
+                        </div>
+                    </div>
+
+                    <div class="section-title mt-4">
+                        <span class="material-icons">settings</span>
+                        Event Settings
+                    </div>
+
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input asp-for="IsHighPriority" class="custom-control-input" />
+                            <label asp-for="IsHighPriority" class="custom-control-label">
+                                Mark as High Priority
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input asp-for="RequiresRegistration" class="custom-control-input" 
+                                   onchange="toggleRegistrationFields()" />
+                            <label asp-for="RequiresRegistration" class="custom-control-label">
+                                Enable Registration
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="registrationSection" class="registration-section d-none">
+                        <div class="section-title">
+                            <span class="material-icons">how_to_reg</span>
+                            Registration Details
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="MaxAttendees">Maximum Attendees</label>
+                            <input asp-for="MaxAttendees" class="form-control" type="number" min="1" />
+                            <span asp-validation-for="MaxAttendees" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="RegistrationInstructions">Registration Instructions</label>
+                            <textarea asp-for="RegistrationInstructions" class="form-control" rows="3" 
+                                    placeholder="Provide instructions for registration"></textarea>
+                            <span asp-validation-for="RegistrationInstructions" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Status">Event Status</label>
+                        <select asp-for="Status" class="form-control" 
+                                asp-items="Html.GetEnumSelectList<EventStatus>()"></select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+
+                    <div id="cancellationReasonSection" class="form-group d-none">
+                        <label asp-for="CancellationReason">Cancellation Reason</label>
+                        <textarea asp-for="CancellationReason" class="form-control" rows="3" 
+                                placeholder="Please provide a reason for cancellation"></textarea>
+                        <span asp-validation-for="CancellationReason" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="material-icons">save</span> Save Changes
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <span class="material-icons">arrow_back</span> Back to Calendar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Validation Error Modal -->
+<div class="modal fade" id="validationErrorModal" tabindex="-1" role="dialog" aria-labelledby="validationErrorModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="validationErrorModalLabel">
+                    <i class="bi bi-exclamation-triangle"></i> Validation Errors
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal('validationErrorModal')">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="validationErrorList"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal('validationErrorModal')">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        function toggleRegistrationFields() {
+            var requiresRegistration = document.getElementById('RequiresRegistration').checked;
+            var registrationSection = document.getElementById('registrationSection');
+            
+            if (requiresRegistration) {
+                registrationSection.classList.remove('d-none');
+            } else {
+                registrationSection.classList.add('d-none');
+            }
+        }
+
+        function toggleCancellationReason() {
+            var status = document.getElementById('Status').value;
+            var cancellationSection = document.getElementById('cancellationReasonSection');
+            
+            if (status === '@EventStatus.Cancelled.ToString()') {
+                cancellationSection.classList.remove('d-none');
+            } else {
+                cancellationSection.classList.add('d-none');
+            }
+        }
+
+        function previewImage(event) {
+            var preview = document.getElementById('preview');
+            var file = event.target.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function() {
+                preview.src = reader.result;
+                preview.classList.remove('d-none');
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function closeModal(modalId) {
+            $(`#${modalId}`).modal('hide');
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+        }
+
+        $(document).ready(function () {
+            toggleRegistrationFields();
+            toggleCancellationReason();
+
+            $('#Status').on('change', toggleCancellationReason);
+
+            $('form').on('submit', function (e) {
+                if (!$(this).valid()) {
+                    e.preventDefault();
+                    
+                    var errorList = '<ul class="validation-error-list">';
+                    $('.field-validation-error').each(function () {
+                        errorList += '<li><i class="bi bi-x-circle"></i> ' + $(this).text() + '</li>';
+                    });
+                    errorList += '</ul>';
+                    
+                    $('#validationErrorList').html(errorList);
+                    $('#validationErrorModal').modal('show');
+                }
+            });
+
+            // Format datetime-local inputs
+            var startDate = new Date('@Model.StartDateTime.ToString("s")');
+            var endDate = new Date('@Model.EndDateTime.ToString("s")');
+            
+            $('#StartDateTime').val(startDate.toISOString().slice(0,16));
+            $('#EndDateTime').val(endDate.toISOString().slice(0,16));
+
+            // Handle modal closing with escape key
+            $(document).keydown(function(e) {
+                if (e.key === "Escape") {
+                    closeModal('validationErrorModal');
+                }
+            });
+
+            // Clean up any stuck modals on page load
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+        });
+    </script>
+} 
