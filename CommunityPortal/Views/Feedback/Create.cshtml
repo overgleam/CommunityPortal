@@ -213,8 +213,11 @@
             document.getElementById("charCount").textContent = remaining + " characters remaining";
         }
 
-        document.getElementById("feedbackForm").addEventListener("submit", async function (event) {
+            document.getElementById("feedbackForm").addEventListener("submit", async function (event) {
             event.preventDefault();
+
+            const thankYouMessage = document.getElementById("thankYouMessage");
+            thankYouMessage.classList.add("d-none"); // Ensure the message is hidden before submitting again
 
             try {
                 const formData = new FormData(this);
@@ -229,9 +232,12 @@
                 if (response.ok) {
                     this.reset();
                     updateCharacterCount();
-                    document.getElementById("thankYouMessage").classList.remove("d-none");
+
+                    // Show the Thank You message again
+                    thankYouMessage.classList.remove("d-none");
+
                     setTimeout(() => {
-                        document.getElementById("thankYouMessage").classList.add("d-none");
+                        thankYouMessage.classList.add("d-none");
                         window.location.reload();
                     }, 3000);
                 } else {
