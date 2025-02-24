@@ -139,18 +139,6 @@
                 <i class="material-icons me-2">info</i>
                 <span>No service requests found.</span>
             </div>
-            @if (User.Identity.IsAuthenticated)
-            {
-                <div class="mt-2">
-                    <small class="text-muted">
-                        Debug Info:<br />
-                        User Roles: @ViewBag.UserRoles<br />
-                        Is Authenticated: @ViewBag.IsAuthenticated<br />
-                        User ID: @ViewBag.UserId<br />
-                        Is Homeowner Role: @isHomeowner
-                    </small>
-                </div>
-            }
         </div>
     }
     else
