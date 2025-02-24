@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
 @{
@@ -251,6 +252,34 @@
         .dash:hover {
             transform: scale(1.1);
         }
+
+    .dropdown-menu {
+        background: inherit;
+        backdrop-filter: blur(10px); /* Blurred background */
+        border: none; /* Remove default borders */
+        border-radius: 10px; /* Rounded corners */
+    }
+
+    .dropdown-item {
+        color: #fff; 
+        transition: background 0.3s ease-in-out;
+    }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.2); 
+        }
+
+    .logout-btn {
+
+        text-align: left; 
+        background: none; 
+        color: #fff; 
+
+        border-radius: 0;
+        font-size: 16px; 
+        cursor: pointer; 
+        transition: background 0.3s ease-in-out;
+    }
 </style>
 <div id="hero">
     <div class="fade-bg"></div>
@@ -260,7 +289,21 @@
             <form asp-controller="Home" asp-action="Dashboard" method="get">
                 <button type="submit" class="dash">Dashboard</button>
             </form>
-            <img src="@profileImageUrl" alt="Profile" class="rounded-circle"/>
+            <div class="nav-item dropdown">
+                <a class="nav-link d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
+                   aria-haspopup="true" aria-expanded="false">
+                    <img src="@profileImageUrl" alt="Profile" class="rounded-circle"/>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <a asp-controller="Profile" asp-action="ViewProfile" class="dropdown-item">Profile</a>
+                    <a asp-controller="Profile" asp-action="ChangePassword" asp-route-userId="@UserManager.GetUserId(User)" class="dropdown-item">Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="dropdown-item logout-btn">Logout</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -273,7 +316,9 @@
             </p>
             <input type="text" id="search" placeholder="Search">
             <div id="suggestions" class="hidden"></div>
+            <form asp-controller="Home" asp-action="Dashboard" method="get">
             <button id="getStarted" class="hidden">Get Started</button>
+            </form>
         </div>
     </div>
 </div>
