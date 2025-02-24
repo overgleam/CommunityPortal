@@ -1,0 +1,442 @@
+@model IEnumerable<CommunityPortal.Models.Event.Event>
+@{
+    ViewData["Title"] = "Event Calendar";
+}
+
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar/index.global.min.js'></script>
+
+<style>
+    .fc-event {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .fc-event:hover {
+            transform: scale(1.02);
+        }
+
+    .high-priority-event {
+        border-left: 4px solid #dc3545 !important;
+    }
+
+    .event-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .badge {
+        font-size: 0.9em;
+        padding: 0.4em 0.8em;
+        margin-right: 0.5em;
+    }
+
+    .event-details {
+        margin-top: 1rem;
+    }
+
+    .event-meta {
+        color: #6c757d;
+        font-size: 0.9em;
+        margin-bottom: 0.5rem;
+    }
+
+    #calendar {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+
+    .fc-toolbar-title {
+        font-size: 1.5em !important;
+        font-weight: 600;
+    }
+
+    .fc-button-primary {
+        background-color: #007bff !important;
+        border-color: #007bff !important;
+    }
+
+        .fc-button-primary:hover {
+            background-color: #0056b3 !important;
+            border-color: #0056b3 !important;
+        }
+
+    .modal-content {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+
+    .modal-header {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        color: white;
+        border-radius: 12px 12px 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #eee;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .legend-item {
+        padding: 8px 16px;
+        border-radius: 20px;
+        margin: 0 8px 8px 0;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .legend-item .material-icons {
+        font-size: 16px;
+        margin-right: 6px;
+    }
+
+    .status-info {
+        padding: 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+        background-color: #f8f9fa;
+        border-left: 4px solid #6c757d;
+    }
+
+    .status-scheduled { border-left-color: #007bff; }
+    .status-in-progress { border-left-color: #28a745; }
+    .status-completed { border-left-color: #17a2b8; }
+    .status-cancelled { border-left-color: #dc3545; }
+    .status-postponed { border-left-color: #ffc107; }
+
+    .legend-container {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+    }
+
+    .fc-day-past {
+        background-color: #f8f9fa;
+        cursor: not-allowed !important;
+    }
+
+    .fc-day-past .fc-daygrid-day-number {
+        color: #adb5bd;
+    }
+
+    .fc-event-past {
+        opacity: 0.7;
+    }
+
+    .material-icons {
+        vertical-align: middle;
+        font-size: 20px;
+        margin-right: 4px;
+    }
+
+    .event-meta .material-icons {
+        font-size: 16px;
+        margin-right: 4px;
+        opacity: 0.8;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Community Events Calendar</h2>
+                @if (User.IsInRole("admin"))
+                {
+                    <a href="@Url.Action("Create", "Event")" class="btn btn-primary">
+                        <span class="material-icons">add</span> Create New Event
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="legend-container">
+                <h5 class="mb-3">Event Status Legend</h5>
+                <div class="legend-item" style="background-color: #007bff">
+                    <span class="material-icons">event</span> Scheduled
+                </div>
+                <div class="legend-item" style="background-color: #28a745">
+                    <span class="material-icons">play_circle</span> In Progress
+                </div>
+                <div class="legend-item" style="background-color: #17a2b8">
+                    <span class="material-icons">check_circle</span> Completed
+                </div>
+                <div class="legend-item" style="background-color: #dc3545">
+                    <span class="material-icons">cancel</span> Cancelled
+                </div>
+                <div class="legend-item postponed" style="background-color: #ffc107">
+                    <span class="material-icons">update</span> Postponed
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Event Details Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <span class="material-icons">event_note</span>
+                    <span id="eventModalLabel">Event Details</span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div id="eventImage" class="text-center"></div>
+                <h4 id="eventTitle" class="mb-3"></h4>
+                
+                <div id="statusInfo" class="status-info">
+                    <div class="event-meta mb-2">
+                        <span id="eventStatus" class="badge"></span>
+                        <span id="eventPriority" class="badge badge-danger d-none">High Priority</span>
+                    </div>
+                    <p id="eventStatusText" class="mb-0"></p>
+                </div>
+
+                <div class="event-details">
+                    <p id="eventDescription" class="mb-4"></p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><i class="bi bi-clock"></i> <strong>Start:</strong> <span id="eventStart"></span></p>
+                            <p><i class="bi bi-clock-history"></i> <strong>End:</strong> <span id="eventEnd"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p id="eventLocationContainer" class="d-none">
+                                <i class="bi bi-geo-alt"></i> <strong>Location:</strong> <span id="eventLocation"></span>
+                            </p>
+                            <p id="eventCreatedByContainer">
+                                <i class="bi bi-person"></i> <strong>Created by:</strong> <span id="eventCreatedBy"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <div id="eventRegistrationContainer" class="d-none">
+                        <hr>
+                        <h5>Registration Details</h5>
+                        <p><strong>Maximum Attendees:</strong> <span id="eventMaxAttendees"></span></p>
+                        <p><strong>Instructions:</strong> <span id="eventRegistrationInstructions"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                @if (User.IsInRole("admin"))
+                {
+                    <a href="#" id="editEventLink" class="btn btn-primary">
+                        <span class="material-icons">edit</span> Edit
+                    </a>
+                    <button type="button" id="deleteEventBtn" class="btn btn-danger">
+                        <span class="material-icons">delete</span> Delete
+                    </button>
+                }
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <span class="material-icons">close</span> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: '/Event/GetEvents',
+                eventClick: function(info) {
+                    showEventDetails(info.event);
+                },
+                eventDidMount: function(info) {
+                    if (info.event.extendedProps.isHighPriority) {
+                        info.el.classList.add('high-priority-event');
+                    }
+                    // Add past event styling
+                    if (info.event.start < new Date()) {
+                        info.el.classList.add('fc-event-past');
+                    }
+                },
+                selectable: true,
+                selectConstraint: {
+                    start: new Date() // Constrain selection to today and future
+                },
+                selectAllow: function(selectInfo) {
+                    return selectInfo.start >= new Date().setHours(0,0,0,0);
+                },
+                dateClick: function(info) {
+                    if (info.date < new Date().setHours(0,0,0,0)) {
+                        return false; // Prevent clicking on past dates
+                    }
+                },
+                validRange: function(nowDate) {
+                    return {
+                        start: nowDate.setMonth(nowDate.getMonth() - 1) // Show one month in the past
+                    };
+                },
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: true
+                }
+            });
+            calendar.render();
+
+            // Fix modal closing
+            $('.modal .close, .modal .btn-secondary').on('click', function() {
+                $('#eventModal').modal('hide');
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+            });
+
+            // Handle escape key
+            $(document).keydown(function(e) {
+                if (e.key === "Escape") {
+                    $('#eventModal').modal('hide');
+                    $('body').removeClass('modal-open');
+                    $('.modal-backdrop').remove();
+                }
+            });
+
+            function showEventDetails(event) {
+                document.getElementById('eventTitle').textContent = event.title;
+                document.getElementById('eventDescription').textContent = event.extendedProps.description;
+                
+                // Format dates
+                var startDate = new Date(event.start);
+                var endDate = new Date(event.end);
+                document.getElementById('eventStart').textContent = startDate.toLocaleString();
+                document.getElementById('eventEnd').textContent = endDate.toLocaleString();
+
+                // Status information
+                var statusBadge = document.getElementById('eventStatus');
+                statusBadge.textContent = event.extendedProps.status;
+                statusBadge.className = 'badge ' + event.extendedProps.statusBadgeClass;
+
+                var statusInfo = document.getElementById('statusInfo');
+                statusInfo.className = 'status-info status-' + event.extendedProps.status.toLowerCase().replace('_', '-');
+                
+                document.getElementById('eventStatusText').textContent = event.extendedProps.statusText;
+
+                // Priority badge
+                var priorityBadge = document.getElementById('eventPriority');
+                if (event.extendedProps.isHighPriority) {
+                    priorityBadge.classList.remove('d-none');
+                } else {
+                    priorityBadge.classList.add('d-none');
+                }
+
+                // Location handling
+                var locationContainer = document.getElementById('eventLocationContainer');
+                if (event.extendedProps.location) {
+                    locationContainer.classList.remove('d-none');
+                    locationContainer.innerHTML = `
+                        <span class="material-icons">location_on</span>
+                        <strong>Location:</strong> ${event.extendedProps.location}
+                    `;
+                } else {
+                    locationContainer.classList.add('d-none');
+                }
+
+                // Created by handling
+                var createdByContainer = document.getElementById('eventCreatedByContainer');
+                if (createdByContainer && event.extendedProps.createdBy) {
+                    createdByContainer.innerHTML = `
+                        <span class="material-icons">person</span>
+                        <strong>Created by:</strong> ${event.extendedProps.createdBy}
+                    `;
+                }
+
+                // Registration details
+                var registrationContainer = document.getElementById('eventRegistrationContainer');
+                if (event.extendedProps.requiresRegistration) {
+                    registrationContainer.classList.remove('d-none');
+                    document.getElementById('eventMaxAttendees').textContent = event.extendedProps.maxAttendees;
+                    document.getElementById('eventRegistrationInstructions').textContent = event.extendedProps.registrationInstructions;
+                } else {
+                    registrationContainer.classList.add('d-none');
+                }
+
+                // Image
+                var imageContainer = document.getElementById('eventImage');
+                if (event.extendedProps.imageUrl) {
+                    imageContainer.innerHTML = `<img src="${event.extendedProps.imageUrl}" class="event-image" alt="${event.title}">`;
+                } else {
+                    imageContainer.innerHTML = '';
+                }
+
+                // Admin actions
+                if (document.getElementById('editEventLink')) {
+                    document.getElementById('editEventLink').href = `/Event/Edit/${event.id}`;
+                }
+                
+                if (document.getElementById('deleteEventBtn')) {
+                    document.getElementById('deleteEventBtn').onclick = function() {
+                        if (confirm('Are you sure you want to delete this event?')) {
+                            var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                            fetch(`/Event/Delete/${event.id}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'RequestVerificationToken': token || ''
+                                }
+                            }).then(response => {
+                                if (response.ok) {
+                                    $('#eventModal').modal('hide');
+                                    calendar.refetchEvents();
+                                } else {
+                                    alert('Error deleting event');
+                                }
+                            });
+                        }
+                    };
+                }
+
+                $('#eventModal').modal('show');
+            }
+        });
+    </script>
+}

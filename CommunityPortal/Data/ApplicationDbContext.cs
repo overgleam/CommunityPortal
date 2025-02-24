@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Models;
 using CommunityPortal.Models.Forum;
 using CommunityPortal.Models.Facility;
+using CommunityPortal.Models.Event;
 
 namespace CommunityPortal.Data
 {
@@ -23,6 +24,7 @@ namespace CommunityPortal.Data
         public DbSet<Facility> Facilities { get; set; }
         public DbSet<FacilityReservation> FacilityReservations { get; set; }
         public DbSet<BlackoutDate> BlackoutDates { get; set; }
+        public DbSet<Event> Events { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -215,6 +217,16 @@ namespace CommunityPortal.Data
                 .HasForeignKey(bd => bd.FacilityId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired(false);
+
+            // Event configurations
+            builder.Entity<Event>()
+                .HasQueryFilter(e => !e.IsDeleted);
+
+            builder.Entity<Event>()
+                .HasOne(e => e.Creator)
+                .WithMany()
+                .HasForeignKey(e => e.CreatorId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public override int SaveChanges()
