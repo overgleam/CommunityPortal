@@ -29,7 +29,7 @@ namespace CommunityPortal.Controllers
         }
 
         // GET: Documents
-        public async Task<IActionResult> Index(DocumentCategory? category, string searchTerm, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(DocumentCategory? category, string searchTerm, int page = 1, int pageSize = 9)
         {
             var query = _context.Documents
                 .Where(d => !d.IsDeleted)
@@ -224,7 +224,7 @@ namespace CommunityPortal.Controllers
             document.DeletedById = user.Id;
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Manage));
         }
 
         // GET: Documents/Restore/5
@@ -260,7 +260,7 @@ namespace CommunityPortal.Controllers
             document.DeletedById = null;
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Manage));
         }
 
         // GET: Documents/Manage

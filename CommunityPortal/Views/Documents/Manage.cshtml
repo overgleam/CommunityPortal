@@ -22,7 +22,7 @@
                 </div>
             </div>
             
-            <form method="get" id="filterForm" class="mb-3">
+            <form method="get" id="mainFilterForm" class="mb-3">
                 <div class="row g-3">
                     <div class="col-md-5">
                         <div class="input-group">
@@ -92,7 +92,7 @@
     else
     {
         <div class="card shadow-sm">
-            <div class="table-responsive">
+            <div class="card-body p-0">
                 <table class="table table-hover align-middle mb-0" id="documentsTable">
                     <thead class="table-light">
                         <tr>
@@ -103,7 +103,7 @@
                             <th>Uploaded By</th>
                             <th>Upload Date</th>
                             <th>Status</th>
-                            <th class="text-end">Actions</th>
+                            <th class="text-end no-sort">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -158,48 +158,6 @@
                 </table>
             </div>
         </div>
-
-        @if (Model.TotalPages > 1)
-        {
-            <nav aria-label="Page navigation" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    @if (Model.CurrentPage > 1)
-                    {
-                        <li class="page-item">
-                            <a class="page-link" asp-action="Manage" asp-route-page="1" asp-route-category="@Model.CategoryFilter" asp-route-searchTerm="@Model.SearchTerm" asp-route-showDeleted="@Model.ShowDeleted">
-                                <i class="material-icons">first_page</i>
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" asp-action="Manage" asp-route-page="@(Model.CurrentPage - 1)" asp-route-category="@Model.CategoryFilter" asp-route-searchTerm="@Model.SearchTerm" asp-route-showDeleted="@Model.ShowDeleted">
-                                <i class="material-icons">chevron_left</i>
-                            </a>
-                        </li>
-                    }
-
-                    @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
-                    {
-                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                            <a class="page-link" asp-action="Manage" asp-route-page="@i" asp-route-category="@Model.CategoryFilter" asp-route-searchTerm="@Model.SearchTerm" asp-route-showDeleted="@Model.ShowDeleted">@i</a>
-                        </li>
-                    }
-
-                    @if (Model.CurrentPage < Model.TotalPages)
-                    {
-                        <li class="page-item">
-                            <a class="page-link" asp-action="Manage" asp-route-page="@(Model.CurrentPage + 1)" asp-route-category="@Model.CategoryFilter" asp-route-searchTerm="@Model.SearchTerm" asp-route-showDeleted="@Model.ShowDeleted">
-                                <i class="material-icons">chevron_right</i>
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" asp-action="Manage" asp-route-page="@Model.TotalPages" asp-route-category="@Model.CategoryFilter" asp-route-searchTerm="@Model.SearchTerm" asp-route-showDeleted="@Model.ShowDeleted">
-                                <i class="material-icons">last_page</i>
-                            </a>
-                        </li>
-                    }
-                </ul>
-            </nav>
-        }
     }
 </div>
 
@@ -258,13 +216,94 @@
 @section Scripts {
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap5.min.css" />
     
     <!-- JavaScript libraries -->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Custom styles for more elegant DataTables -->
+    <style>
+        /* Fancy hover effect on table rows */
+        #documentsTable tbody tr {
+            transition: all 0.2s ease;
+        }
+        #documentsTable tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Custom DataTables styling */
+        .dataTables_wrapper .dataTables_length, 
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_processing,
+        .dataTables_wrapper .dataTables_paginate {
+            padding: 12px 15px;
+            color: #495057;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 4px !important;
+            margin: 0 3px;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current, 
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background: linear-gradient(to bottom, #0d6efd 0%, #0a58ca 100%) !important;
+            color: white !important;
+            border: 1px solid #0a58ca !important;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%) !important;
+            border: 1px solid #dee2e6 !important;
+            color: #0d6efd !important;
+        }
+        
+        .dataTables_filter input {
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            padding: 5px 10px;
+            margin-left: 6px;
+        }
+        
+        .dataTables_length select {
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            padding: 5px 10px;
+            margin: 0 5px;
+        }
+        
+        /* Make the table actions sticky */
+        .dataTables_wrapper .row:first-child {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: white;
+            border-bottom: 1px solid #dee2e6;
+            margin: 0;
+            padding: 15px;
+        }
+        
+        /* Rounded badge styling */
+        .badge.rounded-pill {
+            font-weight: 500;
+            padding: 5px 10px;
+        }
+    </style>
     
     <script>
         $(document).ready(function () {
@@ -275,15 +314,66 @@
             });
             
             // Add DataTables for better table functionality
-            if ($.fn.DataTable) {
-                $('#documentsTable').DataTable({
-                    "paging": false,
-                    "ordering": true,
-                    "info": false,
-                    "searching": false,
-                    "responsive": true
-                });
-            }
+            var dataTable = $('#documentsTable').DataTable({
+                "paging": true,
+                "ordering": true,
+                "info": true,
+                "searching": true,
+                "responsive": true,
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                "pageLength": 10,
+                "language": {
+                    "search": "<i class='material-icons'>search</i> _INPUT_",
+                    "searchPlaceholder": "Quick search...",
+                    "lengthMenu": "<i class='material-icons'>view_list</i> _MENU_ per page",
+                    "info": "<i class='material-icons'>info</i> Showing _START_ to _END_ of _TOTAL_ documents",
+                    "paginate": {
+                        "first": "<i class='material-icons'>first_page</i>",
+                        "last": "<i class='material-icons'>last_page</i>",
+                        "next": "<i class='material-icons'>chevron_right</i>",
+                        "previous": "<i class='material-icons'>chevron_left</i>"
+                    },
+                    "infoFiltered": "(filtered from _MAX_ total documents)",
+                    "zeroRecords": "<div class='alert alert-info'><i class='material-icons me-2'>info</i> No matching documents found</div>"
+                },
+                "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                       "<'row'<'col-sm-12'tr>>" +
+                       "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                "columnDefs": [
+                    { "targets": 'no-sort', "orderable": false }
+                ],
+                "buttons": [
+                    {
+                        extend: 'excel',
+                        text: '<i class="material-icons">file_download</i> Excel',
+                        className: 'btn btn-sm btn-outline-secondary',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<i class="material-icons">picture_as_pdf</i> PDF',
+                        className: 'btn btn-sm btn-outline-secondary',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6]
+                        }
+                    }
+                ],
+                "initComplete": function(settings, json) {
+                    // Add custom styling to the DataTables search box
+                    $('.dataTables_filter input').addClass('form-control form-control-sm');
+                    $('.dataTables_length select').addClass('form-select form-select-sm');
+                    
+                    // Add a clear button to the search field
+                    $('.dataTables_filter').append('<button id="clearSearch" class="btn btn-sm btn-outline-secondary ms-2"><i class="material-icons">clear</i></button>');
+                    
+                    $('#clearSearch').on('click', function() {
+                        dataTable.search('').draw();
+                        return false;
+                    });
+                }
+            });
             
             // Show notification when filters are applied
             @if (Model.ShowDeleted || Model.CategoryFilter.HasValue || !string.IsNullOrEmpty(Model.SearchTerm))
@@ -312,7 +402,7 @@
             // Handle checkbox change
             $('#showDeletedCheckbox').change(function() {
                 $('#showDeletedHidden').val(this.checked.toString().toLowerCase());
-                $('#filterForm').submit();
+                $('#mainFilterForm').submit();
             });
             
             // Handle delete button click
@@ -331,6 +421,18 @@
                 $('#restoreDocumentTitle').text(title);
                 $('#confirmRestoreBtn').attr('href', '@Url.Action("Restore")/' + id);
                 $('#restoreModal').modal('show');
+            });
+
+            // Add key press event for search
+            $('.dataTables_filter input').keyup(function(e) {
+                if (e.key === 'Escape') {
+                    dataTable.search('').draw();
+                }
+            });
+            
+            // Make the DataTable responsive to window resizing
+            $(window).resize(function() {
+                dataTable.responsive.recalc();
             });
         });
     </script>
@@ -362,4 +464,4 @@
                 return "insert_drive_file";
         }
     }
-} 
+}

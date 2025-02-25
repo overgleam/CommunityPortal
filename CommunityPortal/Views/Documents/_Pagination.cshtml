@@ -1,0 +1,116 @@
+@model CommunityPortal.Models.Documents.DocumentListViewModel
+@{
+    var actionName = ViewContext.RouteData.Values["action"].ToString();
+}
+
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination pagination-rounded justify-content-center">
+            @if (Model.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="@actionName" asp-route-page="1" 
+                       asp-route-category="@Model.CategoryFilter" 
+                       asp-route-searchTerm="@Model.SearchTerm" 
+                       asp-route-showDeleted="@Model.ShowDeleted"
+                       title="First Page" data-bs-toggle="tooltip">
+                        <i class="material-icons">first_page</i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" asp-action="@actionName" asp-route-page="@(Model.CurrentPage - 1)" 
+                       asp-route-category="@Model.CategoryFilter" 
+                       asp-route-searchTerm="@Model.SearchTerm" 
+                       asp-route-showDeleted="@Model.ShowDeleted"
+                       title="Previous Page" data-bs-toggle="tooltip">
+                        <i class="material-icons">chevron_left</i>
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        <i class="material-icons">first_page</i>
+                    </span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        <i class="material-icons">chevron_left</i>
+                    </span>
+                </li>
+            }
+
+            @{
+                int startPage = Math.Max(1, Model.CurrentPage - 2);
+                int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+                
+                // Ensure we always show 5 page numbers if possible
+                if (endPage - startPage + 1 < 5 && Model.TotalPages >= 5)
+                {
+                    if (startPage == 1)
+                    {
+                        endPage = Math.Min(5, Model.TotalPages);
+                    }
+                    else if (endPage == Model.TotalPages)
+                    {
+                        startPage = Math.Max(1, Model.TotalPages - 4);
+                    }
+                }
+            }
+
+            @for (int i = startPage; i <= endPage; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" asp-action="@actionName" asp-route-page="@i" 
+                       asp-route-category="@Model.CategoryFilter" 
+                       asp-route-searchTerm="@Model.SearchTerm" 
+                       asp-route-showDeleted="@Model.ShowDeleted">@i</a>
+                </li>
+            }
+
+            @if (Model.CurrentPage < Model.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="@actionName" asp-route-page="@(Model.CurrentPage + 1)" 
+                       asp-route-category="@Model.CategoryFilter" 
+                       asp-route-searchTerm="@Model.SearchTerm" 
+                       asp-route-showDeleted="@Model.ShowDeleted"
+                       title="Next Page" data-bs-toggle="tooltip">
+                        <i class="material-icons">chevron_right</i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" asp-action="@actionName" asp-route-page="@Model.TotalPages" 
+                       asp-route-category="@Model.CategoryFilter" 
+                       asp-route-searchTerm="@Model.SearchTerm" 
+                       asp-route-showDeleted="@Model.ShowDeleted"
+                       title="Last Page" data-bs-toggle="tooltip">
+                        <i class="material-icons">last_page</i>
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        <i class="material-icons">chevron_right</i>
+                    </span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        <i class="material-icons">last_page</i>
+                    </span>
+                </li>
+            }
+        </ul>
+    </nav>
+    
+    <div class="text-center text-muted mt-2">
+        <small>
+            Page @Model.CurrentPage of @Model.TotalPages 
+            (@Model.Documents.Count() total @(Model.Documents.Count() == 1 ? "document" : "documents"))
+        </small>
+    </div>
+}
