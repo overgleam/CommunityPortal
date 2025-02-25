@@ -86,21 +86,21 @@
             }
             else
             {
-                <div class="table-responsive rounded-3 shadow-sm">
+                <div class="table-responsive rounded-sm shadow-sm">
                     <table id="feedbackTable" class="table table-hover mb-0">
-                        <thead class="table-dark">
+                        <thead class="">
                             <tr>
-                                <th style="width: 775px">
-                                    <i class="material-icons">message</i>Message
+                                <th style="width: 50%; text-wrap:nowrap">
+                                    <i class="material-icons me-2">message</i>Message
                                 </th>
-                                <th style="width: 213px">
-                                    <i class="material-icons">calendar_today</i>Submitted At
+                                <th style="width: 20%; text-wrap:nowrap">
+                                    <i class="material-icons me-2">calendar_today</i>Submitted At
                                 </th>
-                                <th style="width: 150px">
-                                    <i class="material-icons">info</i>Status
+                                <th style="width: 10%; text-wrap:nowrap">
+                                    <i class="material-icons me-2">info</i>Status
                                 </th>
-                                <th style="width: 100px">
-                                    <i class="material-icons">delete</i>Actions
+                                <th style="width: 10%; text-wrap:nowrap">
+                                    <i class="material-icons me-2">delete</i>Actions
                                 </th>
                             </tr>
                         </thead>
@@ -209,16 +209,23 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script>
         function updateCharacterCount() {
-            var textarea = document.querySelector("textarea");
-            var remaining = 1500 - textarea.value.length;
-            document.getElementById("charCount").textContent = remaining + " characters remaining";
+            const textarea = document.querySelector("textarea[name='Message']");
+            if (textarea) {
+                const remaining = 1500 - textarea.value.length;
+                const charCount = document.getElementById("charCount");
+                if (charCount) {
+                    charCount.textContent = remaining + " characters remaining";
+                }
+            }
         }
 
-            document.getElementById("feedbackForm").addEventListener("submit", async function (event) {
+        document.getElementById("feedbackForm")?.addEventListener("submit", async function (event) {
             event.preventDefault();
 
             const thankYouMessage = document.getElementById("thankYouMessage");
-            thankYouMessage.classList.add("d-none"); // Ensure the message is hidden before submitting again
+            if (thankYouMessage) {
+                thankYouMessage.classList.add("d-none"); // Ensure the message is hidden before submitting again
+            }
 
             try {
                 const formData = new FormData(this);
@@ -226,7 +233,7 @@
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
                     }
                 });
 
@@ -234,13 +241,18 @@
                     this.reset();
                     updateCharacterCount();
 
-                    // Show the Thank You message again
-                    thankYouMessage.classList.remove("d-none");
+                    if (thankYouMessage) {
+                        thankYouMessage.classList.remove("d-none");
 
-                    setTimeout(() => {
-                        thankYouMessage.classList.add("d-none");
+                        setTimeout(() => {
+                            if (thankYouMessage) {
+                                thankYouMessage.classList.add("d-none");
+                            }
+                            window.location.reload();
+                        }, 3000);
+                    } else {
                         window.location.reload();
-                    }, 3000);
+                    }
                 } else {
                     console.error('Submission failed');
                 }
@@ -280,7 +292,7 @@
             });
         });
 
-            $(document).ready(function () {
+        $(document).ready(function () {
             $('#feedbackTable').DataTable({
                 "paging": true,
                 "searching": false,
@@ -297,8 +309,12 @@
                         "previous": '<i class="material-icons">chevron_left</i>'
                     }
                 },
-                "dom": '<"top"f>rt<"bottom"lip><"clear">' // Places "Show entries" below the table
+                "dom": '<"top"f>rt<"bottom"lip><"clear">'
             });
+
+            // Add additional styling to match ApproveUsers.cshtml
+            $('.dataTables_wrapper .dataTables_filter input').addClass('custom-search');
+            $('.dataTables_wrapper .dataTables_length select').addClass('custom-select');
         });
     </script>
 }
@@ -336,6 +352,7 @@
 
         .table {
             margin-bottom: 0;
+            padding: 1rem;
         }
 
         .table td {
@@ -421,19 +438,7 @@
 
         /* Message Text */
         .message-text {
-            color: #2d3748;
             line-height: 1.5;
-        }
-
-        /* Alert Styles */
-        .alert {
-            border: none;
-            border-radius: 8px;
-        }
-
-        .alert-success {
-            background-color: #c6f6d5;
-            color: #2f855a;
         }
 
         /* Modal Styles */
@@ -505,6 +510,51 @@
             padding-bottom:15px;
             font-size: 16px;
             font-weight: 500;
+        }
+
+        /* Enhanced DataTables styling to match ApproveUsers */
+        .dataTables_wrapper .dataTables_filter input {
+            margin-left: 1rem;
+            padding: 8px 12px 8px 40px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            width: 250px;
+            background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23495057' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E") no-repeat 12px center;
+            transition: all 0.2s;
+        }
+
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: #86b7fe;
+            outline: none;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            padding: 8px 36px 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: #fff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") no-repeat;
+            background-position: right 12px center;
+            background-size: 16px 12px;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .dataTables_wrapper .dataTables_length select:focus {
+            border-color: #86b7fe;
+            outline: none;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .table-container {
+            padding: 5px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
     </style>
 }
