@@ -4,6 +4,7 @@ using CommunityPortal.Models;
 using CommunityPortal.Models.Forum;
 using CommunityPortal.Models.Facility;
 using CommunityPortal.Models.Event;
+using CommunityPortal.Models.ServiceRequest;
 
 namespace CommunityPortal.Data
 {

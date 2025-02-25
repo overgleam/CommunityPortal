@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Models;
+using CommunityPortal.Models.ServiceRequest;
 using CommunityPortal.Data;
 using Microsoft.AspNetCore.Identity;
 
