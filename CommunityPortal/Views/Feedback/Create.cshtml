@@ -87,20 +87,20 @@
             else
             {
                 <div class="table-responsive rounded-3 shadow-sm">
-                    <table class="table table-hover mb-0">
+                    <table id="feedbackTable" class="table table-hover mb-0">
                         <thead class="table-dark">
                             <tr>
-                                <th style="width: 60%">
-                                    <i class="material-icons align-middle me-1 small">message</i>Message
+                                <th style="width: 775px">
+                                    <i class="material-icons">message</i>Message
                                 </th>
-                                <th style="width: 20%">
-                                    <i class="material-icons align-middle me-1 small">calendar_today</i>Submitted At
+                                <th style="width: 213px">
+                                    <i class="material-icons">calendar_today</i>Submitted At
                                 </th>
-                                <th style="width: 20%">
-                                    <i class="material-icons align-middle me-1 small">info</i>Status
+                                <th style="width: 150px">
+                                    <i class="material-icons">info</i>Status
                                 </th>
-                                <th style="width: 10%">
-                                    <i class="material-icons align-middle me-1 small">delete</i>Actions
+                                <th style="width: 100px">
+                                    <i class="material-icons">delete</i>Actions
                                 </th>
                             </tr>
                         </thead>
@@ -134,12 +134,12 @@
                                     </td>
                                     <td class="align-middle">
                                         <span class="badge @(feedback.Status switch {
-                                                    FeedbackStatus.New => "bg-primary",
-                                                    FeedbackStatus.InReview => "bg-warning text-dark",
-                                                    FeedbackStatus.Resolved => "bg-success",
-                                                    FeedbackStatus.Rejected => "bg-danger",
-                                                    _ => "bg-secondary"
-                                                })">
+                                    FeedbackStatus.New => "bg-primary",
+                                    FeedbackStatus.InReview => "bg-warning text-dark",
+                                    FeedbackStatus.Resolved => "bg-success",
+                                    FeedbackStatus.Rejected => "bg-danger",
+                                    _ => "bg-secondary"
+                                })">
                                             <i class="material-icons align-middle me-1 small">
                                                 @(feedback.Status switch
                                                 {
@@ -206,6 +206,7 @@
 }
 
 @section Scripts {
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script>
         function updateCharacterCount() {
             var textarea = document.querySelector("textarea");
@@ -278,10 +279,34 @@
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
         });
+
+            $(document).ready(function () {
+            $('#feedbackTable').DataTable({
+                "paging": true,
+                "searching": false,
+                "ordering": false,
+                "pageLength": 5, // Default number of entries to show
+                "lengthMenu": [5, 10, 25, 50, 100], // Options in dropdown
+                "language": {
+                    "lengthMenu": 'Show _MENU_ entries',  // Custom label
+                    "search": "Search:",
+                    "paginate": {
+                        "first": '<i class="material-icons">first_page</i>',
+                        "last": '<i class="material-icons">last_page</i>',
+                        "next": '<i class="material-icons">chevron_right</i>',
+                        "previous": '<i class="material-icons">chevron_left</i>'
+                    }
+                },
+                "dom": '<"top"f>rt<"bottom"lip><"clear">' // Places "Show entries" below the table
+            });
+        });
     </script>
 }
 
 @section Styles {
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
     <style>
         /* Typography */
         h1, h2, h3, h4, h5, h6 {
@@ -324,7 +349,6 @@
             letter-spacing: 0.05em;
             font-weight: 600;
             color: #4a5568;
-            padding: 1rem;
         }
 
         /* Card Styles */
@@ -445,6 +469,42 @@
         .container-fluid {
             max-width: 1400px;
             margin: 0 auto;
+        }
+
+        /*data tables*/
+        .dataTables_length label {
+            margin-left:15px;
+            margin-top:10px;
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .dataTables_length select {
+            width: auto;
+            display: inline-block;
+            margin: 0 5px;
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: #fff;
+            font-size: 14px;
+            cursor:pointer;
+        }
+
+        .dataTables_info{
+            margin-left: 15px;
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .dataTables_paginate{
+            padding-bottom:15px;
+            font-size: 16px;
+            font-weight: 500;
         }
     </style>
 }
