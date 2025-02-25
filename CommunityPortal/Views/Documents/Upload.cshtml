@@ -1,0 +1,156 @@
+@model CommunityPortal.Models.Documents.DocumentUploadViewModel
+@using CommunityPortal.Models.Enums
+@using CommunityPortal.Models.Utilities
+@{
+    ViewData["Title"] = "Upload Document";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="material-icons align-middle me-2">upload_file</i>Upload New Document
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Upload" method="post" enctype="multipart/form-data" id="uploadForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Document Title</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="material-icons">title</i></span>
+                                <input asp-for="Title" class="form-control" placeholder="Enter document title" />
+                            </div>
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="material-icons">description</i></span>
+                                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Enter document description (optional)"></textarea>
+                            </div>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Category" class="form-label">Category</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="material-icons">category</i></span>
+                                <select asp-for="Category" class="form-select" asp-items="Html.GetEnumSelectList<DocumentCategory>()">
+                                    <option value="">-- Select Category --</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label asp-for="File" class="form-label">Document File</label>
+                            <div class="input-group mb-1">
+                                <span class="input-group-text"><i class="material-icons">attach_file</i></span>
+                                <input type="file" asp-for="File" class="form-control" id="fileInput" />
+                            </div>
+                            <span asp-validation-for="File" class="text-danger"></span>
+                            <div class="form-text text-muted">
+                                <i class="material-icons align-middle me-1" style="font-size: 0.9rem;">info</i>
+                                Allowed file types: .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .txt, .jpg, .jpeg, .png<br />
+                                Maximum file size: 10MB
+                            </div>
+                        </div>
+                        
+                        <div id="filePreview" class="mb-3 d-none">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="material-icons align-middle me-1" id="previewIcon">description</i>
+                                        <span id="fileName">filename.ext</span>
+                                    </h6>
+                                    <p class="card-text mb-0">
+                                        <small class="text-muted">
+                                            <span id="fileSize">0 KB</span>
+                                        </small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="material-icons align-middle me-1">arrow_back</i>Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="uploadButton">
+                                <i class="material-icons align-middle me-1">cloud_upload</i>Upload Document
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            // File input preview
+            $('#fileInput').on('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024).toFixed(2) + ' KB';
+                    const fileExt = fileName.split('.').pop().toLowerCase();
+                    
+                    $('#fileName').text(fileName);
+                    $('#fileSize').text(fileSize);
+                    
+                    // Set icon based on file type
+                    let icon = 'insert_drive_file';
+                    if (fileExt === 'pdf') icon = 'picture_as_pdf';
+                    else if (['doc', 'docx'].includes(fileExt)) icon = 'description';
+                    else if (['xls', 'xlsx'].includes(fileExt)) icon = 'table_chart';
+                    else if (['ppt', 'pptx'].includes(fileExt)) icon = 'slideshow';
+                    else if (fileExt === 'txt') icon = 'article';
+                    else if (['jpg', 'jpeg', 'png'].includes(fileExt)) icon = 'image';
+                    
+                    $('#previewIcon').text(icon);
+                    $('#filePreview').removeClass('d-none');
+                } else {
+                    $('#filePreview').addClass('d-none');
+                }
+            });
+            
+            // Form submission with validation
+            $('#uploadForm').on('submit', function(e) {
+                const title = $('#Title').val();
+                const category = $('#Category').val();
+                const file = $('#fileInput').val();
+                
+                if (!title || !category || !file) {
+                    e.preventDefault();
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        text: 'Please fill in all required fields',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    
+                    return false;
+                }
+                
+                // Show loading state
+                $('#uploadButton').prop('disabled', true).html('<i class="material-icons align-middle me-1">hourglass_top</i>Uploading...');
+                
+                return true;
+            });
+        });
+    </script>
+} 

@@ -163,6 +163,73 @@ namespace CommunityPortal.Migrations
                     b.ToTable("ChatMessages");
                 });
 
+            modelBuilder.Entity("CommunityPortal.Models.Documents.Document", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DeletedById")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("DeletedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<long>("FileSizeInKB")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UploadDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UploadedById")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeletedById");
+
+                    b.HasIndex("UploadedById");
+
+                    b.ToTable("Documents");
+                });
+
             modelBuilder.Entity("CommunityPortal.Models.Event.Event", b =>
                 {
                     b.Property<int>("Id")
@@ -578,7 +645,7 @@ namespace CommunityPortal.Migrations
                     b.ToTable("Homeowners");
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.ServiceCategory", b =>
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -637,7 +704,7 @@ namespace CommunityPortal.Migrations
                         });
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.ServiceFeedback", b =>
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceFeedback", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -672,7 +739,7 @@ namespace CommunityPortal.Migrations
                     b.ToTable("ServiceFeedbacks");
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest", b =>
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceRequest", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -735,7 +802,7 @@ namespace CommunityPortal.Migrations
                     b.ToTable("ServiceRequests");
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.ServiceStaffAssignment", b =>
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceStaffAssignment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -964,6 +1031,24 @@ namespace CommunityPortal.Migrations
                     b.Navigation("Sender");
                 });
 
+            modelBuilder.Entity("CommunityPortal.Models.Documents.Document", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "DeletedBy")
+                        .WithMany()
+                        .HasForeignKey("DeletedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "UploadedBy")
+                        .WithMany()
+                        .HasForeignKey("UploadedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("DeletedBy");
+
+                    b.Navigation("UploadedBy");
+                });
+
             modelBuilder.Entity("CommunityPortal.Models.Event.Event", b =>
                 {
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "Creator")
@@ -1086,7 +1171,7 @@ namespace CommunityPortal.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.ServiceFeedback", b =>
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceFeedback", b =>
                 {
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "Homeowner")
                         .WithMany()
@@ -1094,9 +1179,9 @@ namespace CommunityPortal.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("CommunityPortal.Models.ServiceRequest", "ServiceRequest")
+                    b.HasOne("CommunityPortal.Models.ServiceRequest.ServiceRequest", "ServiceRequest")
                         .WithOne("Feedback")
-                        .HasForeignKey("CommunityPortal.Models.ServiceFeedback", "ServiceRequestId")
+                        .HasForeignKey("CommunityPortal.Models.ServiceRequest.ServiceFeedback", "ServiceRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1105,7 +1190,7 @@ namespace CommunityPortal.Migrations
                     b.Navigation("ServiceRequest");
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest", b =>
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceRequest", b =>
                 {
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "Homeowner")
                         .WithMany()
@@ -1113,7 +1198,7 @@ namespace CommunityPortal.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("CommunityPortal.Models.ServiceCategory", "ServiceCategory")
+                    b.HasOne("CommunityPortal.Models.ServiceRequest.ServiceCategory", "ServiceCategory")
                         .WithMany("ServiceRequests")
                         .HasForeignKey("ServiceCategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1124,9 +1209,9 @@ namespace CommunityPortal.Migrations
                     b.Navigation("ServiceCategory");
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.ServiceStaffAssignment", b =>
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceStaffAssignment", b =>
                 {
-                    b.HasOne("CommunityPortal.Models.ServiceRequest", "ServiceRequest")
+                    b.HasOne("CommunityPortal.Models.ServiceRequest.ServiceRequest", "ServiceRequest")
                         .WithMany("StaffAssignments")
                         .HasForeignKey("ServiceRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1235,12 +1320,12 @@ namespace CommunityPortal.Migrations
                     b.Navigation("Likes");
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.ServiceCategory", b =>
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceCategory", b =>
                 {
                     b.Navigation("ServiceRequests");
                 });
 
-            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest", b =>
+            modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceRequest", b =>
                 {
                     b.Navigation("Feedback");
 

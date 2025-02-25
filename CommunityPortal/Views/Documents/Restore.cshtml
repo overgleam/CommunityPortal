@@ -1,0 +1,121 @@
+@model CommunityPortal.Models.Documents.Document
+@using CommunityPortal.Models.Utilities
+@{
+    ViewData["Title"] = "Restore Document";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="material-icons align-middle me-2">restore_from_trash</i>Confirm Restore
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <div class="d-flex align-items-center">
+                            <i class="material-icons me-3">info</i>
+                            <div>
+                                <strong>Note:</strong> Are you sure you want to restore this document? This action will make the document accessible to users again.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="material-icons align-middle me-2">info</i>Document Details
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-12 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="material-icons me-2 fs-1">@(GetFileIcon(Model.FileType))</i>
+                                        <h4 class="mb-0">@Model.Title</h4>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">Description</dt>
+                                        <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Description) ? "No description provided." : Model.Description)</dd>
+                                        
+                                        <dt class="col-sm-4">Category</dt>
+                                        <dd class="col-sm-8"><span class="badge bg-primary rounded-pill">@Model.Category</span></dd>
+                                        
+                                        <dt class="col-sm-4">File Name</dt>
+                                        <dd class="col-sm-8">@Model.FileName</dd>
+                                        
+                                        <dt class="col-sm-4">File Type</dt>
+                                        <dd class="col-sm-8"><span class="badge bg-secondary rounded-pill">@Model.FileType</span></dd>
+                                    </dl>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">File Size</dt>
+                                        <dd class="col-sm-8">@(Model.FileSizeInKB < 1024 ? $"{Model.FileSizeInKB} KB" : $"{Model.FileSizeInKB / 1024:F2} MB")</dd>
+                                        
+                                        <dt class="col-sm-4">Deleted By</dt>
+                                        <dd class="col-sm-8">@Model.DeletedBy.UserName</dd>
+                                        
+                                        <dt class="col-sm-4">Deleted Date</dt>
+                                        <dd class="col-sm-8">@Model.DeletedDate?.ToString("MMM dd, yyyy HH:mm")</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form asp-action="Restore" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Manage" class="btn btn-outline-secondary">
+                                <i class="material-icons align-middle me-1">arrow_back</i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="material-icons align-middle me-1">restore</i> Restore Document
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+}
+
+@functions {
+    public string GetFileIcon(string fileType)
+    {
+        switch (fileType.ToLower())
+        {
+            case ".pdf":
+                return "picture_as_pdf";
+            case ".doc":
+            case ".docx":
+                return "description";
+            case ".xls":
+            case ".xlsx":
+                return "table_chart";
+            case ".ppt":
+            case ".pptx":
+                return "slideshow";
+            case ".txt":
+                return "article";
+            case ".jpg":
+            case ".jpeg":
+            case ".png":
+                return "image";
+            default:
+                return "insert_drive_file";
+        }
+    }
+} 

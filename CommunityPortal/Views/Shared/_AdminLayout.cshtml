@@ -102,6 +102,15 @@
                 <a asp-controller="Event" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
                     <i class="material-icons me-2">calendar_today</i> Events Calendar
                 </a>
+                <a asp-controller="Documents" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
+                    <i class="material-icons me-2">insert_drive_file</i> Documents
+                </a>
+                @if (User.IsInRole("admin"))
+                {
+                    <a asp-controller="Documents" asp-action="Manage" class="list-group-item list-group-item-action bg-sidebar">
+                        <i class="material-icons me-2">folder_shared</i> Manage Documents
+                    </a>
+                }
                 @if (User.IsInRole("staff"))
                 {
                     <a asp-controller="Feedback" asp-action="Create" class="list-group-item list-group-item-action bg-sidebar">

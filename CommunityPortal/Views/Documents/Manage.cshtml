@@ -1,0 +1,365 @@
+@model CommunityPortal.Models.Documents.DocumentListViewModel
+@using CommunityPortal.Models.Enums
+@using CommunityPortal.Models.Utilities
+@{
+    ViewData["Title"] = "Manage Documents";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 class="card-title mb-0">
+                    <i class="material-icons align-middle me-2">folder_managed</i>Manage Documents
+                </h1>
+                <div>
+                    <a asp-action="Upload" class="btn btn-success">
+                        <i class="material-icons align-middle me-1">upload_file</i> Upload
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-primary ms-2">
+                        <i class="material-icons align-middle me-1">visibility</i> View Public
+                    </a>
+                </div>
+            </div>
+            
+            <form method="get" id="filterForm" class="mb-3">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="material-icons">search</i></span>
+                            <input type="text" name="searchTerm" class="form-control" placeholder="Search documents..." value="@Model.SearchTerm">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="material-icons">category</i></span>
+                            <select name="category" id="categoryFilter" class="form-select">
+                                <option value="">All Categories</option>
+                                @{
+                                    foreach (DocumentCategory categoryItem in Enum.GetValues(typeof(DocumentCategory)))
+                                    {
+                                        if (Model.CategoryFilter.HasValue && Model.CategoryFilter.Value == categoryItem)
+                                        {
+                                            <option value="@((int)categoryItem)" selected>@categoryItem.GetDisplayName()</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@((int)categoryItem)">@categoryItem.GetDisplayName()</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check form-switch ps-0 d-flex align-items-center">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="showDeletedCheckbox" @(Model.ShowDeleted ? "checked" : "")>
+                                <input type="hidden" name="showDeleted" id="showDeletedHidden" value="@Model.ShowDeleted.ToString().ToLower()">
+                                <label class="form-check-label ms-2" for="showDeletedCheckbox">
+                                    <i class="material-icons align-middle me-1">delete_outline</i> Show Deleted
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="d-flex">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="material-icons align-middle">filter_list</i> Filter
+                            </button>
+                            <a href="@Url.Action("Manage")" class="btn btn-outline-secondary">
+                                <i class="material-icons align-middle">clear</i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Documents.Any())
+    {
+        <div class="alert alert-info shadow-sm">
+            <div class="d-flex align-items-center">
+                <i class="material-icons me-3 fs-1">info</i>
+                <div>
+                    <h5 class="alert-heading">No Documents Found</h5>
+                    <p class="mb-0">No documents match your current filter criteria. Try adjusting your search or filters.</p>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="documentsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>File Type</th>
+                            <th>Size</th>
+                            <th>Uploaded By</th>
+                            <th>Upload Date</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var document in Model.Documents)
+                        {
+                            <tr class="@(document.IsDeleted ? "table-danger bg-opacity-25" : "")">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="material-icons me-2">@(GetFileIcon(document.FileType))</i>
+                                        <span>@document.Title</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-primary rounded-pill">@document.Category.GetDisplayName()</span></td>
+                                <td><span class="badge bg-secondary rounded-pill">@document.FileType</span></td>
+                                <td>@(document.FileSizeInKB < 1024 ? $"{document.FileSizeInKB} KB" : $"{document.FileSizeInKB / 1024:F2} MB")</td>
+                                <td>@document.UploadedBy.UserName</td>
+                                <td>@document.UploadDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    @if (document.IsDeleted)
+                                    {
+                                        <span class="badge bg-danger rounded-pill">
+                                            <i class="material-icons align-middle me-1" style="font-size: 0.9rem;">delete</i> Deleted
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success rounded-pill">
+                                            <i class="material-icons align-middle me-1" style="font-size: 0.9rem;">check_circle</i> Active
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    @if (!document.IsDeleted)
+                                    {
+                                        <a asp-action="Download" asp-route-id="@document.Id" class="btn btn-sm btn-primary" title="Download" data-bs-toggle="tooltip">
+                                            <i class="material-icons">download</i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger delete-btn" data-id="@document.Id" data-title="@document.Title" title="Delete" data-bs-toggle="tooltip">
+                                            <i class="material-icons">delete</i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success restore-btn" data-id="@document.Id" data-title="@document.Title" title="Restore" data-bs-toggle="tooltip">
+                                            <i class="material-icons">restore_from_trash</i>
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    @if (Model.CurrentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Manage" asp-route-page="1" asp-route-category="@Model.CategoryFilter" asp-route-searchTerm="@Model.SearchTerm" asp-route-showDeleted="@Model.ShowDeleted">
+                                <i class="material-icons">first_page</i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Manage" asp-route-page="@(Model.CurrentPage - 1)" asp-route-category="@Model.CategoryFilter" asp-route-searchTerm="@Model.SearchTerm" asp-route-showDeleted="@Model.ShowDeleted">
+                                <i class="material-icons">chevron_left</i>
+                            </a>
+                        </li>
+                    }
+
+                    @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-action="Manage" asp-route-page="@i" asp-route-category="@Model.CategoryFilter" asp-route-searchTerm="@Model.SearchTerm" asp-route-showDeleted="@Model.ShowDeleted">@i</a>
+                        </li>
+                    }
+
+                    @if (Model.CurrentPage < Model.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Manage" asp-route-page="@(Model.CurrentPage + 1)" asp-route-category="@Model.CategoryFilter" asp-route-searchTerm="@Model.SearchTerm" asp-route-showDeleted="@Model.ShowDeleted">
+                                <i class="material-icons">chevron_right</i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Manage" asp-route-page="@Model.TotalPages" asp-route-category="@Model.CategoryFilter" asp-route-searchTerm="@Model.SearchTerm" asp-route-showDeleted="@Model.ShowDeleted">
+                                <i class="material-icons">last_page</i>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="material-icons align-middle me-2">warning</i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the document "<span id="deleteDocumentTitle"></span>"?</p>
+                <p class="mb-0 text-muted">This action will make the document inaccessible to users.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="material-icons align-middle me-1">close</i>Cancel
+                </button>
+                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">
+                    <i class="material-icons align-middle me-1">delete</i>Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Confirmation Modal -->
+<div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="restoreModalLabel">
+                    <i class="material-icons align-middle me-2">restore</i>Confirm Restore
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to restore the document "<span id="restoreDocumentTitle"></span>"?</p>
+                <p class="mb-0 text-muted">This action will make the document accessible to users again.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="material-icons align-middle me-1">close</i>Cancel
+                </button>
+                <a href="#" id="confirmRestoreBtn" class="btn btn-success">
+                    <i class="material-icons align-middle me-1">restore_from_trash</i>Restore
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" />
+    
+    <!-- JavaScript libraries -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        $(document).ready(function () {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+            
+            // Add DataTables for better table functionality
+            if ($.fn.DataTable) {
+                $('#documentsTable').DataTable({
+                    "paging": false,
+                    "ordering": true,
+                    "info": false,
+                    "searching": false,
+                    "responsive": true
+                });
+            }
+            
+            // Show notification when filters are applied
+            @if (Model.ShowDeleted || Model.CategoryFilter.HasValue || !string.IsNullOrEmpty(Model.SearchTerm))
+            {
+                <text>
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+
+                Toast.fire({
+                    icon: 'info',
+                    title: 'Filters Applied',
+                    text: 'Documents are being filtered based on your criteria'
+                });
+                </text>
+            }
+            
+            // Handle checkbox change
+            $('#showDeletedCheckbox').change(function() {
+                $('#showDeletedHidden').val(this.checked.toString().toLowerCase());
+                $('#filterForm').submit();
+            });
+            
+            // Handle delete button click
+            $('.delete-btn').click(function() {
+                const id = $(this).data('id');
+                const title = $(this).data('title');
+                $('#deleteDocumentTitle').text(title);
+                $('#confirmDeleteBtn').attr('href', '@Url.Action("Delete")/' + id);
+                $('#deleteModal').modal('show');
+            });
+            
+            // Handle restore button click
+            $('.restore-btn').click(function() {
+                const id = $(this).data('id');
+                const title = $(this).data('title');
+                $('#restoreDocumentTitle').text(title);
+                $('#confirmRestoreBtn').attr('href', '@Url.Action("Restore")/' + id);
+                $('#restoreModal').modal('show');
+            });
+        });
+    </script>
+}
+
+@functions {
+    public string GetFileIcon(string fileType)
+    {
+        switch (fileType.ToLower())
+        {
+            case ".pdf":
+                return "picture_as_pdf";
+            case ".doc":
+            case ".docx":
+                return "description";
+            case ".xls":
+            case ".xlsx":
+                return "table_chart";
+            case ".ppt":
+            case ".pptx":
+                return "slideshow";
+            case ".txt":
+                return "article";
+            case ".jpg":
+            case ".jpeg":
+            case ".png":
+                return "image";
+            default:
+                return "insert_drive_file";
+        }
+    }
+} 

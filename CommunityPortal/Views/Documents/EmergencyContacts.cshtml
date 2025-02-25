@@ -1,0 +1,174 @@
+@model IEnumerable<CommunityPortal.Models.Documents.Document>
+@using CommunityPortal.Models.Utilities
+@{
+    ViewData["Title"] = "Emergency Contacts";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h1 class="card-title mb-1">
+                        <i class="material-icons align-middle me-2">emergency</i>Emergency Contacts
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Access important emergency contact information for community services, local authorities, and essential resources.
+                    </p>
+                </div>
+                <div>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="material-icons align-middle me-1">arrow_back</i> Back
+                    </a>
+                    @if (User.IsInRole("admin"))
+                    {
+                        <a asp-action="Upload" class="btn btn-success ms-2">
+                            <i class="material-icons align-middle me-1">upload_file</i> Upload
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">
+                <i class="material-icons align-middle me-2">contact_phone</i>Emergency Contact Information
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <div class="d-flex align-items-center">
+                    <i class="material-icons me-3">warning</i>
+                    <div>
+                        <strong>Important:</strong> In case of immediate emergency, always call 911 first.
+                    </div>
+                </div>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">
+                    <div class="d-flex align-items-center">
+                        <i class="material-icons me-3 fs-1">info</i>
+                        <div>
+                            <h5 class="alert-heading">No Documents Available</h5>
+                            <p class="mb-0">No emergency contact documents have been uploaded yet.</p>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="list-group">
+                    @foreach (var document in Model)
+                    {
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <div>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="material-icons me-2">@(GetFileIcon(document.FileType))</i>
+                                        <h5 class="mb-0">@document.Title</h5>
+                                    </div>
+                                    <p class="mb-1 text-muted">@(string.IsNullOrEmpty(document.Description) ? "No description provided." : document.Description)</p>
+                                    <small class="text-muted">
+                                        @document.FileName (@(document.FileSizeInKB < 1024 ? $"{document.FileSizeInKB} KB" : $"{document.FileSizeInKB / 1024:F2} MB"))
+                                        <span class="ms-2 text-danger">
+                                            <i class="material-icons align-middle" style="font-size: 0.9rem;">calendar_today</i> 
+                                            @document.UploadDate.ToString("MMM dd, yyyy")
+                                        </span>
+                                    </small>
+                                </div>
+                                <div>
+                                    <a asp-action="Download" asp-route-id="@document.Id" class="btn btn-primary">
+                                        <i class="material-icons align-middle me-1">download</i> Download
+                                    </a>
+                                    @if (User.IsInRole("admin"))
+                                    {
+                                        <button type="button" class="btn btn-danger ms-2 delete-btn" data-id="@document.Id" data-title="@document.Title">
+                                            <i class="material-icons align-middle me-1">delete</i> Delete
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="material-icons align-middle me-2">warning</i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the document "<span id="deleteDocumentTitle"></span>"?</p>
+                <p class="mb-0 text-muted">This action will make the document inaccessible to users.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="material-icons align-middle me-1">close</i>Cancel
+                </button>
+                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">
+                    <i class="material-icons align-middle me-1">delete</i>Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        $(document).ready(function () {
+            // Handle delete button click
+            $('.delete-btn').click(function() {
+                const id = $(this).data('id');
+                const title = $(this).data('title');
+                $('#deleteDocumentTitle').text(title);
+                $('#confirmDeleteBtn').attr('href', '@Url.Action("Delete")/' + id);
+                $('#deleteModal').modal('show');
+            });
+        });
+    </script>
+}
+
+@functions {
+    public string GetFileIcon(string fileType)
+    {
+        switch (fileType.ToLower())
+        {
+            case ".pdf":
+                return "picture_as_pdf";
+            case ".doc":
+            case ".docx":
+                return "description";
+            case ".xls":
+            case ".xlsx":
+                return "table_chart";
+            case ".ppt":
+            case ".pptx":
+                return "slideshow";
+            case ".txt":
+                return "article";
+            case ".jpg":
+            case ".jpeg":
+            case ".png":
+                return "image";
+            default:
+                return "insert_drive_file";
+        }
+    }
+} 
