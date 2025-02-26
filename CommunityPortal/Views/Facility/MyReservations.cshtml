@@ -3,6 +3,87 @@
     ViewData["Title"] = "My Reservations";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" />
+    <style>
+        /* Modal Enhancements */
+        .modal-content {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+        
+        .card {
+            transition: transform 0.2s;
+            border-radius: 10px;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Make sure blackout date reasons are larger */
+        .blackout-reason {
+            font-size: 1rem !important;
+            color: #495057 !important;
+        }
+        
+        /* Text truncation styles */
+        .truncate-text {
+            position: relative;
+            max-height: 100px;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+        
+        .truncate-text.expanded {
+            max-height: 1000px;
+        }
+        
+        .truncate-text.has-fade:after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(transparent, white);
+        }
+        
+        .read-more-btn {
+            color: #4e73df;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+        
+        .read-more-btn:hover {
+            text-decoration: underline;
+        }
+        
+        .read-more-btn i {
+            font-size: 18px;
+            margin-right: 3px;
+        }
+        
+        /* Duration badge */
+        .duration-badge {
+            display: inline-block;
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+    </style>
+}
+
 <div class="container mt-4">
     <h1>My Facility Reservations</h1>
 
@@ -72,16 +153,6 @@
                                                 }
                                             </a>
                                         }
-                                        
-                                        @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Pending ||
-                                             reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending ||
-                                             reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Approved)
-                                        {
-                                            <button type="button" class="btn btn-sm btn-danger" 
-                                                    onclick="confirmCancel(@reservation.Id)">
-                                                <i class="fas fa-times"></i> Cancel
-                                            </button>
-                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -106,160 +177,238 @@
 {
     <div class="modal fade" id="reservationModal-@reservation.Id" tabindex="-1">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Reservation Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-gradient-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="material-icons align-middle me-2">event</i>
+                        Reservation Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="row">
+                <div class="modal-body p-4">
+                    <div class="row g-4">
                         <div class="col-md-6">
-                            <h6>Facility Details</h6>
-                            <p><strong>Name:</strong> @reservation.Facility.Name</p>
-                            <p><strong>Type:</strong> @reservation.Facility.Type</p>
-                            <p><strong>Maximum Occupancy:</strong> @reservation.Facility.MaximumOccupancy people</p>
-                            @if (!string.IsNullOrEmpty(reservation.Facility.Description))
-                            {
-                                <p><strong>Description:</strong> @(reservation.Facility.Description.Length > 100 ? reservation.Facility.Description.Substring(0, 97) + "..." : reservation.Facility.Description)</p>
-                            }
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="card-title d-flex align-items-center mb-3">
+                                        <i class="material-icons text-primary me-2">villa</i>
+                                        Facility Details
+                                    </h6>
+                                    <p class="mb-2"><strong>Name:</strong> @reservation.Facility.Name</p>
+                                    <p class="mb-2"><strong>Type:</strong> <span class="badge bg-info">@reservation.Facility.Type</span></p>
+                                    <p class="mb-2"><strong>Maximum Occupancy:</strong> @reservation.Facility.MaximumOccupancy people</p>
+                                    <p class="mb-0"><strong>Price Per Hour:</strong> ₱@reservation.Facility.PricePerHour</p>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <h6>Reservation Details</h6>
-                            <p><strong>Date:</strong> @reservation.ReservationDate.ToShortDateString()</p>
-                            <p><strong>Time:</strong> @($"{reservation.StartTime.ToString("h:mm tt")} - {reservation.EndTime.ToString("h:mm tt")}")</p>
-                            <p><strong>Guest Count:</strong> @reservation.GuestCount</p>
-                            <p><strong>Total Price:</strong> ₱@reservation.TotalPrice</p>
-                            <p><strong>Status:</strong> <span class="badge @GetStatusBadgeClass(reservation.Status)">@reservation.Status</span></p>
-                            @if (reservation.IsPaid)
-                            {
-                                <p><strong>Payment Status:</strong> <span class="badge bg-success">Paid</span></p>
-                                @if (!string.IsNullOrEmpty(reservation.PaymentMethod))
-                                {
-                                    <p><strong>Payment Method:</strong> @reservation.PaymentMethod</p>
-                                }
-                            }
-                            else
-                            {
-                                <p><strong>Payment Status:</strong> <span class="badge bg-warning text-dark">Not Paid</span></p>
-                            }
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="card-title d-flex align-items-center mb-3">
+                                        <i class="material-icons text-primary me-2">calendar_today</i>
+                                        Reservation Details
+                                    </h6>
+                                    <p class="mb-2"><strong>Date:</strong> @reservation.ReservationDate.ToShortDateString()</p>
+                                    <p class="mb-2">
+                                        <strong>Time:</strong> @($"{reservation.StartTime.ToString("h:mm tt")} - {reservation.EndTime.ToString("h:mm tt")}")
+                                        @{
+                                            var duration = (reservation.EndTime - reservation.StartTime).TotalMinutes;
+                                            <span class="duration-badge">
+                                                <i class="fas fa-clock small"></i> @duration minutes
+                                            </span>
+                                        }
+                                    </p>
+                                    <p class="mb-2"><strong>Guest Count:</strong> @reservation.GuestCount</p>
+                                    <p class="mb-2"><strong>Total Price:</strong> ₱@reservation.TotalPrice</p>
+                                    <p class="mb-0">
+                                        <strong>Status:</strong> 
+                                        <span class="badge @GetStatusBadgeClass(reservation.Status)">@reservation.Status</span>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     @if (!string.IsNullOrEmpty(reservation.SpecialRequests))
                     {
-                        <div class="mt-3">
-                            <h6>Special Requests</h6>
-                            <p>@reservation.SpecialRequests</p>
+                        <div class="card border-0 shadow-sm mt-4">
+                            <div class="card-body">
+                                <h6 class="card-title d-flex align-items-center mb-3">
+                                    <i class="material-icons text-primary me-2">notes</i>
+                                    Special Requests
+                                </h6>
+                                @{
+                                    var specialRequestsId = $"specialRequests-{reservation.Id}";
+                                    var hasLongText = reservation.SpecialRequests.Length > 150;
+                                }
+                                <div class="truncate-text @(hasLongText ? "has-fade" : "")" id="@specialRequestsId">
+                                    <p class="mb-0">@reservation.SpecialRequests</p>
+                                </div>
+                                @if (hasLongText)
+                                {
+                                    <a class="read-more-btn" onclick="toggleReadMore('@specialRequestsId')">
+                                        <i class="material-icons small">expand_more</i>
+                                        <span class="read-more-text">Read more</span>
+                                    </a>
+                                }
+                            </div>
                         </div>
                     }
 
                     @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Rejected)
                     {
-                        <div class="mt-3 alert alert-danger">
-                            <h6><i class="fas fa-exclamation-triangle"></i> Rejection Reason</h6>
-                            <p>@reservation.RejectionReason</p>
-                        </div>
-                    }
-                    else if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Cancelled)
-                    {
-                        <div class="mt-3 alert alert-warning">
-                            <h6><i class="fas fa-ban"></i> Cancellation Reason</h6>
-                            <p>@(string.IsNullOrEmpty(reservation.RejectionReason) ? "No reason provided." : reservation.RejectionReason)</p>
+                        <div class="card border-0 shadow-sm mt-4 border-start border-danger border-4">
+                            <div class="card-body">
+                                <h6 class="card-title d-flex align-items-center mb-3 text-danger">
+                                    <i class="material-icons me-2">error_outline</i>
+                                    Rejection Information
+                                </h6>
+                                @{
+                                    var rejectionReasonId = $"rejectionReason-{reservation.Id}";
+                                    var hasLongRejection = !string.IsNullOrEmpty(reservation.RejectionReason) && reservation.RejectionReason.Length > 150;
+                                }
+                                <div class="truncate-text @(hasLongRejection ? "has-fade" : "")" id="@rejectionReasonId">
+                                    <p class="mb-0"><strong>Reason:</strong> @reservation.RejectionReason</p>
+                                </div>
+                                @if (hasLongRejection)
+                                {
+                                    <a class="read-more-btn" onclick="toggleReadMore('@rejectionReasonId')">
+                                        <i class="material-icons small">expand_more</i>
+                                        <span class="read-more-text">Read more</span>
+                                    </a>
+                                }
+                            </div>
                         </div>
                     }
 
+                    @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending || 
+                         reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Approved)
+                    {
+                        <div class="card border-0 shadow-sm mt-4">
+                            <div class="card-body">
+                                <h6 class="card-title d-flex align-items-center mb-3">
+                                    <i class="material-icons text-primary me-2">payment</i>
+                                    Payment Information
+                                </h6>
+                                <p class="mb-2">
+                                    <strong>Payment Status:</strong>
+                                    @if (reservation.IsPaid)
+                                    {
+                                        <span class="badge bg-success">Paid</span>
+                                    }
+                                    else if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending)
+                                    {
+                                        if (!string.IsNullOrEmpty(reservation.ReceiptFileName))
+                                        {
+                                            <span class="badge bg-warning">Receipt Uploaded - Pending Verification</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Payment Required</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">N/A</span>
+                                    }
+                                </p>
+                                
+                                @if (!string.IsNullOrEmpty(reservation.ReceiptFileName))
+                                {
+                                    <div class="mt-3">
+                                        <p class="mb-2"><strong>Receipt Uploaded:</strong> @(reservation.ReceiptUploadDate?.ToString("MMMM dd, yyyy, hh:mm tt") ?? "N/A")</p>
+                                        <div class="mt-2 text-center">
+                                            <img src="~/uploads/receipts/@reservation.ReceiptFileName" alt="Receipt" class="img-thumbnail" style="max-height: 300px;" />
+                                        </div>
+                                    </div>
+                                }
+                                else if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending)
+                                {
+                                    <div class="d-grid gap-2 mt-3">
+                                        <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-primary">
+                                            <i class="material-icons align-middle me-2">upload_file</i>
+                                            Upload Payment Receipt
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">
+                        <i class="material-icons align-middle me-1">close</i>
+                        Close
+                    </button>
+                    
+                    @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Pending || 
+                         reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Approved)
+                    {
+                        <button type="button" class="btn btn-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#cancelModal-@reservation.Id">
+                            <i class="material-icons align-middle me-1">cancel</i>
+                            Cancel Reservation
+                        </button>
+                    }
+                    
                     @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending)
                     {
-                        <div class="mt-3">
-                            <h6>Payment Status</h6>
-                            @if (string.IsNullOrEmpty(reservation.ReceiptFileName))
-                            {
-                                <div class="alert alert-warning">
-                                    <p><i class="fas fa-exclamation-circle"></i> Payment is required to confirm your reservation.</p>
-                                    <p><strong>Amount Due:</strong> ₱@reservation.TotalPrice</p>
-                                    <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-primary mt-2">
-                                        <i class="fas fa-credit-card"></i> Make Payment
-                                    </a>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="alert alert-info">
-                                    <p><i class="fas fa-info-circle"></i> Your payment receipt has been uploaded and is awaiting verification.</p>
-                                    <p><strong>Uploaded on:</strong> @reservation.ReceiptUploadDate?.ToString("MMMM dd, yyyy, hh:mm tt")</p>
-                                    <p><strong>Payment Method:</strong> @reservation.PaymentMethod</p>
-                                    <p><strong>Amount Paid:</strong> ₱@reservation.TotalPrice</p>
-                                    @if (!string.IsNullOrEmpty(reservation.PaymentVerificationNotes))
-                                    {
-                                        <p><strong>Verification Notes:</strong> @reservation.PaymentVerificationNotes</p>
-                                    }
-                                    <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-primary mt-2">
-                                        <i class="fas fa-receipt"></i> View Payment Details
-                                    </a>
-                                </div>
-                            }
-                        </div>
+                        <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-primary rounded-pill">
+                            <i class="material-icons align-middle me-1">payment</i>
+                            Make Payment
+                        </a>
                     }
-                    else if (reservation.IsPaid)
-                    {
-                        <div class="mt-3 alert alert-success">
-                            <h6><i class="fas fa-check-circle"></i> Payment Information</h6>
-                            <p>Payment has been verified and confirmed.</p>
-                            <p><strong>Amount Paid:</strong> ₱@reservation.TotalPrice</p>
-                            <p><strong>Payment Method:</strong> @reservation.PaymentMethod</p>
-                            <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-sm btn-outline-primary mt-2">
-                                <i class="fas fa-receipt"></i> View Full Payment Details
-                            </a>
-                        </div>
-                    }
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <div class="mt-4 text-end">
-                        @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Pending ||
-                             reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending ||
-                             reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Approved)
-                        {
-                            <form asp-action="CancelReservation" method="post" id="cancelForm-@reservation.Id" style="display:none;">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@reservation.Id" />
-                            </form>
-                            <button type="button" class="btn btn-danger" onclick="confirmCancel(@reservation.Id)">
-                                <i class="fas fa-times"></i> Cancel Reservation
-                            </button>
-                        }
+    @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Pending || 
+         reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Approved)
+    {
+        <div class="modal fade" id="cancelModal-@reservation.Id" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="material-icons align-middle me-2">warning</i>
+                            Cancel Reservation
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="text-center mb-4">
+                            <i class="material-icons" style="font-size: 4rem; color: #dc3545;">cancel</i>
+                        </div>
+                        <h4 class="text-center mb-3">Are you sure you want to cancel this reservation?</h4>
+                        <p class="text-center text-muted mb-4">
+                            This action cannot be undone. The facility will become available for other users to reserve.
+                        </p>
+                        
+                        <form asp-action="CancelReservation" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@reservation.Id" />
+                            
+                            <div class="d-flex justify-content-center gap-3">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                                    <i class="material-icons align-middle me-1">close</i>
+                                    No, Keep It
+                                </button>
+                                <button type="submit" class="btn btn-danger rounded-pill px-4">
+                                    <i class="material-icons align-middle me-1">check_circle</i>
+                                    Yes, Cancel
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
             </div>
         </div>
-    </div>
+    }
 }
 
-<!-- Cancel Modal -->
-<div class="modal fade" id="cancelModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">Confirm Cancellation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to cancel this reservation? This action cannot be undone.</p>
-                <p class="text-danger"><strong>Note:</strong> Cancellations made less than 2 hours before the reservation start time are not allowed.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Keep Reservation</button>
-                <form id="cancelForm" asp-action="CancelReservation" method="post">
-                    <input type="hidden" id="reservationId" name="id" value="" />
-                    <button type="submit" class="btn btn-danger">Yes, Cancel Reservation</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
 @section Scripts {
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script>
         $(document).ready(function () {
             // Initialize DataTable
@@ -276,11 +425,27 @@
             document.getElementById('reservationId').value = id;
             new bootstrap.Modal(document.getElementById('cancelModal')).show();
         }
+        
+        function toggleReadMore(elementId) {
+            const element = document.getElementById(elementId);
+            const button = element.nextElementSibling;
+            const buttonText = button.querySelector('.read-more-text');
+            
+            if (element.classList.contains('expanded')) {
+                element.classList.remove('expanded');
+                buttonText.textContent = 'Read more';
+                button.querySelector('i').textContent = 'expand_more';
+            } else {
+                element.classList.add('expanded');
+                buttonText.textContent = 'Read less';
+                button.querySelector('i').textContent = 'expand_less';
+            }
+        }
     </script>
 }
 
 @functions {
-    string GetStatusBadgeClass(CommunityPortal.Models.Facility.ReservationStatus status)
+    public string GetStatusBadgeClass(CommunityPortal.Models.Facility.ReservationStatus status)
     {
         return status switch
         {

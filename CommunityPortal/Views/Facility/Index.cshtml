@@ -6,69 +6,224 @@
     ViewData["Title"] = "Facilities";
 }
 
-<div class="container mt-4">
-    <h1>Community Facilities</h1>
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold">Community Facilities</h1>
+            <p class="text-muted">Browse and reserve our community's premium facilities</p>
+        </div>
+    </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
+    <div class="card border-0 shadow-sm rounded-3 mb-5">
+        <div class="card-body p-4">
             <form method="get" class="row g-3">
                 <div class="col-md-4">
-                    <input type="text" name="searchString" class="form-control" placeholder="Search facilities..." />
+                    <div class="form-floating">
+                        <input type="text" name="searchString" class="form-control" id="searchString" placeholder="Search facilities..." value="@Context.Request.Query["searchString"]" />
+                        <label for="searchString"><i class="material-icons align-middle me-1" style="font-size: 1rem;">search</i> Search facilities</label>
+                    </div>
                 </div>
                 <div class="col-md-3">
-                    <select name="type" class="form-select">
-                        <option value="">All Types</option>
-                        @foreach (var type in ViewBag.Types)
-                        {
-                            <option value="@type">@type</option>
-                        }
-                    </select>
+                    <div class="form-floating">
+                        <select name="type" class="form-select" id="facilityType">
+                            <option value="">All Types</option>
+                            @foreach (var type in ViewBag.Types)
+                            {
+                                var isSelected = Context.Request.Query["type"].ToString() == type.ToString();
+                                <option value="@type" selected="@isSelected">@type</option>
+                            }
+                        </select>
+                        <label for="facilityType"><i class="material-icons align-middle me-1" style="font-size: 1rem;">category</i> Facility Type</label>
+                    </div>
                 </div>
                 <div class="col-md-3">
-                    <input type="date" name="date" class="form-control" />
+                    <div class="form-floating">
+                        <input type="date" name="date" class="form-control" id="availabilityDate" value="@Context.Request.Query["date"]" />
+                        <label for="availabilityDate"><i class="material-icons align-middle me-1" style="font-size: 1rem;">event</i> Availability Date</label>
+                    </div>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                    <button type="submit" class="btn btn-primary h-100 w-100 d-flex align-items-center justify-content-center">
+                        <i class="material-icons me-2">filter_list</i> Filter
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        @foreach (var facility in Model)
-        {
-            <div class="col">
-                <div class="card h-100">
-                    @if (!string.IsNullOrEmpty(facility.ImageUrl))
-                    {
-                        <img src="@facility.ImageUrl" class="card-img-top" alt="@facility.Name" style="height: 200px; object-fit: cover;">
-                    }
-                    else
-                    {
-                        <img src="/images/default-facility.jpg" class="card-img-top" alt="Default Facility Image" style="height: 200px; object-fit: cover;">
-                    }
-                    <div class="card-body">
-                        <h5 class="card-title">@facility.Name</h5>
-                        <p class="card-text">@facility.Description</p>
-                        <div class="facility-details">
-                            <p><strong>Type:</strong> @facility.Type</p>
-                            <p><strong>Operating Hours:</strong> @($"{facility.OpeningTime.ToString("h:mm tt")} - {facility.ClosingTime.ToString("h:mm tt")}")</p>
-                            <p><strong>Maximum Occupancy:</strong> @facility.MaximumOccupancy persons</p>
-                            <p><strong>Price:</strong> $@facility.PricePerHour/hour</p>
-                        </div>
-                        <a href="@Url.Action("Details", new { id = facility.Id })" class="btn btn-primary">View Details</a>
-                    </div>
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info shadow-sm border-0 rounded-3 p-4">
+            <div class="d-flex align-items-center">
+                <i class="material-icons display-4 me-3 text-primary">info</i>
+                <div>
+                    <h4 class="alert-heading">No Facilities Found</h4>
+                    <p class="mb-0">No facilities match your search criteria. Try adjusting your filters or check back later.</p>
                 </div>
             </div>
-        }
-    </div>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+            @foreach (var facility in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 facility-card border-0 shadow-sm">
+                        <div class="facility-image-wrapper">
+                            @if (!string.IsNullOrEmpty(facility.ImageUrl))
+                            {
+                                <img src="@facility.ImageUrl" class="card-img-top facility-image" alt="@facility.Name">
+                            }
+                            else
+                            {
+                                <img src="/images/default-facility.jpg" class="card-img-top facility-image" alt="Default Facility Image">
+                            }
+                            <div class="facility-type-badge">@facility.Type</div>
+                            <a href="@Url.Action("Details", new { id = facility.Id })" class="facility-overlay">
+                                <div class="facility-overlay-content">
+                                    <i class="material-icons">visibility</i>
+                                    <span>View Details</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">@facility.Name</h5>
+                            <p class="card-text text-muted">@(facility.Description?.Length > 100 ? facility.Description.Substring(0, 97) + "..." : facility.Description)</p>
+                            
+                            <div class="facility-details mt-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="material-icons text-primary me-2">schedule</i>
+                                    <span>@($"{facility.OpeningTime.ToString("h:mm tt")} - {facility.ClosingTime.ToString("h:mm tt")}")</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="material-icons text-primary me-2">group</i>
+                                    <span>@facility.MaximumOccupancy persons max</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="material-icons text-primary me-2">attach_money</i>
+                                    <span>&#8369; @facility.PricePerHour/hour</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-0 pt-0">
+                            <a href="@Url.Action("Details", new { id = facility.Id })" class="btn btn-primary w-100 rounded-pill">
+                                <i class="material-icons align-middle me-1">event_available</i> Reserve Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @section Styles {
     <style>
-        .facility-details p {
-            margin-bottom: 0.5rem;
+        .facility-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .facility-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+        
+        .facility-image-wrapper {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .facility-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .facility-card:hover .facility-image {
+            transform: scale(1.05);
+        }
+        
+        .facility-type-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: rgba(43, 46, 52, 0.8);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            z-index: 2;
+        }
+        
+        .facility-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .facility-overlay-content {
+            color: white;
+            text-align: center;
+        }
+        
+        .facility-overlay-content i {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .facility-card:hover .facility-overlay {
+            opacity: 1;
+        }
+        
+        .facility-details {
             font-size: 0.9rem;
         }
+        
+        .facility-details i {
+            font-size: 1.2rem;
+        }
+        
+        .form-floating .material-icons {
+            position: relative;
+            top: -1px;
+        }
     </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add animation when cards appear
+            const cards = document.querySelectorAll('.facility-card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate__animated', 'animate__fadeIn');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
 }

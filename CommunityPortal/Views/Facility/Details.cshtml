@@ -4,96 +4,176 @@
     var blackoutDates = Model.BlackoutDates.Select(bd => new { start = bd.StartDate.ToString("yyyy-MM-dd"), end = bd.EndDate.ToString("yyyy-MM-dd"), reason = bd.Reason }).ToList();
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                {
-                    <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Name" style="height: 400px; object-fit: cover;">
-                }
-                else
-                {
-                    <img src="/images/default-facility.jpg" class="card-img-top" alt="Default Facility Image" style="height: 400px; object-fit: cover;">
-                }
-                <div class="card-body">
-                    <h1 class="card-title">@Model.Name</h1>
-                    <p class="card-text">@Model.Description</p>
-                    <hr />
-                    <div class="facility-details">
-                        <p><strong>Type:</strong> @Model.Type</p>
-                        <p><strong>Operating Hours:</strong> @($"{Model.OpeningTime.ToString("h:mm tt")} - {Model.ClosingTime.ToString("h:mm tt")}")</p>
-                        <p><strong>Maximum Occupancy:</strong> @Model.MaximumOccupancy persons</p>
-                        <p><strong>Price:</strong> $@Model.PricePerHour/hour</p>
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Facility" asp-action="Index">Facilities</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                <div class="facility-image-container">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" class="facility-detail-image" alt="@Model.Name">
+                    }
+                    else
+                    {
+                        <img src="/images/default-facility.jpg" class="facility-detail-image" alt="Default Facility Image">
+                    }
+                    <div class="facility-type-badge-large">@Model.Type</div>
+                </div>
+                <div class="card-body p-4">
+                    <h1 class="display-6 fw-bold mb-3">@Model.Name</h1>
+                    
+                    <div class="facility-highlights mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="highlight-item">
+                                    <i class="material-icons text-primary">schedule</i>
+                                    <div>
+                                        <span class="highlight-label">Hours</span>
+                                        <p class="highlight-value">@($"{Model.OpeningTime.ToString("h:mm tt")} - {Model.ClosingTime.ToString("h:mm tt")}")</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="highlight-item">
+                                    <i class="material-icons text-primary">group</i>
+                                    <div>
+                                        <span class="highlight-label">Capacity</span>
+                                        <p class="highlight-value">@Model.MaximumOccupancy persons</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="highlight-item">
+                                    <i class="material-icons text-primary">attach_money</i>
+                                    <div>
+                                        <span class="highlight-label">Price</span>
+                                        <p class="highlight-value">&#8369; @Model.PricePerHour/hour</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="facility-description">
+                        <h5 class="fw-bold mb-3">About this Facility</h5>
+                        <p class="mb-0">@Model.Description</p>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Make a Reservation</h5>
-                    
-                    <form asp-action="Reserve" method="post" id="reservationForm">
-                        <input type="hidden" name="FacilityId" value="@Model.Id" />
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Date</label>
-                            <input type="date" name="ReservationDate" id="reservationDate" class="form-control" required 
-                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" 
-                                   value="@(TempData["ReservationDate"]?.ToString() ?? "")" />
-                            <small class="text-muted">Blackout dates are disabled in the calendar</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Start Time</label>
-                            <input type="time" name="StartTime" id="startTime" class="form-control" required 
-                                   value="@(TempData["StartTime"]?.ToString() ?? "")" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">End Time</label>
-                            <input type="time" name="EndTime" id="endTime" class="form-control" required 
-                                   value="@(TempData["EndTime"]?.ToString() ?? "")" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Number of Guests</label>
-                            <input type="number" name="GuestCount" id="guestCount" class="form-control" required 
-                                   min="1" max="@Model.MaximumOccupancy" 
-                                   value="@(TempData["GuestCount"]?.ToString() ?? "")" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Special Requests</label>
-                            <textarea name="SpecialRequests" class="form-control" rows="3">@(TempData["SpecialRequests"]?.ToString() ?? "")</textarea>
-                        </div>
-
-                        <button type="button" class="btn btn-primary w-100" onclick="validateAndShowConfirmation()">Submit Reservation</button>
-                    </form>
-                </div>
-            </div>
-
+            
             @if (Model.BlackoutDates.Any())
             {
-                <div class="card mt-3">
-                    <div class="card-body">
-                        <h5 class="card-title text-danger">Unavailable Dates</h5>
-                        <ul class="list-unstyled">
+                <div class="card border-0 shadow-sm rounded-3 mt-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="material-icons text-danger me-2">event_busy</i>
+                            <h5 class="fw-bold mb-0">Unavailable Dates</h5>
+                        </div>
+                        <div class="row g-3">
                             @foreach (var blackout in Model.BlackoutDates.OrderBy(bd => bd.StartDate))
                             {
-                                <li>
-                                    <i class="fas fa-calendar-times text-danger"></i>
-                                    @blackout.StartDate.ToShortDateString() - @blackout.EndDate.ToShortDateString()
-                                    <br />
-                                    <small class="text-muted">@blackout.Reason</small>
-                                </li>
+                                <div class="col-md-6">
+                                    <div class="blackout-date-card">
+                                        <div class="blackout-date-range">
+                                            <i class="material-icons">date_range</i>
+                                            <span>@blackout.StartDate.ToShortDateString() - @blackout.EndDate.ToShortDateString()</span>
+                                        </div>
+                                        <div class="blackout-reason">@blackout.Reason</div>
+                                    </div>
+                                </div>
                             }
-                        </ul>
+                        </div>
                     </div>
                 </div>
             }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-sm sticky-top" style="top: 20px; z-index: 100;">
+                <div class="card-header bg-primary text-white p-3">
+                    <h5 class="card-title mb-0">
+                        <i class="material-icons align-middle me-2">event_available</i>
+                        Make a Reservation
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Reserve" method="post" id="reservationForm" class="needs-validation" novalidate>
+                        <input type="hidden" name="FacilityId" value="@Model.Id" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">
+                                <i class="material-icons align-middle me-1 small">event</i>
+                                Date
+                            </label>
+                            <input type="date" name="ReservationDate" id="reservationDate" class="form-control rounded-3" required 
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" 
+                                   value="@(TempData["ReservationDate"]?.ToString() ?? "")" />
+                            <div class="form-text">
+                                <i class="material-icons align-middle small me-1">info</i>
+                                Blackout dates are disabled
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-medium">
+                                    <i class="material-icons align-middle me-1 small">access_time</i>
+                                    Start Time
+                                </label>
+                                <input type="time" name="StartTime" id="startTime" class="form-control rounded-3" required 
+                                       value="@(TempData["StartTime"]?.ToString() ?? "")" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-medium">
+                                    <i class="material-icons align-middle me-1 small">access_time</i>
+                                    End Time
+                                </label>
+                                <input type="time" name="EndTime" id="endTime" class="form-control rounded-3" required 
+                                       value="@(TempData["EndTime"]?.ToString() ?? "")" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">
+                                <i class="material-icons align-middle me-1 small">group</i>
+                                Number of Guests
+                            </label>
+                            <input type="number" name="GuestCount" id="guestCount" class="form-control rounded-3" required 
+                                   min="1" max="@Model.MaximumOccupancy" 
+                                   value="@(TempData["GuestCount"]?.ToString() ?? "1")" />
+                            <div class="form-text">Maximum @Model.MaximumOccupancy persons</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-medium">
+                                <i class="material-icons align-middle me-1 small">notes</i>
+                                Special Requests
+                            </label>
+                            <textarea name="SpecialRequests" class="form-control rounded-3" rows="3" 
+                                      placeholder="Any special requirements or notes...">@(TempData["SpecialRequests"]?.ToString() ?? "")</textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-primary btn-lg rounded-pill" onclick="validateAndShowConfirmation()">
+                                <i class="material-icons align-middle me-2">check_circle</i>
+                                Submit Reservation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -118,27 +198,184 @@
 
 <!-- Confirmation Modal -->
 <div class="modal fade" id="confirmationModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Reservation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="material-icons me-2">check_circle</i>
+                    Confirm Reservation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <h6>Please confirm your reservation details:</h6>
-                <p><strong>Facility:</strong> @Model.Name</p>
-                <p><strong>Date:</strong> <span id="confirmDate"></span></p>
-                <p><strong>Time:</strong> <span id="confirmTime"></span></p>
-                <p><strong>Number of Guests:</strong> <span id="confirmGuests"></span></p>
-                <p><strong>Estimated Price:</strong> <span id="confirmPrice"></span></p>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <i class="material-icons" style="font-size: 4rem; color: #4e73df;">event_available</i>
+                </div>
+                
+                <h5 class="text-center mb-4">Please confirm your reservation details</h5>
+                
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title d-flex align-items-center mb-3">
+                            <i class="material-icons text-primary me-2">villa</i>
+                            Facility Details
+                        </h6>
+                        <p class="mb-2"><strong>Name:</strong> @Model.Name</p>
+                        <p class="mb-0"><strong>Type:</strong> <span class="badge bg-info">@Model.Type</span></p>
+                    </div>
+                </div>
+                
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title d-flex align-items-center mb-3">
+                            <i class="material-icons text-primary me-2">event</i>
+                            Reservation Details
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong><i class="material-icons small align-middle text-muted me-1">calendar_today</i> Date:</strong>
+                                    <span id="confirmDate" class="fw-medium"></span>
+                                </p>
+                                <p class="mb-2">
+                                    <strong><i class="material-icons small align-middle text-muted me-1">schedule</i> Time:</strong>
+                                    <span id="confirmTime" class="fw-medium"></span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong><i class="material-icons small align-middle text-muted me-1">group</i> Guests:</strong>
+                                    <span id="confirmGuests" class="fw-medium"></span>
+                                </p>
+                                <p class="mb-0">
+                                    <strong><i class="material-icons small align-middle text-muted me-1">payments</i> Price:</strong>
+                                    <span id="confirmPrice" class="fw-medium"></span>
+                                </p>
+                            </div>
+                        </div>
+                        <div id="durationContainer" class="mt-2 p-2 bg-light rounded-3 d-flex align-items-center">
+                            <i class="material-icons text-primary me-2">timelapse</i>
+                            <div>
+                                <span class="small text-muted">Duration</span>
+                                <p class="mb-0 fw-medium" id="confirmDuration"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-light border mt-3">
+                    <div class="d-flex">
+                        <i class="material-icons text-primary me-2">info</i>
+                        <div class="small">
+                            <p class="mb-0">By confirming this reservation, you agree to the facility usage terms and cancellation policy.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="submitReservation()">Confirm Reservation</button>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">
+                    <i class="material-icons align-middle me-1" style="font-size: 18px;">close</i>
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-primary rounded-pill" onclick="submitReservation()">
+                    <i class="material-icons align-middle me-1" style="font-size: 18px;">check_circle</i>
+                    Confirm Reservation
+                </button>
             </div>
         </div>
     </div>
 </div>
+
+@section Styles {
+    <style>
+        .facility-image-container {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
+        
+        .facility-detail-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .facility-type-badge-large {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(43, 46, 52, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .facility-highlights {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .highlight-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .highlight-item i {
+            font-size: 2rem;
+        }
+        
+        .highlight-label {
+            display: block;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .highlight-value {
+            font-weight: 500;
+            margin-bottom: 0;
+        }
+        
+        .blackout-date-card {
+            background-color: #f8f9fa;
+            border-left: 4px solid #dc3545;
+            padding: 12px;
+            border-radius: 6px;
+        }
+        
+        .blackout-date-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .blackout-date-range i {
+            color: #dc3545;
+        }
+        
+        .blackout-reason {
+            font-size: 1rem !important;
+            color: #495057 !important;
+        }
+        
+        .material-icons.small {
+            font-size: 16px;
+        }
+        
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+        
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+    </style>
+}
 
 @section Scripts {
     <script>
@@ -255,7 +492,23 @@
             document.getElementById('confirmDate').textContent = new Date(date).toLocaleDateString();
             document.getElementById('confirmTime').textContent = `${formatTime(startTime)} - ${formatTime(endTime)}`;
             document.getElementById('confirmGuests').textContent = guestCount;
-            document.getElementById('confirmPrice').textContent = `$${totalPrice.toFixed(2)}`;
+            document.getElementById('confirmPrice').textContent = `₱${totalPrice.toFixed(2)}`;
+            
+            // Calculate and display duration in minutes
+            const durationMinutes = Math.round(durationHours * 60);
+            const hours = Math.floor(durationMinutes / 60);
+            const minutes = durationMinutes % 60;
+            let durationText = '';
+            
+            if (hours > 0) {
+                durationText += `${hours} hour${hours !== 1 ? 's' : ''}`;
+                if (minutes > 0) durationText += ` and `;
+            }
+            if (minutes > 0 || hours === 0) {
+                durationText += `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+            }
+            
+            document.getElementById('confirmDuration').textContent = durationText;
 
             // Show confirmation modal
             new bootstrap.Modal(document.getElementById('confirmationModal')).show();

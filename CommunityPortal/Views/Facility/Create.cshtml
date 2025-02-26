@@ -3,75 +3,243 @@
     ViewData["Title"] = "Add New Facility";
 }
 
-<div class="container mt-4">
+@section Styles {
+    <style>
+        /* Card Enhancements */
+        .card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            color: white;
+            padding: 1.5rem;
+            border-bottom: none;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+        }
+        
+        .btn {
+            border-radius: 50px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3a5ac1 0%, #1a3b9c 100%);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+            color: #212529;
+            transform: translateY(-2px);
+        }
+        
+        /* Image preview container */
+        .image-preview-container {
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            height: 200px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .image-preview-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .image-preview-placeholder {
+            color: #6c757d;
+            text-align: center;
+        }
+        
+        .image-preview-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.3;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-label i {
+            margin-right: 0.5rem;
+            color: #4e73df;
+        }
+    </style>
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Facility" asp-action="Index">Facilities</a></li>
+                    <li class="breadcrumb-item"><a asp-controller="Facility" asp-action="Manage">Manage Facilities</a></li>
+                    <li class="breadcrumb-item active">Add New Facility</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title mb-0">Add New Facility</h2>
+        <div class="col-lg-10">
+            <div class="card mb-5">
+                <div class="card-header d-flex align-items-center">
+                    <i class="material-icons me-3" style="font-size: 2rem;">add_circle</i>
+                    <h2 class="card-title mb-0 fw-bold">Add New Facility</h2>
                 </div>
-                <div class="card-body">
-                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
                         @Html.AntiForgeryToken()
 
-                        <div class="mb-3">
-                            <label asp-for="Name" class="form-label">Name</label>
-                            <input asp-for="Name" class="form-control" required />
-                            <span asp-validation-for="Name" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Description" class="form-label">Description</label>
-                            <textarea asp-for="Description" class="form-control" rows="4" required></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="Type" class="form-label">Type</label>
-                            <select asp-for="Type" class="form-select" required>
-                                @foreach (var type in Enum.GetValues(typeof(CommunityPortal.Models.Facility.FacilityType)))
-                                {
-                                    <option value="@type">@type</option>
-                                }
-                            </select>
-                            <span asp-validation-for="Type" class="text-danger"></span>
-                        </div>
-
-                        <div class="row mb-3">
+                        <div class="row g-4">
                             <div class="col-md-6">
-                                <label asp-for="OpeningTime" class="form-label">Opening Time</label>
-                                <input asp-for="OpeningTime" type="time" class="form-control" required value="@(Model?.OpeningTime.ToString("HH:mm"))" />
-                                <span asp-validation-for="OpeningTime" class="text-danger"></span>
+                                <div class="mb-4">
+                                    <label asp-for="Name" class="form-label">
+                                        <i class="material-icons small">apartment</i>
+                                        Name
+                                    </label>
+                                    <input asp-for="Name" class="form-control" required />
+                                    <div class="invalid-feedback">Please enter a facility name.</div>
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label asp-for="Type" class="form-label">
+                                        <i class="material-icons small">category</i>
+                                        Type
+                                    </label>
+                                    <select asp-for="Type" class="form-select" required>
+                                        @foreach (var type in Enum.GetValues(typeof(CommunityPortal.Models.Facility.FacilityType)))
+                                        {
+                                            <option value="@type">@type</option>
+                                        }
+                                    </select>
+                                    <div class="invalid-feedback">Please select a facility type.</div>
+                                    <span asp-validation-for="Type" class="text-danger"></span>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label asp-for="OpeningTime" class="form-label">
+                                            <i class="material-icons small">access_time</i>
+                                            Opening Time
+                                        </label>
+                                        <input asp-for="OpeningTime" type="time" class="form-control" required value="@(Model?.OpeningTime.ToString("HH:mm"))" />
+                                        <div class="invalid-feedback">Please set an opening time.</div>
+                                        <span asp-validation-for="OpeningTime" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label asp-for="ClosingTime" class="form-label">
+                                            <i class="material-icons small">access_time</i>
+                                            Closing Time
+                                        </label>
+                                        <input asp-for="ClosingTime" type="time" class="form-control" required value="@(Model?.ClosingTime.ToString("HH:mm"))" />
+                                        <div class="invalid-feedback">Please set a closing time.</div>
+                                        <span asp-validation-for="ClosingTime" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label asp-for="MaximumOccupancy" class="form-label">
+                                            <i class="material-icons small">group</i>
+                                            Maximum Occupancy
+                                        </label>
+                                        <input asp-for="MaximumOccupancy" type="number" class="form-control" min="1" required />
+                                        <div class="invalid-feedback">Please enter a valid occupancy (min 1).</div>
+                                        <span asp-validation-for="MaximumOccupancy" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label asp-for="PricePerHour" class="form-label">
+                                            <i class="material-icons small">payments</i>
+                                            Price Per Hour (₱)
+                                        </label>
+                                        <input asp-for="PricePerHour" type="number" class="form-control" min="0" step="0.01" required />
+                                        <div class="invalid-feedback">Please enter a valid price.</div>
+                                        <span asp-validation-for="PricePerHour" class="text-danger"></span>
+                                    </div>
+                                </div>
                             </div>
+
                             <div class="col-md-6">
-                                <label asp-for="ClosingTime" class="form-label">Closing Time</label>
-                                <input asp-for="ClosingTime" type="time" class="form-control" required value="@(Model?.ClosingTime.ToString("HH:mm"))" />
-                                <span asp-validation-for="ClosingTime" class="text-danger"></span>
+                                <div class="mb-4">
+                                    <label asp-for="Description" class="form-label">
+                                        <i class="material-icons small">description</i>
+                                        Description
+                                    </label>
+                                    <textarea asp-for="Description" class="form-control" rows="5" required></textarea>
+                                    <div class="invalid-feedback">Please provide a description.</div>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="image" class="form-label">
+                                        <i class="material-icons small">add_photo_alternate</i>
+                                        Facility Image
+                                    </label>
+                                    <div class="image-preview-container mb-3" id="imagePreviewContainer">
+                                        <div class="image-preview-placeholder" id="previewPlaceholder">
+                                            <i class="material-icons">image</i>
+                                            <p class="mb-0">Image preview will appear here</p>
+                                        </div>
+                                        <img id="imagePreview" style="display: none;" alt="Facility Preview" />
+                                    </div>
+                                    <input type="file" name="image" id="image" class="form-control" accept="image/*" />
+                                    <div class="form-text">
+                                        <i class="material-icons small align-middle" style="font-size: 14px;">info</i>
+                                        Upload an image of the facility (optional)
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="MaximumOccupancy" class="form-label">Maximum Occupancy</label>
-                                <input asp-for="MaximumOccupancy" type="number" class="form-control" min="1" required />
-                                <span asp-validation-for="MaximumOccupancy" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label asp-for="PricePerHour" class="form-label">Price Per Hour ($)</label>
-                                <input asp-for="PricePerHour" type="number" class="form-control" min="0" step="0.01" required />
-                                <span asp-validation-for="PricePerHour" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="image" class="form-label">Facility Image</label>
-                            <input type="file" name="image" id="image" class="form-control" accept="image/*" />
-                            <small class="form-text text-muted">Upload an image of the facility (optional)</small>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="Manage" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Create Facility</button>
+                        <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                            <a asp-action="Manage" class="btn btn-secondary">
+                                <i class="material-icons align-middle me-1" style="font-size: 18px;">arrow_back</i>
+                                Back to Manage
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="material-icons align-middle me-1" style="font-size: 18px;">add_circle</i>
+                                Create Facility
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -83,18 +251,46 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Form validation
             const form = document.querySelector('form');
             const openingTimeInput = document.querySelector('#OpeningTime');
             const closingTimeInput = document.querySelector('#ClosingTime');
+            
+            // Image preview
+            const imageInput = document.querySelector('#image');
+            const imagePreview = document.querySelector('#imagePreview');
+            const previewPlaceholder = document.querySelector('#previewPlaceholder');
+            
+            if (imageInput) {
+                imageInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            imagePreview.src = e.target.result;
+                            imagePreview.style.display = 'block';
+                            previewPlaceholder.style.display = 'none';
+                        }
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
 
+            // Bootstrap validation
             form.addEventListener('submit', function(e) {
-                const openingTime = openingTimeInput.value;
-                const closingTime = closingTimeInput.value;
-
-                if (closingTime <= openingTime) {
+                if (!form.checkValidity()) {
                     e.preventDefault();
-                    alert('Closing time must be after opening time');
+                    e.stopPropagation();
+                } else {
+                    // Additional time validation
+                    const openingTime = openingTimeInput.value;
+                    const closingTime = closingTimeInput.value;
+
+                    if (closingTime <= openingTime) {
+                        e.preventDefault();
+                        alert('Closing time must be after opening time');
+                    }
                 }
+                form.classList.add('was-validated');
             });
         });
     </script>

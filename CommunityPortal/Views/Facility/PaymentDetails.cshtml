@@ -5,183 +5,352 @@
 }
 
 <div class="container mt-4">
-    <div class="row">
+    <div class="row g-4">
         <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Reservation Payment Details</h4>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <h4 class="mb-0 d-flex align-items-center">
+                        <i class="material-icons me-2">payment</i>
+                        Reservation Payment Details
+                    </h4>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-4">
+                <div class="card-body p-4">
+                    <div class="row g-4 mb-4">
                         <div class="col-md-6">
-                            <h5>Facility Details</h5>
-                            <p><strong>Name:</strong> @Model.Facility.Name</p>
-                            <p><strong>Type:</strong> @Model.Facility.Type</p>
-                            @if (!string.IsNullOrEmpty(Model.Facility.Description))
-                            {
-                                <p><strong>Description:</strong> @(Model.Facility.Description.Length > 100 ? Model.Facility.Description.Substring(0, 97) + "..." : Model.Facility.Description)</p>
-                            }
-                            <p><strong>Maximum Occupancy:</strong> @Model.Facility.MaximumOccupancy people</p>
-                            <p><strong>Operating Hours:</strong> @Model.Facility.OpeningTime.ToString("h:mm tt") - @Model.Facility.ClosingTime.ToString("h:mm tt")</p>
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title d-flex align-items-center mb-3">
+                                        <i class="material-icons text-primary me-2">villa</i>
+                                        Facility Details
+                                    </h5>
+                                    <p class="mb-2"><strong>Name:</strong> @Model.Facility.Name</p>
+                                    <p class="mb-2"><strong>Type:</strong> <span class="badge bg-info">@Model.Facility.Type</span></p>
+                                    @if (!string.IsNullOrEmpty(Model.Facility.Description))
+                                    {
+                                        <p class="mb-2"><strong>Description:</strong></p>
+                                        <div class="description-preview text-muted mb-2">
+                                            @{
+                                                var descriptionPreview = Model.Facility.Description.Length > 100 
+                                                    ? Model.Facility.Description.Substring(0, 97) + "..." 
+                                                    : Model.Facility.Description;
+                                            }
+                                            @descriptionPreview
+                                        </div>
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#descriptionModal" class="read-more-link">
+                                            <i class="material-icons align-middle me-1 small">read_more</i> Read more
+                                        </a>
+                                    }
+                                    <p class="mb-2"><strong>Maximum Occupancy:</strong> @Model.Facility.MaximumOccupancy people</p>
+                                    <p class="mb-0"><strong>Operating Hours:</strong> @Model.Facility.OpeningTime.ToString("h:mm tt") - @Model.Facility.ClosingTime.ToString("h:mm tt")</p>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <h5>Reservation Details</h5>
-                            <p><strong>Date:</strong> @Model.ReservationDate.ToShortDateString()</p>
-                            <p><strong>Time:</strong> @($"{Model.StartTime.ToString("h:mm tt")} - {Model.EndTime.ToString("h:mm tt")}")</p>
-                            <p><strong>Duration:</strong> @(((TimeSpan)(Model.EndTime - Model.StartTime)).TotalHours) hours</p>
-                            <p><strong>Guest Count:</strong> @Model.GuestCount</p>
-                            @if (!string.IsNullOrEmpty(Model.SpecialRequests))
-                            {
-                                <p><strong>Special Requests:</strong> @Model.SpecialRequests</p>
-                            }
-                            <p><strong>Status:</strong> <span class="badge @GetStatusBadgeClass(Model.Status)">@Model.Status</span></p>
-                            <p><strong>Reserved On:</strong> @Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</p>
-                            <p><strong>Reservation ID:</strong> #@Model.Id</p>
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title d-flex align-items-center mb-3">
+                                        <i class="material-icons text-primary me-2">calendar_today</i>
+                                        Reservation Details
+                                    </h5>
+                                    <p class="mb-2"><strong>Date:</strong> @Model.ReservationDate.ToShortDateString()</p>
+                                    @{
+                                        var duration = (Model.EndTime - Model.StartTime).TotalMinutes;
+                                        var hours = Math.Floor(duration / 60);
+                                        var minutes = duration % 60;
+                                        var durationText = hours > 0 
+                                            ? (minutes > 0 ? $"{hours} {(hours == 1 ? "hour" : "hours")} and {minutes} {(minutes == 1 ? "minute" : "minutes")}" : $"{hours} {(hours == 1 ? "hour" : "hours")}")
+                                            : $"{minutes} {(minutes == 1 ? "minute" : "minutes")}";
+                                    }
+                                    <p class="mb-2">
+                                        <strong>Time:</strong> @($"{Model.StartTime.ToString("h:mm tt")} - {Model.EndTime.ToString("h:mm tt")}")
+                                        <span class="duration-badge">
+                                            <i class="fas fa-clock small"></i> @duration minutes
+                                        </span>
+                                    </p>
+                                    <p class="mb-2"><strong>Duration:</strong> @durationText</p>
+                                    <p class="mb-2"><strong>Guest Count:</strong> @Model.GuestCount</p>
+                                    @if (!string.IsNullOrEmpty(Model.SpecialRequests))
+                                    {
+                                        <p class="mb-2"><strong>Special Requests:</strong></p>
+                                        <div class="description-preview text-muted mb-2">
+                                            @{
+                                                var requestsPreview = Model.SpecialRequests.Length > 100 
+                                                    ? Model.SpecialRequests.Substring(0, 97) + "..." 
+                                                    : Model.SpecialRequests;
+                                            }
+                                            @requestsPreview
+                                        </div>
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#specialRequestsModal" class="read-more-link">
+                                            <i class="material-icons align-middle me-1 small">read_more</i> Read more
+                                        </a>
+                                    }
+                                    <p class="mb-2"><strong>Status:</strong> <span class="badge @GetStatusBadgeClass(Model.Status)">@Model.Status</span></p>
+                                    <p class="mb-2"><strong>Reserved On:</strong> @Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</p>
+                                    <p class="mb-0"><strong>Reservation ID:</strong> #@Model.Id</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     @if (!string.IsNullOrEmpty(Model.PaymentVerificationNotes) && !Model.IsPaid && string.IsNullOrEmpty(Model.ReceiptFileName))
                     {
-                        <div class="alert alert-danger mb-4">
-                            <h5><i class="fas fa-exclamation-triangle"></i> Payment Rejected</h5>
-                            <p><strong>Reason for Rejection:</strong> @Model.PaymentVerificationNotes</p>
-                            <p>Please upload a new receipt with the correct information. Your reservation will remain in "Payment Pending" status until a valid receipt is verified.</p>
-                            <p><i class="fas fa-info-circle"></i> <strong>Next Steps:</strong> Review the rejection reason above, make the necessary corrections, and upload a new receipt using the form below.</p>
+                        <div class="card border-0 shadow-sm mb-4 border-start border-danger border-4">
+                            <div class="card-body">
+                                <h5 class="d-flex align-items-center text-danger mb-3">
+                                    <i class="material-icons me-2">error_outline</i>
+                                    Payment Rejected
+                                </h5>
+                                @{
+                                    var rejectionReasonId = $"rejectionReason-{Model.Id}";
+                                    var hasLongRejection = Model.PaymentVerificationNotes.Length > 100;
+                                }
+                                <div class="truncate-text @(hasLongRejection ? "has-fade" : "")" id="@rejectionReasonId">
+                                    <p class="mb-2"><strong>Reason for Rejection:</strong> @Model.PaymentVerificationNotes</p>
+                                </div>
+                                @if (hasLongRejection)
+                                {
+                                    <a class="read-more-btn" onclick="toggleReadMore('@rejectionReasonId')">
+                                        <i class="material-icons small">expand_more</i>
+                                        <span class="read-more-text">Read more</span>
+                                    </a>
+                                }
+                                <p class="mb-2">Please upload a new receipt with the correct information. Your reservation will remain in "Payment Pending" status until a valid receipt is verified.</p>
+                                <p class="mb-0"><i class="material-icons align-middle me-1 small">info</i> <strong>Next Steps:</strong> Review the rejection reason above, make the necessary corrections, and upload a new receipt using the form below.</p>
+                            </div>
                         </div>
                     }
 
-                    <div class="alert alert-info">
-                        <h5>Payment Information</h5>
-                        <p><strong>Total Amount Due:</strong> ₱@Model.TotalPrice</p>
-                        <p><strong>Base Price:</strong> ₱@Model.Facility.PricePerHour per hour</p>
-                        <p><strong>Calculated Price:</strong> ₱@Model.Facility.PricePerHour × @(((TimeSpan)(Model.EndTime - Model.StartTime)).TotalHours) hours = ₱@Model.TotalPrice</p>
-                        
-                        @if (Model.IsPaid)
-                        {
-                            <div class="alert alert-success mt-2">
-                                <h6><i class="fas fa-check-circle"></i> Payment Confirmed</h6>
-                                <p><strong>Payment Method:</strong> @Model.PaymentMethod</p>
-                                @if (!string.IsNullOrEmpty(Model.PaymentTransactionId))
-                                {
-                                    <p><strong>Transaction ID:</strong> @Model.PaymentTransactionId</p>
-                                }
-                                @if (Model.PaymentVerificationDate.HasValue)
-                                {
-                                    <p><strong>Verified On:</strong> @Model.PaymentVerificationDate.Value.ToString("MMM dd, yyyy hh:mm tt")</p>
-                                    <p><strong>Verified By:</strong> Administrator</p>
-                                }
-                                @if (!string.IsNullOrEmpty(Model.ReceiptFileName))
-                                {
-                                    <p>
-                                        <strong>Receipt:</strong>
-                                        <a href="/uploads/receipts/@Model.ReceiptFileName" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-file-invoice"></i> View Receipt
-                                        </a>
-                                    </p>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <p><i class="fas fa-info-circle"></i> Please pay the full amount to complete your reservation.</p>
-                            <div class="mt-2 mb-2">
-                                <strong>Payment Status:</strong> 
-                                @if (string.IsNullOrEmpty(Model.ReceiptFileName))
-                                {
-                                    <span class="badge bg-danger">No Receipt Uploaded</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-warning">Pending Verification</span>
-                                }
-                            </div>
-                        }
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title d-flex align-items-center mb-3">
+                                <i class="material-icons text-primary me-2">attach_money</i>
+                                Payment Information
+                            </h5>
+                            <p class="mb-2"><strong>Total Amount Due:</strong> ₱@Model.TotalPrice</p>
+                            <p class="mb-2"><strong>Base Price:</strong> ₱@Model.Facility.PricePerHour per hour</p>
+                            <p class="mb-2">
+                                <strong>Calculated Price:</strong> ₱@Model.Facility.PricePerHour × @(((TimeSpan)(Model.EndTime - Model.StartTime)).TotalHours) hours = ₱@Model.TotalPrice
+                                <span class="duration-badge">
+                                    <i class="fas fa-clock small"></i> @duration minutes
+                                </span>
+                            </p>
+                            
+                            @if (Model.IsPaid)
+                            {
+                                <div class="alert alert-success mt-3">
+                                    <h6 class="d-flex align-items-center mb-2">
+                                        <i class="material-icons me-2">check_circle</i>
+                                        Payment Confirmed
+                                    </h6>
+                                    <p class="mb-2"><strong>Payment Method:</strong> @Model.PaymentMethod</p>
+                                    @if (!string.IsNullOrEmpty(Model.PaymentTransactionId))
+                                    {
+                                        <p class="mb-2"><strong>Transaction ID:</strong> @Model.PaymentTransactionId</p>
+                                    }
+                                    @if (Model.PaymentVerificationDate.HasValue)
+                                    {
+                                        <p class="mb-2"><strong>Verified On:</strong> @Model.PaymentVerificationDate.Value.ToString("MMM dd, yyyy hh:mm tt")</p>
+                                        <p class="mb-2"><strong>Verified By:</strong> Administrator</p>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.ReceiptFileName))
+                                    {
+                                        <p class="mb-0">
+                                            <strong>Receipt:</strong>
+                                            <a href="/uploads/receipts/@Model.ReceiptFileName" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill">
+                                                <i class="material-icons align-middle me-1 small">receipt</i> View Receipt
+                                            </a>
+                                        </p>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="mt-3 mb-2"><i class="material-icons align-middle me-1 small">info</i> Please pay the full amount to complete your reservation.</p>
+                                <div class="mb-2">
+                                    <strong>Payment Status:</strong> 
+                                    @if (string.IsNullOrEmpty(Model.ReceiptFileName))
+                                    {
+                                        <span class="badge bg-danger">No Receipt Uploaded</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">Pending Verification</span>
+                                    }
+                                </div>
+                            }
+                        </div>
                     </div>
 
                     @if (Model.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending && string.IsNullOrEmpty(Model.ReceiptFileName))
                     {
-                        <div class="mt-4">
-                            @if (!string.IsNullOrEmpty(Model.PaymentVerificationNotes))
-                            {
-                                <h5><i class="fas fa-upload text-danger"></i> <span class="text-danger">Upload New Payment Receipt</span></h5>
-                                <p class="text-danger">Your previous payment receipt was rejected. Please upload a new one addressing the issues mentioned above.</p>
-                            }
-                            else
-                            {
-                                <h5><i class="fas fa-upload"></i> Upload Payment Receipt</h5>
-                                <p>Please select your payment method and upload your receipt to confirm your reservation.</p>
-                            }
+                        <div class="card border-0 shadow-sm mt-4">
+                            <div class="card-body">
+                                @if (!string.IsNullOrEmpty(Model.PaymentVerificationNotes))
+                                {
+                                    <h5 class="card-title d-flex align-items-center text-danger mb-3">
+                                        <i class="material-icons me-2">upload_file</i>
+                                        Upload New Payment Receipt
+                                    </h5>
+                                    <p class="text-danger mb-3">Your previous payment receipt was rejected. Please upload a new one addressing the issues mentioned above.</p>
+                                }
+                                else
+                                {
+                                    <h5 class="card-title d-flex align-items-center mb-3">
+                                        <i class="material-icons text-primary me-2">upload_file</i>
+                                        Upload Payment Receipt
+                                    </h5>
+                                    <p class="mb-3">Please select your payment method and upload your receipt to confirm your reservation.</p>
+                                }
 
-                            <form asp-action="UploadReceiptForReservation" method="post" enctype="multipart/form-data">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@Model.Id" />
+                                <form asp-action="UploadReceiptForReservation" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.Id" />
 
-                                <div class="mb-3">
-                                    <label for="paymentMethod" class="form-label">Payment Method Used</label>
-                                    <select id="paymentMethod" name="paymentMethod" class="form-select" required>
-                                        <option value="">-- Select Payment Method --</option>
-                                        @foreach (var method in paymentMethods)
-                                        {
-                                            <option value="@method.Name">@method.Name</option>
-                                        }
-                                    </select>
-                                </div>
+                                    <div class="mb-4">
+                                        <label for="paymentMethod" class="form-label">Payment Method Used</label>
+                                        <select id="paymentMethod" name="paymentMethod" class="form-select rounded-pill" required>
+                                            <option value="">-- Select Payment Method --</option>
+                                            @foreach (var method in paymentMethods)
+                                            {
+                                                <option value="@method.Name">@method.Name</option>
+                                            }
+                                        </select>
+                                        <div class="invalid-feedback">Please select a payment method.</div>
+                                    </div>
 
-                                <div class="mb-3">
-                                    <label for="receiptFile" class="form-label">Receipt Image</label>
-                                    <input type="file" id="receiptFile" name="receiptFile" class="form-control" required accept="image/*" />
-                                    <div class="form-text">Upload a clear image of your payment receipt.</div>
-                                </div>
+                                    <div class="mb-4">
+                                        <label for="receiptFile" class="form-label">Receipt Image</label>
+                                        <input type="file" id="receiptFile" name="receiptFile" class="form-control rounded-pill" required accept="image/*" />
+                                        <div class="form-text">Upload a clear image of your payment receipt.</div>
+                                        <div class="invalid-feedback">Please upload a receipt image.</div>
+                                        <div class="image-preview-container mt-3" id="receiptImagePreviewContainer">
+                                            <div class="image-preview-placeholder" id="receiptPreviewPlaceholder">
+                                                <i class="material-icons">image</i>
+                                                <p class="mb-0">Image preview will appear here</p>
+                                            </div>
+                                            <img id="receiptImagePreview" style="display: none;" alt="Receipt Preview" />
+                                        </div>
+                                    </div>
 
-                                <button type="submit" class="btn btn-primary">
-                                    @if (!string.IsNullOrEmpty(Model.PaymentVerificationNotes))
-                                    {
-                                        <span>Upload New Receipt</span>
-                                    }
-                                    else
-                                    {
-                                        <span>Upload Receipt</span>
-                                    }
-                                </button>
-                            </form>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary rounded-pill">
+                                            <i class="material-icons align-middle me-2">cloud_upload</i>
+                                            @if (!string.IsNullOrEmpty(Model.PaymentVerificationNotes))
+                                            {
+                                                <span>Upload New Receipt</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Upload Receipt</span>
+                                            }
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     }
                     else if (!string.IsNullOrEmpty(Model.ReceiptFileName))
                     {
-                        <div class="mt-4">
-                            <h5>Receipt Uploaded</h5>
-                            <p>You have uploaded a receipt on @Model.ReceiptUploadDate?.ToString("MMMM dd, yyyy, hh:mm tt")</p>
-                            
-                            <div class="mt-2">
-                                <img src="~/uploads/receipts/@Model.ReceiptFileName" alt="Receipt" class="img-thumbnail" style="max-width: 300px;" />
-                            </div>
-                            
-                            <p class="mt-2">
-                                <strong>Payment Method:</strong> @Model.PaymentMethod<br />
-                                <strong>Status:</strong> 
-                                @if (Model.IsPaid)
-                                {
-                                    <span class="badge bg-success">Verified</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-warning">Pending Verification</span>
-                                }
-                            </p>
+                        <div class="card border-0 shadow-sm mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title d-flex align-items-center mb-3">
+                                    <i class="material-icons text-primary me-2">receipt</i>
+                                    Receipt Uploaded
+                                </h5>
+                                <p class="mb-3">You have uploaded a receipt on @Model.ReceiptUploadDate?.ToString("MMMM dd, yyyy, hh:mm tt")</p>
+                                
+                                <div class="text-center mb-3">
+                                    <img src="~/uploads/receipts/@Model.ReceiptFileName" alt="Receipt" class="img-thumbnail" style="max-height: 300px;" />
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="mb-0">
+                                            <strong>Payment Method:</strong> @Model.PaymentMethod<br />
+                                            <strong>Status:</strong> 
+                                            @if (Model.IsPaid)
+                                            {
+                                                <span class="badge bg-success">Verified</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">Pending Verification</span>
+                                            }
+                                        </p>
+                                    </div>
+                                    <a href="/uploads/receipts/@Model.ReceiptFileName" target="_blank" class="btn btn-outline-primary rounded-pill">
+                                        <i class="material-icons align-middle me-1">fullscreen</i> View Full Size
+                                    </a>
+                                </div>
 
-                            @if (!Model.IsPaid && Model.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending)
-                            {
-                                <div class="alert alert-warning mt-2">
-                                    <i class="fas fa-clock"></i> Your payment is being verified by the administrator. You will be notified once the verification is complete.
-                                </div>
-                            }
-                            
-                            @if (!string.IsNullOrEmpty(Model.PaymentVerificationNotes))
-                            {
-                                <div class="alert alert-info mt-2">
-                                    <strong>Admin Notes:</strong> @Model.PaymentVerificationNotes
-                                </div>
-                            }
+                                @if (!Model.IsPaid && Model.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending)
+                                {
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="material-icons align-middle me-1">schedule</i> Your payment is being verified by the administrator. You will be notified once the verification is complete.
+                                    </div>
+                                }
+                                
+                                @if (!string.IsNullOrEmpty(Model.PaymentVerificationNotes))
+                                {
+                                    <div class="alert alert-info mt-3">
+                                        <strong>Admin Notes:</strong> @Model.PaymentVerificationNotes
+                                    </div>
+                                }
+
+                                @if (User.IsInRole("admin") && !Model.IsPaid && Model.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending && !string.IsNullOrEmpty(Model.ReceiptFileName))
+                                {
+                                    <hr class="my-4">
+                                    <div class="card border-0 shadow-sm mt-4">
+                                        <div class="card-header bg-gradient-primary text-white py-3">
+                                            <h5 class="mb-0 d-flex align-items-center">
+                                                <i class="material-icons me-2">verified</i>
+                                                Admin Payment Verification
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <form asp-action="VerifyPayment" method="post" class="needs-validation" novalidate>
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@Model.Id" />
+
+                                                <div class="mb-4">
+                                                    <label class="form-label">Verification Decision</label>
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="radio" name="isPaymentVerified" id="verifyPaymentYes" value="true" required>
+                                                        <label class="form-check-label" for="verifyPaymentYes">
+                                                            <i class="material-icons text-success align-middle me-1">check_circle</i>
+                                                            Approve Payment
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="isPaymentVerified" id="verifyPaymentNo" value="false" required>
+                                                        <label class="form-check-label" for="verifyPaymentNo">
+                                                            <i class="material-icons text-danger align-middle me-1">cancel</i>
+                                                            Reject Payment
+                                                        </label>
+                                                    </div>
+                                                    <div class="invalid-feedback">Please select a verification decision.</div>
+                                                </div>
+
+                                                <div class="mb-4">
+                                                    <label for="verificationNotes" class="form-label">Verification Notes</label>
+                                                    <textarea id="verificationNotes" name="verificationNotes" class="form-control" rows="3" placeholder="Enter any notes about this payment verification"></textarea>
+                                                    <div class="form-text" id="rejectionNotesInfo" style="display: none;">
+                                                        <i class="material-icons text-warning align-middle me-1 small">warning</i>
+                                                        If rejecting, please explain the reason so the user can address it when uploading a new receipt.
+                                                    </div>
+                                                </div>
+
+                                                <div class="d-grid">
+                                                    <button type="submit" class="btn btn-primary rounded-pill">
+                                                        <i class="material-icons align-middle me-2">save</i>
+                                                        Submit Verification
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
                         </div>
                     }
                 </div>
@@ -189,37 +358,41 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Payment Methods</h5>
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-gradient-info text-white py-3">
+                    <h5 class="mb-0 d-flex align-items-center">
+                        <i class="material-icons me-2">account_balance</i>
+                        Payment Methods
+                    </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     @if (paymentMethods != null && paymentMethods.Any())
                     {
                         <div class="accordion" id="paymentMethodsAccordion">
                             @foreach (var method in paymentMethods)
                             {
-                                <div class="accordion-item">
+                                <div class="accordion-item border-0 mb-3 shadow-sm">
                                     <h2 class="accordion-header" id="heading-@method.Id">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                        <button class="accordion-button collapsed rounded-3" type="button" data-bs-toggle="collapse" 
                                                 data-bs-target="#collapse-@method.Id" aria-expanded="false" aria-controls="collapse-@method.Id">
+                                            <i class="material-icons me-2">@(method.Type == "Bank Transfer" ? "account_balance" : method.Type == "E-Wallet" ? "account_balance_wallet" : "payment")</i>
                                             @method.Name (@method.Type)
                                         </button>
                                     </h2>
                                     <div id="collapse-@method.Id" class="accordion-collapse collapse" 
                                          aria-labelledby="heading-@method.Id" data-bs-parent="#paymentMethodsAccordion">
                                         <div class="accordion-body">
-                                            <p><strong>Details:</strong> @method.Details</p>
+                                            <p class="mb-2"><strong>Details:</strong> @method.Details</p>
                                             
                                             @if (!string.IsNullOrEmpty(method.Instructions))
                                             {
-                                                <p><strong>Instructions:</strong> @method.Instructions</p>
+                                                <p class="mb-3"><strong>Instructions:</strong> @method.Instructions</p>
                                             }
                                             
                                             @if (!string.IsNullOrEmpty(method.QRCodeFileName))
                                             {
-                                                <div class="text-center mt-2">
-                                                    <img src="~/uploads/payment_qr_codes/@method.QRCodeFileName" alt="QR Code" class="img-fluid" style="max-width: 200px;" />
+                                                <div class="text-center mt-3">
+                                                    <img src="~/uploads/payment_qr_codes/@method.QRCodeFileName" alt="QR Code" class="img-fluid rounded" style="max-width: 200px;" />
                                                 </div>
                                             }
                                         </div>
@@ -237,55 +410,309 @@
                 </div>
             </div>
             
-            <div class="card mt-3">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Need Help?</h5>
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-gradient-secondary text-white py-3">
+                    <h5 class="mb-0 d-flex align-items-center">
+                        <i class="material-icons me-2">help_outline</i>
+                        Need Help?
+                    </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <p>If you're having trouble with your payment or have questions about the reservation process, please contact our support team:</p>
                     <ul class="list-unstyled">
-                        <li><i class="fas fa-envelope me-2"></i> support@communityportal.com</li>
-                        <li><i class="fas fa-phone me-2"></i> +63 (123) 456-7890</li>
+                        <li class="mb-2 d-flex align-items-center">
+                            <i class="material-icons text-primary me-2">email</i> support@communityportal.com
+                        </li>
+                        <li class="mb-2 d-flex align-items-center">
+                            <i class="material-icons text-primary me-2">phone</i> +63 (123) 456-7890
+                        </li>
                     </ul>
-                    <p class="mt-2">Our office hours are Monday to Friday, 9:00 AM to 5:00 PM.</p>
+                    <p class="mt-2 mb-0">Our office hours are Monday to Friday, 9:00 AM to 5:00 PM.</p>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    @if (User.IsInRole("admin") && !string.IsNullOrEmpty(Model.ReceiptFileName) && !Model.IsPaid)
-    {
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">Verify Payment (Admin Only)</h4>
-                    </div>
-                    <div class="card-body">
-                        <form asp-action="VerifyPayment" method="post">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@Model.Id" />
-                            
-                            <div class="mb-3">
-                                <label for="verificationNotes" class="form-label">Verification Notes</label>
-                                <textarea id="verificationNotes" name="verificationNotes" class="form-control" rows="3"></textarea>
-                            </div>
-                            
-                            <div class="d-flex gap-2">
-                                <button type="submit" name="isPaymentVerified" value="true" class="btn btn-success">
-                                    <i class="fas fa-check"></i> Verify Payment
-                                </button>
-                                <button type="submit" name="isPaymentVerified" value="false" class="btn btn-danger">
-                                    <i class="fas fa-times"></i> Reject Payment
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+<div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-gradient-primary text-white border-0">
+                <h5 class="modal-title d-flex align-items-center" id="descriptionModalLabel">
+                    <i class="material-icons me-2">description</i>
+                    Facility Description
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="content-container">
+                    @Model.Facility.Description
                 </div>
             </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-outline-primary rounded-pill" data-bs-dismiss="modal">
+                    <i class="material-icons align-middle me-1 small">close</i>
+                    Close
+                </button>
+            </div>
         </div>
-    }
+    </div>
 </div>
+
+<div class="modal fade" id="specialRequestsModal" tabindex="-1" aria-labelledby="specialRequestsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-gradient-primary text-white border-0">
+                <h5 class="modal-title d-flex align-items-center" id="specialRequestsModalLabel">
+                    <i class="material-icons me-2">notes</i>
+                    Special Requests
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="content-container">
+                    @Model.SpecialRequests
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-outline-primary rounded-pill" data-bs-dismiss="modal">
+                    <i class="material-icons align-middle me-1 small">close</i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div> 
+
+@section Styles {
+    <style>
+        /* Modal Enhancements */
+        .card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        }
+        
+        .bg-gradient-info {
+            background: linear-gradient(135deg, #36b9cc 0%, #1a8a98 100%);
+        }
+        
+        .bg-gradient-secondary {
+            background: linear-gradient(135deg, #858796 0%, #60616f 100%);
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background-color: rgba(78, 115, 223, 0.1);
+            color: #4e73df;
+        }
+        
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: rgba(78, 115, 223, 0.1);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+        }
+        
+        /* Modal styling */
+        .modal-content {
+            border-radius: 15px;
+        }
+        
+        .modal-backdrop.show {
+            opacity: 0.7;
+        }
+        
+        .modal.fade .modal-dialog {
+            transition: transform 0.3s ease-out;
+        }
+        
+        .modal.show .modal-dialog {
+            transform: none;
+        }
+        
+        .content-container {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #495057;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #4e73df;
+        }
+        
+        /* Make sure blackout date reasons are larger */
+        .blackout-reason {
+            font-size: 1rem !important;
+            color: #495057 !important;
+        }
+        
+        /* Text truncation styles */
+        .truncate-text {
+            position: relative;
+            max-height: 100px;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+        
+        .truncate-text.expanded {
+            max-height: 1000px;
+        }
+        
+        .truncate-text.has-fade:after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(transparent, white);
+        }
+        
+        .read-more-btn {
+            color: #4e73df;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+        
+        .read-more-btn:hover {
+            text-decoration: underline;
+        }
+        
+        .read-more-btn i {
+            font-size: 18px;
+            margin-right: 3px;
+        }
+        
+        /* Description and special requests preview */
+        .description-preview {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border-left: 3px solid #4e73df;
+        }
+        
+        .read-more-link {
+            color: #4e73df;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        
+        .read-more-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Duration badge */
+        .duration-badge {
+            display: inline-block;
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Form validation
+        (function () {
+            'use strict'
+            
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.querySelectorAll('.needs-validation')
+            
+            // Loop over them and prevent submission
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+        
+        // Modal animation enhancement
+        $('.modal').on('show.bs.modal', function (e) {
+            $(this).addClass('modal-animation');
+        });
+        
+        // Toggle notes info text based on verification decision
+        const verifyPaymentNoRadio = document.getElementById('verifyPaymentNo');
+        const rejectionNotesInfo = document.getElementById('rejectionNotesInfo');
+        
+        if (verifyPaymentNoRadio && rejectionNotesInfo) {
+            document.querySelectorAll('input[name="isPaymentVerified"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (verifyPaymentNoRadio.checked) {
+                        rejectionNotesInfo.style.display = 'block';
+                    } else {
+                        rejectionNotesInfo.style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        // Read more functionality
+        function toggleReadMore(elementId) {
+            const element = document.getElementById(elementId);
+            const button = element.nextElementSibling;
+            const buttonText = button.querySelector('.read-more-text');
+            
+            if (element.classList.contains('expanded')) {
+                element.classList.remove('expanded');
+                buttonText.textContent = 'Read more';
+                button.querySelector('i').textContent = 'expand_more';
+            } else {
+                element.classList.add('expanded');
+                buttonText.textContent = 'Read less';
+                button.querySelector('i').textContent = 'expand_less';
+            }
+        }
+
+        // Image preview for receipt upload
+        const receiptInput = document.querySelector('#receiptFile');
+        const receiptImagePreview = document.querySelector('#receiptImagePreview');
+        const receiptPreviewPlaceholder = document.querySelector('#receiptPreviewPlaceholder');
+
+        if (receiptInput) {
+            receiptInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        receiptImagePreview.src = e.target.result;
+                        receiptImagePreview.style.display = 'block';
+                        receiptPreviewPlaceholder.style.display = 'none';
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+    </script>
+}
 
 @functions {
     private string GetStatusBadgeClass(CommunityPortal.Models.Facility.ReservationStatus status)
@@ -301,4 +728,4 @@
             _ => "bg-secondary"
         };
     }
-} 
+}
