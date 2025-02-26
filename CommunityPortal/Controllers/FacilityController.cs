@@ -426,6 +426,7 @@ namespace CommunityPortal.Controllers
             var reservations = await _context.FacilityReservations
                 .Include(r => r.Facility)
                 .Include(r => r.User)
+                    .ThenInclude(u => u.Homeowner)
                 .Where(r => !r.IsDeleted)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();

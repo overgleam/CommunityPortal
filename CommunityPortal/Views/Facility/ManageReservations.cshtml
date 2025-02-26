@@ -36,7 +36,9 @@
                                 <td>
                                     @if (reservation.User?.Homeowner != null)
                                     {
-                                        @($"{reservation.User.Homeowner.FirstName} {reservation.User.Homeowner.LastName}")
+                                          <a asp-controller="Profile" asp-action="ViewProfile" asp-route-userId="@reservation.User.Id" class="text-decoration-none text-dark">
+                                            @($"{reservation.User.Homeowner.FirstName} {reservation.User.Homeowner.LastName}")
+                                          </a>
                                     }
                                     else
                                     {
