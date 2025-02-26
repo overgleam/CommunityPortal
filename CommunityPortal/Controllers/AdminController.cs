@@ -28,16 +28,16 @@ namespace CommunityPortal.Controllers
             return View();
         }
 
-        // GET: /Admin/ApproveUsers
+        // GET: /Admin/ManageUsers
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> ApproveUsers()
+        public async Task<IActionResult> ManageUsers()
         {
             var users = await _userManager.Users
                 .Include(u => u.Administrator)
                 .Where(u => u.Administrator == null && !u.IsDeleted)
                 .ToListAsync();
 
-            var model = new ApproveUsersViewModel
+            var model = new ManageUsersViewModel
             {
                 Users = new List<UserWithRoleViewModel>()
             };
@@ -84,26 +84,26 @@ namespace CommunityPortal.Controllers
         {
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return RedirectToAction("ApproveUsers");
+                return RedirectToAction("ManageUsers");
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return RedirectToAction("ApproveUsers");
+                return RedirectToAction("ManageUsers");
             }
 
             user.Status = status;
             await _userManager.UpdateAsync(user);
             TempData["SuccessMessage"] = "User status updated successfully.";
-            return RedirectToAction("ApproveUsers");
+            return RedirectToAction("ManageUsers");
         }
 
-        // POST: /Admin/ApproveUser
+        // POST: /Admin/ManageUser
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "AdminOnly")]
-        public Task<IActionResult> ApproveUser(string userId) =>
+        public Task<IActionResult> ManageUser(string userId) =>
             ChangeUserStatus(userId, UserStatus.Approved);
 
         [HttpPost]
@@ -143,13 +143,13 @@ namespace CommunityPortal.Controllers
         {
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return RedirectToAction("ApproveUsers");
+                return RedirectToAction("ManageUsers");
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return RedirectToAction("ApproveUsers");
+                return RedirectToAction("ManageUsers");
             }
 
             // Soft delete the user
@@ -162,11 +162,11 @@ namespace CommunityPortal.Controllers
             if (!result.Succeeded)
             {
                 TempData["ErrorMessage"] = "Failed to remove user.";
-                return RedirectToAction("ApproveUsers");
+                return RedirectToAction("ManageUsers");
             }
 
             TempData["SuccessMessage"] = "User has been successfully removed.";
-            return RedirectToAction("ApproveUsers");
+            return RedirectToAction("ManageUsers");
         }
 
         [HttpGet]
@@ -198,6 +198,7 @@ namespace CommunityPortal.Controllers
                     Email = model.Email,
                     PhoneNumber = model.PhoneNumber,
                     Status = UserStatus.PendingApproval,
+                    ProfileImagePath = "images/default-profile.jpg",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -219,7 +220,7 @@ namespace CommunityPortal.Controllers
 
                     _context.Staffs.Add(staff);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction("ApproveUsers");
+                    return RedirectToAction("ManageUsers");
                 }
                 ModelState.AddModelError(string.Empty, result.Errors.First().Description);
             }
@@ -406,7 +407,7 @@ namespace CommunityPortal.Controllers
                 .Where(u => u.IsDeleted)
                 .ToListAsync();
 
-            var model = new ApproveUsersViewModel
+            var model = new ManageUsersViewModel
             {
                 Users = new List<UserWithRoleViewModel>()
             };

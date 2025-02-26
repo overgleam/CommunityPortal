@@ -6,6 +6,7 @@
     ApplicationUser currentUser = null;
     // Default profile image path (ensure this exists in wwwroot/images/)
     var profileImageUrl = Url.Content("~/images/default-profile.jpg");
+    var userRole = "Homeowner";
     
     if (User.Identity.IsAuthenticated)
     {
@@ -25,103 +26,279 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Community Portal</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/swifted-demo" >
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+    <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/enhanced-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/homeowner.css" asp-append-version="true" />
 
     @RenderSection("Styles", required: false)
 </head>
 <body>
-    <!-- Alerts -->
-    @if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
+    <!-- Hidden inputs for TempData messages -->
+    @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert-overlay">
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success" role="alert">
-                    @TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="alert alert-danger" role="alert">
-                    @TempData["ErrorMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-        </div>
+        <input type="hidden" id="tempDataSuccessMessage" value="@TempData["SuccessMessage"]" />
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <input type="hidden" id="tempDataErrorMessage" value="@TempData["ErrorMessage"]" />
     }
 
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebar-overlay"></div>
+    
+    <!-- Sidebar Toggle Button (Desktop) -->
+    <div class="sidebar-toggle d-none d-lg-flex" id="sidebar-toggle">
+        <i class="material-icons">menu</i>
+    </div>
+
     <div class="d-flex min-vh-100" id="wrapper">
+        <!-- Sidebar -->
         <div class="bg-sidebar border-right" id="sidebar-wrapper">
             <div class="sidebar-heading text-center py-4 primary-text mb-3 fs-4 fw-bold text-uppercase border-bottom">
                 <img src="~/images/logo.png" alt="Logo" width="169" height="92" class="me-2">
             </div>
-            <div class="list-group list-group-flush">
-                <a asp-controller="Home" asp-action="Dashboard" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">dashboard</i> Dashboard
-                </a>
-                <a asp-controller="Announcement" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">announcement</i> Announcements
-                </a>
-                <a asp-controller="Chat" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">chat</i> Chat
-                </a>
-                <a asp-controller="Billing" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">payment</i> Billing & Payments
-                </a>
-                <a asp-controller="Facility" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">event_available</i> Facility Reservation
-                </a>
-                <a asp-controller="Facility" asp-action="MyReservations" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">event_available</i> My Reservation
-                </a>
-                <a asp-controller="ServiceRequest" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">build</i> Service Requests
-                </a>
-                <a asp-controller="Forum" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">forum</i> Community Forum
-                </a>
-                <a asp-controller="Event" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">calendar_today</i> Events Calendar
-                </a>
-                <a asp-controller="Documents" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">insert_drive_file</i> Documents
-                </a>
-                <a asp-controller="Feedback" asp-action="Create" class="list-group-item list-group-item-action bg-sidebar">
-                    <i class="material-icons me-2">feedback</i> Submit Feedback
-                </a>
+            
+            <!-- Accordion Sidebar -->
+            <div class="accordion sidebar-accordion" id="sidebarAccordion">
+                <!-- Dashboard -->
+                <div class="accordion-item">
+                    <a asp-controller="Home" asp-action="Dashboard" class="list-group-item list-group-item-action bg-sidebar font-lovelace" style="font-size:1rem; transform: translate(-10px);">
+                        <i class="material-icons">dashboard</i> Dashboard
+                    </a>
+                </div>
+                
+                <!-- Communication Group -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="communicationHeading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#communicationCollapse" aria-expanded="false" aria-controls="communicationCollapse">
+                            <i class="material-icons">message</i> Communication
+                        </button>
+                    </h2>
+                    <div id="communicationCollapse" class="accordion-collapse collapse" aria-labelledby="communicationHeading">
+                        <div class="accordion-body">
+                            <div class="list-group list-group-flush">
+                                <a asp-controller="Announcement" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">announcement</i> Announcements
+                                </a>
+                                <a asp-controller="Chat" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">chat</i> Chat
+                                </a>
+                                <a asp-controller="Forum" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">forum</i> Community Forum
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Facilities Group -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="facilitiesHeading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#facilitiesCollapse" aria-expanded="false" aria-controls="facilitiesCollapse">
+                            <i class="material-icons">apartment</i> Facilities
+                        </button>
+                    </h2>
+                    <div id="facilitiesCollapse" class="accordion-collapse collapse" aria-labelledby="facilitiesHeading">
+                        <div class="accordion-body">
+                            <div class="list-group list-group-flush">
+                                <a asp-controller="Facility" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">event_available</i> Facility Reservation
+                                </a>
+                                <a asp-controller="Facility" asp-action="MyReservations" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">event_note</i> My Reservations
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Services Group -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="servicesHeading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#servicesCollapse" aria-expanded="false" aria-controls="servicesCollapse">
+                            <i class="material-icons">miscellaneous_services</i> Services
+                        </button>
+                    </h2>
+                    <div id="servicesCollapse" class="accordion-collapse collapse" aria-labelledby="servicesHeading">
+                        <div class="accordion-body">
+                            <div class="list-group list-group-flush">
+                                <a asp-controller="ServiceRequest" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">build</i> Service Requests
+                                </a>
+                                <a asp-controller="Billing" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">payment</i> Billing & Payments
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Community Group -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="communityHeading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#communityCollapse" aria-expanded="false" aria-controls="communityCollapse">
+                            <i class="material-icons">people</i> Community
+                        </button>
+                    </h2>
+                    <div id="communityCollapse" class="accordion-collapse collapse" aria-labelledby="communityHeading">
+                        <div class="accordion-body">
+                            <div class="list-group list-group-flush">
+                                <a asp-controller="Event" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">calendar_today</i> Events Calendar
+                                </a>
+                                <a asp-controller="Documents" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">insert_drive_file</i> Documents
+                                </a>
+                                <a asp-controller="Feedback" asp-action="Create" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">feedback</i> Submit Feedback
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="page-content-wrapper">
-            <nav class="navbar navbar-expand-lg navbar-light bg-topbar border-bottom rounded-3">
+            <!-- Enhanced Header -->
+            <nav class="navbar navbar-expand-lg navbar-light enhanced-header">
                 <div class="container-fluid">
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
-                            <li class="nav-item me-3">
-                                <a class="nav-link" href="#"><i class="material-icons">notifications</i></a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
-                                   aria-haspopup="true" aria-expanded="false">
-                                    <img src="@profileImageUrl" alt="Profile" class="rounded-circle me-3" width="40" height="40" />
-                                    <span>@User.Identity.Name</span>
-                                    <i class="material-icons ms-1">expand_more</i>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end">
-                                    <a asp-controller="Profile" asp-action="ViewProfile" class="dropdown-item">Profile</a>
-                                    <a asp-controller="Profile" asp-action="ChangePassword" asp-route-userId="@UserManager.GetUserId(User)" class="dropdown-item">Settings</a>
-                                    <div class="dropdown-divider"></div>
-                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item">Logout</button>
-                                    </form>
+                    <!-- Mobile Sidebar Toggle -->
+                    <button class="btn btn-link d-lg-none me-3" id="sidebar-toggler">
+                        <i class="material-icons">menu</i>
+                    </button>
+                    
+                    <!-- Page Title (replaces search bar) -->
+                    <h4 class="mb-0 text-primary">@ViewData["Title"]</h4>
+                    
+                    <div class="d-flex align-items-center">
+                        <!-- Quick Actions -->
+                        <div class="dropdown d-none d-md-block me-3">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="quickActionsDropdown" 
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="material-icons align-middle">add_circle_outline</i> Quick Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quickActionsDropdown">
+                                <li><a class="dropdown-item" asp-controller="ServiceRequest" asp-action="Create">
+                                    <i class="material-icons align-middle me-2">build</i> New Service Request
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="Facility" asp-action="Index">
+                                    <i class="material-icons align-middle me-2">event_available</i> Book Facility
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Billing" asp-action="MakePayment">
+                                    <i class="material-icons align-middle me-2">payment</i> Make Payment
+                                </a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Notifications -->
+                        <div class="dropdown me-3">
+                            <a class="nav-link position-relative" href="#" id="notificationsDropdown" role="button" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="material-icons">notifications</i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    3
+                                    <span class="visually-hidden">unread notifications</span>
+                                </span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="notificationsDropdown" 
+                                 style="width: 300px; max-height: 400px; overflow-y: auto;">
+                                <div class="p-2 border-bottom d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Notifications</h6>
+                                    <a href="#" class="text-decoration-none small">Mark all as read</a>
                                 </div>
-                            </li>
-                        </ul>
+                                <div class="notification-item p-3 border-bottom">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0">
+                                            <i class="material-icons text-primary">announcement</i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-1">New Announcement</h6>
+                                            <p class="mb-1 small">Community meeting scheduled for next week</p>
+                                            <small class="text-muted">2 hours ago</small>
+                                        </div>
+                                        <button class="btn btn-sm text-muted mark-as-read" data-notification-id="1">
+                                            <i class="material-icons small">check</i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="notification-item p-3 border-bottom">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0">
+                                            <i class="material-icons text-success">build</i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-1">Service Request Update</h6>
+                                            <p class="mb-1 small">Your request #1234 has been completed</p>
+                                            <small class="text-muted">1 day ago</small>
+                                        </div>
+                                        <button class="btn btn-sm text-muted mark-as-read" data-notification-id="2">
+                                            <i class="material-icons small">check</i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="notification-item p-3 border-bottom">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0">
+                                            <i class="material-icons text-warning">payment</i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-1">Payment Reminder</h6>
+                                            <p class="mb-1 small">Your monthly dues are due in 5 days</p>
+                                            <small class="text-muted">2 days ago</small>
+                                        </div>
+                                        <button class="btn btn-sm text-muted mark-as-read" data-notification-id="3">
+                                            <i class="material-icons small">check</i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="p-2 text-center border-top">
+                                    <a href="#" class="text-decoration-none small">View all notifications</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- User Profile -->
+                        <div class="dropdown">
+                            <a class="user-profile-dropdown" href="#" id="userDropdown" role="button" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="@profileImageUrl" alt="Profile" class="me-md-2">
+                                <div class="user-info d-none d-md-block">
+                                    <p class="user-name">@User.Identity.Name</p>
+                                    <p class="user-role">@userRole</p>
+                                </div>
+                                <i class="material-icons ms-1 d-none d-md-block">expand_more</i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a asp-controller="Profile" asp-action="ViewProfile" class="dropdown-item">
+                                        <i class="material-icons align-middle me-2">person</i> My Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a asp-controller="Profile" asp-action="ChangePassword" asp-route-userId="@UserManager.GetUserId(User)" class="dropdown-item">
+                                        <i class="material-icons align-middle me-2">settings</i> Account Settings
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline w-100">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="material-icons align-middle me-2">logout</i> Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </nav>
@@ -158,7 +335,9 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/enhanced-ui.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

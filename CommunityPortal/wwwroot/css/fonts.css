@@ -1,0 +1,62 @@
+/* Custom Fonts for Community Portal */
+
+@font-face {
+    font-family: 'LoveLace';
+    src: url('./fonts/LoveLace.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Swifted';
+    src: url('./fonts/Swifted.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: '1769';
+    src: url('./fonts/1769.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'FranciscoSerial';
+    src: url('./fonts/FranciscoSerial.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'FranklinGothic';
+    src: url('./fonts/FranklinGothic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Bootstrap Font Utility Classes */
+.font-lovelace {
+    font-family: 'LoveLace', serif !important;
+}
+
+.font-swifted {
+    font-family: 'Swifted', sans-serif !important;
+}
+
+.font-1769 {
+    font-family: '1769', sans-serif !important;
+}
+
+.font-francisco {
+    font-family: 'FranciscoSerial', sans-serif !important;
+}
+
+.font-franklin {
+    font-family: 'FranklinGothic', sans-serif !important;
+}

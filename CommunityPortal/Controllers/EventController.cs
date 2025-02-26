@@ -7,8 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Data;
 using CommunityPortal.Models.Event;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
 
 namespace CommunityPortal.Controllers
 {
@@ -17,7 +15,7 @@ namespace CommunityPortal.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        private const string EventImagesFolder = "event-images";
+        private const string EventImagesFolder = "uploads/event-images";
 
         public EventController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {

@@ -1,4 +1,4 @@
-﻿@model CommunityPortal.Models.Admin.ApproveUsersViewModel
+﻿@model CommunityPortal.Models.Admin.ManageUsersViewModel
 
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
@@ -88,7 +88,7 @@
                                     
                                     @if (userWithRole.User.Status == CommunityPortal.Models.Enums.UserStatus.PendingApproval)
                                     {
-                                        <form asp-action="ApproveUser" method="post" class="d-inline">
+                                        <form asp-action="ManageUser" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="userId" value="@user.Id" />
                                             <button type="submit" class="btn custom-btn success">
@@ -122,7 +122,7 @@
                                     }
                                     else if (userWithRole.User.Status == CommunityPortal.Models.Enums.UserStatus.Disabled)
                                     {
-                                        <form asp-action="ApproveUser" method="post" class="d-inline">
+                                        <form asp-action="ManageUser" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="userId" value="@user.Id" />
                                             <button type="submit" class="btn custom-btn success">

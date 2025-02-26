@@ -1,6 +1,6 @@
 ﻿namespace CommunityPortal.Models.Admin
 {
-    public class ApproveUsersViewModel
+    public class ManageUsersViewModel
     {
         public List<UserWithRoleViewModel> Users { get; set; }
     }

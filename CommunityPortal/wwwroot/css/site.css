@@ -10,10 +10,6 @@
     background-attachment: fixed;
 }
 
-.font-swift {
-    font-family: 'Swifted DEMO';
-}
-
 /* Register CSS */
 .bg-image-register {
     background-image: url('/images/backgroundregister.png');
@@ -54,38 +50,7 @@
     border: none;
 }
 
-
-/* FOOTER */
-.footer {
-    background: linear-gradient(to right, #f8f9fa, #ffffff);
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.footer-logo {
-    transition: transform 0.3s ease;
-}
-
-    .footer-logo:hover {
-        transform: translateY(-3px);
-    }
-
-.footer-contact {
-    color: #6c757d;
-}
-
-    .footer-contact a {
-        color: #007bff;
-        transition: color 0.3s ease;
-    }
-
-        .footer-contact a:hover {
-            color: #0056b3;
-        }
-
-.footer p {
-    font-size: 0.9rem;
-}
+/* Note: Footer styles have been moved to enhanced-ui.css */
 
 
 

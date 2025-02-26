@@ -26,20 +26,4 @@
     overflow-y: auto;
 }
 
-/* Scrollbar Styling */
-.list-group::-webkit-scrollbar {
-    width: 8px;
-}
-
-.list-group::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.list-group::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-}
-
-    .list-group::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
+/* Note: Scrollbar styling has been moved to enhanced-ui.css */
