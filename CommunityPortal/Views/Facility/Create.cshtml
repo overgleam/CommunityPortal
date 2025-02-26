@@ -40,12 +40,12 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="OpeningTime" class="form-label">Opening Time</label>
-                                <input asp-for="OpeningTime" type="time" class="form-control" required />
+                                <input asp-for="OpeningTime" type="time" class="form-control" required value="@(Model?.OpeningTime.ToString("HH:mm"))" />
                                 <span asp-validation-for="OpeningTime" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="ClosingTime" class="form-label">Closing Time</label>
-                                <input asp-for="ClosingTime" type="time" class="form-control" required />
+                                <input asp-for="ClosingTime" type="time" class="form-control" required value="@(Model?.ClosingTime.ToString("HH:mm"))" />
                                 <span asp-validation-for="ClosingTime" class="text-danger"></span>
                             </div>
                         </div>

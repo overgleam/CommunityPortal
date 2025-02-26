@@ -16,10 +16,10 @@ namespace CommunityPortal.Models.Facility
         public DateTime ReservationDate { get; set; }
 
         [Required]
-        public TimeSpan StartTime { get; set; }
+        public DateTime StartTime { get; set; }
 
         [Required]
-        public TimeSpan EndTime { get; set; }
+        public DateTime EndTime { get; set; }
 
         [Required]
         public int GuestCount { get; set; }

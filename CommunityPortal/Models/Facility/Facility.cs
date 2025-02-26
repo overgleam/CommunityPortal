@@ -19,10 +19,10 @@ namespace CommunityPortal.Models.Facility
         public FacilityType Type { get; set; }
 
         [Required]
-        public TimeSpan OpeningTime { get; set; }
+        public DateTime OpeningTime { get; set; }
 
         [Required]
-        public TimeSpan ClosingTime { get; set; }
+        public DateTime ClosingTime { get; set; }
 
         [Required]
         public int MaximumOccupancy { get; set; }

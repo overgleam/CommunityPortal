@@ -18,10 +18,11 @@
                     <thead>
                         <tr>
                             <th>Facility</th>
-                            <th>User</th>
+                            <th>Homeowner</th>
                             <th>Date</th>
                             <th>Time</th>
                             <th>Guests</th>
+                            <th>Price</th>
                             <th>Status</th>
                             <th>Payment</th>
                             <th>Actions</th>
@@ -32,10 +33,20 @@
                         {
                             <tr>
                                 <td>@reservation.Facility.Name</td>
-                                <td>@reservation.User.Email</td>
+                                <td>
+                                    @if (reservation.User?.Homeowner != null)
+                                    {
+                                        @($"{reservation.User.Homeowner.FirstName} {reservation.User.Homeowner.LastName}")
+                                    }
+                                    else
+                                    {
+                                        @reservation.User?.Email
+                                    }
+                                </td>
                                 <td>@reservation.ReservationDate.ToShortDateString()</td>
-                                <td>@($"{reservation.StartTime.Hours:D2}:{reservation.StartTime.Minutes:D2} {(reservation.StartTime.Hours < 12 ? "AM" : "PM")} - {reservation.EndTime.Hours:D2}:{reservation.EndTime.Minutes:D2} {(reservation.EndTime.Hours < 12 ? "AM" : "PM")}")</td>
+                                <td>@($"{reservation.StartTime.ToString("h:mm tt")} - {reservation.EndTime.ToString("h:mm tt")}")</td>
                                 <td>@reservation.GuestCount</td>
+                                <td>₱@reservation.TotalPrice</td>
                                 <td>
                                     <span class="badge @GetStatusBadgeClass(reservation.Status)">
                                         @reservation.Status
@@ -77,6 +88,12 @@
                                                 <i class="fas fa-receipt"></i> Verify Payment
                                             </a>
                                         }
+                                        else if (reservation.IsPaid)
+                                        {
+                                            <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-sm btn-success">
+                                                <i class="fas fa-receipt"></i> View Payment
+                                            </a>
+                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -110,14 +127,16 @@
                             <h6>Facility Details</h6>
                             <p><strong>Name:</strong> @reservation.Facility.Name</p>
                             <p><strong>Type:</strong> @reservation.Facility.Type</p>
-                            <p><strong>Maximum Occupancy:</strong> @reservation.Facility.MaximumOccupancy</p>
+                            <p><strong>Maximum Occupancy:</strong> @reservation.Facility.MaximumOccupancy people</p>
+                            <p><strong>Price Per Hour:</strong> ₱@reservation.Facility.PricePerHour</p>
                         </div>
                         <div class="col-md-6">
                             <h6>Reservation Details</h6>
                             <p><strong>Date:</strong> @reservation.ReservationDate.ToShortDateString()</p>
-                            <p><strong>Time:</strong> @($"{reservation.StartTime.Hours:D2}:{reservation.StartTime.Minutes:D2} {(reservation.StartTime.Hours < 12 ? "AM" : "PM")} - {reservation.EndTime.Hours:D2}:{reservation.EndTime.Minutes:D2} {(reservation.EndTime.Hours < 12 ? "AM" : "PM")}")</p>
+                            <p><strong>Time:</strong> @($"{reservation.StartTime.ToString("h:mm tt")} - {reservation.EndTime.ToString("h:mm tt")}")</p>
                             <p><strong>Guest Count:</strong> @reservation.GuestCount</p>
-                            <p><strong>Total Price:</strong> $@reservation.TotalPrice</p>
+                            <p><strong>Total Price:</strong> ₱@reservation.TotalPrice</p>
+                            <p><strong>Status:</strong> <span class="badge @GetStatusBadgeClass(reservation.Status)">@reservation.Status</span></p>
                             <p>
                                 <strong>Payment Status:</strong>
                                 @if (reservation.IsPaid)
@@ -144,7 +163,11 @@
                     </div>
 
                     <div class="mt-3">
-                        <h6>User Details</h6>
+                        <h6>Homeowner Details</h6>
+                        @if (reservation.User?.Homeowner != null)
+                        {
+                            <p><strong>Name:</strong> @reservation.User.Homeowner.FirstName @reservation.User.Homeowner.LastName</p>
+                        }
                         <p><strong>Email:</strong> @reservation.User.Email</p>
                         @if (!string.IsNullOrEmpty(reservation.SpecialRequests))
                         {
@@ -152,17 +175,50 @@
                         }
                     </div>
 
+                    @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Rejected)
+                    {
+                        <div class="mt-3 alert alert-danger">
+                            <h6><i class="fas fa-exclamation-triangle"></i> Rejection Information</h6>
+                            <p><strong>Reason:</strong> @reservation.RejectionReason</p>
+                        </div>
+                    }
+                    else if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Cancelled)
+                    {
+                        <div class="mt-3 alert alert-warning">
+                            <h6><i class="fas fa-ban"></i> Cancellation Information</h6>
+                            <p><strong>Reason:</strong> @(string.IsNullOrEmpty(reservation.RejectionReason) ? "No reason provided." : reservation.RejectionReason)</p>
+                        </div>
+                    }
+
                     @if (!string.IsNullOrEmpty(reservation.ReceiptFileName))
                     {
                         <div class="mt-3">
                             <h6>Payment Receipt</h6>
                             <p>
                                 <strong>Uploaded:</strong> @(reservation.ReceiptUploadDate?.ToString("MMMM dd, yyyy, hh:mm tt") ?? "N/A")<br/>
-                                <strong>Method:</strong> @(reservation.PaymentMethod ?? "N/A")
+                                <strong>Method:</strong> @(reservation.PaymentMethod ?? "N/A")<br/>
+                                <strong>Amount:</strong> ₱@reservation.TotalPrice
                             </p>
                             <div class="mt-2">
                                 <img src="~/uploads/receipts/@reservation.ReceiptFileName" alt="Receipt" class="img-thumbnail" style="max-width: 300px;" />
                             </div>
+                            
+                            @if (reservation.IsPaid && reservation.PaymentVerificationDate.HasValue)
+                            {
+                                <div class="alert alert-success mt-2">
+                                    <p><strong>Verified On:</strong> @reservation.PaymentVerificationDate.Value.ToString("MMM dd, yyyy hh:mm tt")</p>
+                                    @if (!string.IsNullOrEmpty(reservation.PaymentVerificationNotes))
+                                    {
+                                        <p><strong>Verification Notes:</strong> @reservation.PaymentVerificationNotes</p>
+                                    }
+                                </div>
+                            }
+                            else if (!string.IsNullOrEmpty(reservation.PaymentVerificationNotes))
+                            {
+                                <div class="alert alert-warning mt-2">
+                                    <p><strong>Previous Verification Notes:</strong> @reservation.PaymentVerificationNotes</p>
+                                </div>
+                            }
                         </div>
                     }
 

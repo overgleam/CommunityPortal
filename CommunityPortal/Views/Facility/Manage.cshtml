@@ -47,7 +47,7 @@
                             </div>
                             <div class="col-md-8">
                                 <p><strong>Type:</strong> @facility.Type</p>
-                                <p><strong>Operating Hours:</strong> @($"{facility.OpeningTime.Hours:D2}:{facility.OpeningTime.Minutes:D2} {(facility.OpeningTime.Hours < 12 ? "AM" : "PM")} - {facility.ClosingTime.Hours:D2}:{facility.ClosingTime.Minutes:D2} {(facility.ClosingTime.Hours < 12 ? "AM" : "PM")}")</p>
+                                <p><strong>Operating Hours:</strong> @($"{facility.OpeningTime.ToString("h:mm tt")} - {facility.ClosingTime.ToString("h:mm tt")}")</p>
                                 <p><strong>Maximum Occupancy:</strong> @facility.MaximumOccupancy persons</p>
                                 <p><strong>Price:</strong> $@facility.PricePerHour/hour</p>
                             </div>

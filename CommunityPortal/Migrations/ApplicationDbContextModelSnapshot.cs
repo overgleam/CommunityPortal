@@ -352,8 +352,8 @@ namespace CommunityPortal.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<TimeSpan>("ClosingTime")
-                        .HasColumnType("time");
+                    b.Property<DateTime>("ClosingTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -382,8 +382,8 @@ namespace CommunityPortal.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<TimeSpan>("OpeningTime")
-                        .HasColumnType("time");
+                    b.Property<DateTime>("OpeningTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("PricePerHour")
                         .HasColumnType("decimal(18,2)");
@@ -413,8 +413,8 @@ namespace CommunityPortal.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<TimeSpan>("EndTime")
-                        .HasColumnType("time");
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("FacilityId")
                         .HasColumnType("int");
@@ -458,8 +458,8 @@ namespace CommunityPortal.Migrations
                     b.Property<string>("SpecialRequests")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<TimeSpan>("StartTime")
-                        .HasColumnType("time");
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");

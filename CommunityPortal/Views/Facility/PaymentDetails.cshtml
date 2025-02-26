@@ -17,26 +17,100 @@
                             <h5>Facility Details</h5>
                             <p><strong>Name:</strong> @Model.Facility.Name</p>
                             <p><strong>Type:</strong> @Model.Facility.Type</p>
+                            @if (!string.IsNullOrEmpty(Model.Facility.Description))
+                            {
+                                <p><strong>Description:</strong> @(Model.Facility.Description.Length > 100 ? Model.Facility.Description.Substring(0, 97) + "..." : Model.Facility.Description)</p>
+                            }
+                            <p><strong>Maximum Occupancy:</strong> @Model.Facility.MaximumOccupancy people</p>
+                            <p><strong>Operating Hours:</strong> @Model.Facility.OpeningTime.ToString("h:mm tt") - @Model.Facility.ClosingTime.ToString("h:mm tt")</p>
                         </div>
                         <div class="col-md-6">
                             <h5>Reservation Details</h5>
                             <p><strong>Date:</strong> @Model.ReservationDate.ToShortDateString()</p>
-                            <p><strong>Time:</strong> @Model.StartTime.ToString("hh\\:mm") - @Model.EndTime.ToString("hh\\:mm")</p>
+                            <p><strong>Time:</strong> @($"{Model.StartTime.ToString("h:mm tt")} - {Model.EndTime.ToString("h:mm tt")}")</p>
+                            <p><strong>Duration:</strong> @(((TimeSpan)(Model.EndTime - Model.StartTime)).TotalHours) hours</p>
+                            <p><strong>Guest Count:</strong> @Model.GuestCount</p>
+                            @if (!string.IsNullOrEmpty(Model.SpecialRequests))
+                            {
+                                <p><strong>Special Requests:</strong> @Model.SpecialRequests</p>
+                            }
                             <p><strong>Status:</strong> <span class="badge @GetStatusBadgeClass(Model.Status)">@Model.Status</span></p>
+                            <p><strong>Reserved On:</strong> @Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</p>
+                            <p><strong>Reservation ID:</strong> #@Model.Id</p>
                         </div>
                     </div>
 
+                    @if (!string.IsNullOrEmpty(Model.PaymentVerificationNotes) && !Model.IsPaid && string.IsNullOrEmpty(Model.ReceiptFileName))
+                    {
+                        <div class="alert alert-danger mb-4">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Payment Rejected</h5>
+                            <p><strong>Reason for Rejection:</strong> @Model.PaymentVerificationNotes</p>
+                            <p>Please upload a new receipt with the correct information. Your reservation will remain in "Payment Pending" status until a valid receipt is verified.</p>
+                            <p><i class="fas fa-info-circle"></i> <strong>Next Steps:</strong> Review the rejection reason above, make the necessary corrections, and upload a new receipt using the form below.</p>
+                        </div>
+                    }
+
                     <div class="alert alert-info">
                         <h5>Payment Information</h5>
-                        <p><strong>Total Amount Due:</strong> $@Model.TotalPrice</p>
-                        <p><i class="fas fa-info-circle"></i> Please pay the full amount to complete your reservation.</p>
+                        <p><strong>Total Amount Due:</strong> ₱@Model.TotalPrice</p>
+                        <p><strong>Base Price:</strong> ₱@Model.Facility.PricePerHour per hour</p>
+                        <p><strong>Calculated Price:</strong> ₱@Model.Facility.PricePerHour × @(((TimeSpan)(Model.EndTime - Model.StartTime)).TotalHours) hours = ₱@Model.TotalPrice</p>
+                        
+                        @if (Model.IsPaid)
+                        {
+                            <div class="alert alert-success mt-2">
+                                <h6><i class="fas fa-check-circle"></i> Payment Confirmed</h6>
+                                <p><strong>Payment Method:</strong> @Model.PaymentMethod</p>
+                                @if (!string.IsNullOrEmpty(Model.PaymentTransactionId))
+                                {
+                                    <p><strong>Transaction ID:</strong> @Model.PaymentTransactionId</p>
+                                }
+                                @if (Model.PaymentVerificationDate.HasValue)
+                                {
+                                    <p><strong>Verified On:</strong> @Model.PaymentVerificationDate.Value.ToString("MMM dd, yyyy hh:mm tt")</p>
+                                    <p><strong>Verified By:</strong> Administrator</p>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.ReceiptFileName))
+                                {
+                                    <p>
+                                        <strong>Receipt:</strong>
+                                        <a href="/uploads/receipts/@Model.ReceiptFileName" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-invoice"></i> View Receipt
+                                        </a>
+                                    </p>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p><i class="fas fa-info-circle"></i> Please pay the full amount to complete your reservation.</p>
+                            <div class="mt-2 mb-2">
+                                <strong>Payment Status:</strong> 
+                                @if (string.IsNullOrEmpty(Model.ReceiptFileName))
+                                {
+                                    <span class="badge bg-danger">No Receipt Uploaded</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">Pending Verification</span>
+                                }
+                            </div>
+                        }
                     </div>
 
                     @if (Model.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending && string.IsNullOrEmpty(Model.ReceiptFileName))
                     {
                         <div class="mt-4">
-                            <h5>Upload Payment Receipt</h5>
-                            <p>Please select your payment method and upload your receipt to confirm your reservation.</p>
+                            @if (!string.IsNullOrEmpty(Model.PaymentVerificationNotes))
+                            {
+                                <h5><i class="fas fa-upload text-danger"></i> <span class="text-danger">Upload New Payment Receipt</span></h5>
+                                <p class="text-danger">Your previous payment receipt was rejected. Please upload a new one addressing the issues mentioned above.</p>
+                            }
+                            else
+                            {
+                                <h5><i class="fas fa-upload"></i> Upload Payment Receipt</h5>
+                                <p>Please select your payment method and upload your receipt to confirm your reservation.</p>
+                            }
 
                             <form asp-action="UploadReceiptForReservation" method="post" enctype="multipart/form-data">
                                 @Html.AntiForgeryToken()
@@ -59,7 +133,16 @@
                                     <div class="form-text">Upload a clear image of your payment receipt.</div>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary">Upload Receipt</button>
+                                <button type="submit" class="btn btn-primary">
+                                    @if (!string.IsNullOrEmpty(Model.PaymentVerificationNotes))
+                                    {
+                                        <span>Upload New Receipt</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Upload Receipt</span>
+                                    }
+                                </button>
                             </form>
                         </div>
                     }
@@ -151,6 +234,20 @@
                             No payment methods have been set up yet. Please contact the administrator.
                         </div>
                     }
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p>If you're having trouble with your payment or have questions about the reservation process, please contact our support team:</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope me-2"></i> support@communityportal.com</li>
+                        <li><i class="fas fa-phone me-2"></i> +63 (123) 456-7890</li>
+                    </ul>
+                    <p class="mt-2">Our office hours are Monday to Friday, 9:00 AM to 5:00 PM.</p>
                 </div>
             </div>
         </div>

@@ -26,7 +26,7 @@
                             <tr>
                                 <td>@reservation.Facility.Name</td>
                                 <td>@reservation.ReservationDate.ToShortDateString()</td>
-                                <td>@($"{reservation.StartTime.Hours:D2}:{reservation.StartTime.Minutes:D2} {(reservation.StartTime.Hours < 12 ? "AM" : "PM")} - {reservation.EndTime.Hours:D2}:{reservation.EndTime.Minutes:D2} {(reservation.EndTime.Hours < 12 ? "AM" : "PM")}")</td>
+                                <td>@($"{reservation.StartTime.ToString("h:mm tt")} - {reservation.EndTime.ToString("h:mm tt")}")</td>
                                 <td>
                                     <span class="badge @GetStatusBadgeClass(reservation.Status)">
                                         @reservation.Status
@@ -117,14 +117,31 @@
                             <h6>Facility Details</h6>
                             <p><strong>Name:</strong> @reservation.Facility.Name</p>
                             <p><strong>Type:</strong> @reservation.Facility.Type</p>
+                            <p><strong>Maximum Occupancy:</strong> @reservation.Facility.MaximumOccupancy people</p>
+                            @if (!string.IsNullOrEmpty(reservation.Facility.Description))
+                            {
+                                <p><strong>Description:</strong> @(reservation.Facility.Description.Length > 100 ? reservation.Facility.Description.Substring(0, 97) + "..." : reservation.Facility.Description)</p>
+                            }
                         </div>
                         <div class="col-md-6">
                             <h6>Reservation Details</h6>
                             <p><strong>Date:</strong> @reservation.ReservationDate.ToShortDateString()</p>
-                            <p><strong>Time:</strong> @($"{reservation.StartTime.Hours:D2}:{reservation.StartTime.Minutes:D2} {(reservation.StartTime.Hours < 12 ? "AM" : "PM")} - {reservation.EndTime.Hours:D2}:{reservation.EndTime.Minutes:D2} {(reservation.EndTime.Hours < 12 ? "AM" : "PM")}")</p>
+                            <p><strong>Time:</strong> @($"{reservation.StartTime.ToString("h:mm tt")} - {reservation.EndTime.ToString("h:mm tt")}")</p>
                             <p><strong>Guest Count:</strong> @reservation.GuestCount</p>
-                            <p><strong>Total Price:</strong> $@reservation.TotalPrice</p>
+                            <p><strong>Total Price:</strong> ₱@reservation.TotalPrice</p>
                             <p><strong>Status:</strong> <span class="badge @GetStatusBadgeClass(reservation.Status)">@reservation.Status</span></p>
+                            @if (reservation.IsPaid)
+                            {
+                                <p><strong>Payment Status:</strong> <span class="badge bg-success">Paid</span></p>
+                                @if (!string.IsNullOrEmpty(reservation.PaymentMethod))
+                                {
+                                    <p><strong>Payment Method:</strong> @reservation.PaymentMethod</p>
+                                }
+                            }
+                            else
+                            {
+                                <p><strong>Payment Status:</strong> <span class="badge bg-warning text-dark">Not Paid</span></p>
+                            }
                         </div>
                     </div>
 
@@ -139,14 +156,14 @@
                     @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Rejected)
                     {
                         <div class="mt-3 alert alert-danger">
-                            <h6>Rejection Reason</h6>
+                            <h6><i class="fas fa-exclamation-triangle"></i> Rejection Reason</h6>
                             <p>@reservation.RejectionReason</p>
                         </div>
                     }
                     else if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Cancelled)
                     {
                         <div class="mt-3 alert alert-warning">
-                            <h6>Cancellation Reason</h6>
+                            <h6><i class="fas fa-ban"></i> Cancellation Reason</h6>
                             <p>@(string.IsNullOrEmpty(reservation.RejectionReason) ? "No reason provided." : reservation.RejectionReason)</p>
                         </div>
                     }
@@ -159,6 +176,7 @@
                             {
                                 <div class="alert alert-warning">
                                     <p><i class="fas fa-exclamation-circle"></i> Payment is required to confirm your reservation.</p>
+                                    <p><strong>Amount Due:</strong> ₱@reservation.TotalPrice</p>
                                     <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-primary mt-2">
                                         <i class="fas fa-credit-card"></i> Make Payment
                                     </a>
@@ -170,6 +188,11 @@
                                     <p><i class="fas fa-info-circle"></i> Your payment receipt has been uploaded and is awaiting verification.</p>
                                     <p><strong>Uploaded on:</strong> @reservation.ReceiptUploadDate?.ToString("MMMM dd, yyyy, hh:mm tt")</p>
                                     <p><strong>Payment Method:</strong> @reservation.PaymentMethod</p>
+                                    <p><strong>Amount Paid:</strong> ₱@reservation.TotalPrice</p>
+                                    @if (!string.IsNullOrEmpty(reservation.PaymentVerificationNotes))
+                                    {
+                                        <p><strong>Verification Notes:</strong> @reservation.PaymentVerificationNotes</p>
+                                    }
                                     <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-primary mt-2">
                                         <i class="fas fa-receipt"></i> View Payment Details
                                     </a>
@@ -180,10 +203,13 @@
                     else if (reservation.IsPaid)
                     {
                         <div class="mt-3 alert alert-success">
-                            <h6>Payment Information</h6>
-                            <p><i class="fas fa-check-circle"></i> Payment has been verified and confirmed.</p>
+                            <h6><i class="fas fa-check-circle"></i> Payment Information</h6>
+                            <p>Payment has been verified and confirmed.</p>
+                            <p><strong>Amount Paid:</strong> ₱@reservation.TotalPrice</p>
                             <p><strong>Payment Method:</strong> @reservation.PaymentMethod</p>
-                            <p><strong>Verified on:</strong> @reservation.PaymentVerificationDate?.ToString("MMMM dd, yyyy, hh:mm tt")</p>
+                            <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-sm btn-outline-primary mt-2">
+                                <i class="fas fa-receipt"></i> View Full Payment Details
+                            </a>
                         </div>
                     }
 

@@ -22,7 +22,7 @@
                     <hr />
                     <div class="facility-details">
                         <p><strong>Type:</strong> @Model.Type</p>
-                        <p><strong>Operating Hours:</strong> @($"{Model.OpeningTime.Hours:D2}:{Model.OpeningTime.Minutes:D2} {(Model.OpeningTime.Hours < 12 ? "AM" : "PM")} - {Model.ClosingTime.Hours:D2}:{Model.ClosingTime.Minutes:D2} {(Model.ClosingTime.Hours < 12 ? "AM" : "PM")}")</p>
+                        <p><strong>Operating Hours:</strong> @($"{Model.OpeningTime.ToString("h:mm tt")} - {Model.ClosingTime.ToString("h:mm tt")}")</p>
                         <p><strong>Maximum Occupancy:</strong> @Model.MaximumOccupancy persons</p>
                         <p><strong>Price:</strong> $@Model.PricePerHour/hour</p>
                     </div>
@@ -34,39 +34,40 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Make a Reservation</h5>
+                    
                     <form asp-action="Reserve" method="post" id="reservationForm">
                         <input type="hidden" name="FacilityId" value="@Model.Id" />
                         
                         <div class="mb-3">
                             <label class="form-label">Date</label>
                             <input type="date" name="ReservationDate" id="reservationDate" class="form-control" required 
-                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" 
+                                   value="@(TempData["ReservationDate"]?.ToString() ?? "")" />
                             <small class="text-muted">Blackout dates are disabled in the calendar</small>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Start Time</label>
                             <input type="time" name="StartTime" id="startTime" class="form-control" required 
-                                   min="@($"{Model.OpeningTime.Hours:D2}:{Model.OpeningTime.Minutes:D2}")" 
-                                   max="@($"{Model.ClosingTime.Hours:D2}:{Model.ClosingTime.Minutes:D2}")" />
+                                   value="@(TempData["StartTime"]?.ToString() ?? "")" />
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">End Time</label>
                             <input type="time" name="EndTime" id="endTime" class="form-control" required 
-                                   min="@($"{Model.OpeningTime.Hours:D2}:{Model.OpeningTime.Minutes:D2}")" 
-                                   max="@($"{Model.ClosingTime.Hours:D2}:{Model.ClosingTime.Minutes:D2}")" />
+                                   value="@(TempData["EndTime"]?.ToString() ?? "")" />
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Number of Guests</label>
                             <input type="number" name="GuestCount" id="guestCount" class="form-control" required 
-                                   min="1" max="@Model.MaximumOccupancy" />
+                                   min="1" max="@Model.MaximumOccupancy" 
+                                   value="@(TempData["GuestCount"]?.ToString() ?? "")" />
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Special Requests</label>
-                            <textarea name="SpecialRequests" class="form-control" rows="3"></textarea>
+                            <textarea name="SpecialRequests" class="form-control" rows="3">@(TempData["SpecialRequests"]?.ToString() ?? "")</textarea>
                         </div>
 
                         <button type="button" class="btn btn-primary w-100" onclick="validateAndShowConfirmation()">Submit Reservation</button>
@@ -224,9 +225,21 @@
             }
 
             // Calculate duration and price
-            const start = new Date(`2000-01-01T${startTime}`);
-            const end = new Date(`2000-01-01T${endTime}`);
-            const durationHours = (end - start) / (1000 * 60 * 60);
+            const startTimeParts = startTime.split(':');
+            const endTimeParts = endTime.split(':');
+            
+            const startDate = new Date();
+            startDate.setHours(parseInt(startTimeParts[0]), parseInt(startTimeParts[1]), 0);
+            
+            const endDate = new Date();
+            endDate.setHours(parseInt(endTimeParts[0]), parseInt(endTimeParts[1]), 0);
+            
+            // Handle case where end time is on the next day
+            if (endDate < startDate) {
+                endDate.setDate(endDate.getDate() + 1);
+            }
+            
+            const durationHours = (endDate - startDate) / (1000 * 60 * 60);
             const totalPrice = durationHours * pricePerHour;
 
             // Format times to 12-hour format with AM/PM
@@ -255,9 +268,21 @@
             const endTime = document.getElementById('endTime').value;
             
             // Calculate duration and price
-            const start = new Date(`2000-01-01T${startTime}`);
-            const end = new Date(`2000-01-01T${endTime}`);
-            const durationHours = (end - start) / (1000 * 60 * 60);
+            const startTimeParts = startTime.split(':');
+            const endTimeParts = endTime.split(':');
+            
+            const startDate = new Date();
+            startDate.setHours(parseInt(startTimeParts[0]), parseInt(startTimeParts[1]), 0);
+            
+            const endDate = new Date();
+            endDate.setHours(parseInt(endTimeParts[0]), parseInt(endTimeParts[1]), 0);
+            
+            // Handle case where end time is on the next day
+            if (endDate < startDate) {
+                endDate.setDate(endDate.getDate() + 1);
+            }
+            
+            const durationHours = (endDate - startDate) / (1000 * 60 * 60);
             const totalPrice = durationHours * pricePerHour;
             
             // Check if the hidden input already exists

@@ -97,6 +97,13 @@ namespace CommunityPortal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reserve(FacilityReservation reservation)
         {
+            // Save form values in TempData to persist them in case of errors
+            TempData["ReservationDate"] = reservation.ReservationDate.ToString("yyyy-MM-dd");
+            TempData["StartTime"] = reservation.StartTime.ToString("HH:mm");
+            TempData["EndTime"] = reservation.EndTime.ToString("HH:mm");
+            TempData["GuestCount"] = reservation.GuestCount.ToString();
+            TempData["SpecialRequests"] = reservation.SpecialRequests;
+            
             if (ModelState.IsValid)
             {
                 // Get the facility
@@ -114,8 +121,15 @@ namespace CommunityPortal.Controllers
                 reservation.CreatedAt = DateTime.UtcNow;
                 reservation.Status = ReservationStatus.Pending;
                 
-                // Validate operating hours
-                if (reservation.StartTime < facility.OpeningTime || reservation.EndTime > facility.ClosingTime)
+                // Set full datetime for start and end times by combining reservation date with time
+                var startTimeOfDay = reservation.StartTime.TimeOfDay;
+                var endTimeOfDay = reservation.EndTime.TimeOfDay;
+                
+                reservation.StartTime = reservation.ReservationDate.Date.Add(startTimeOfDay);
+                reservation.EndTime = reservation.ReservationDate.Date.Add(endTimeOfDay);
+                
+                // Validate operating hours - compare only the TimeOfDay part
+                if (startTimeOfDay < facility.OpeningTime.TimeOfDay || endTimeOfDay > facility.ClosingTime.TimeOfDay)
                 {
                     ModelState.AddModelError("", "Reservation time must be within facility operating hours.");
                     TempData["ErrorMessage"] = "Reservation time must be within facility operating hours.";
@@ -123,7 +137,7 @@ namespace CommunityPortal.Controllers
                 }
                 
                 // Validate end time is after start time
-                if (reservation.EndTime <= reservation.StartTime)
+                if (endTimeOfDay <= startTimeOfDay)
                 {
                     ModelState.AddModelError("", "End time must be after start time.");
                     TempData["ErrorMessage"] = "End time must be after start time.";
@@ -139,26 +153,27 @@ namespace CommunityPortal.Controllers
                 }
                 
                 // Calculate total price based on duration and hourly rate
-                var duration = (reservation.EndTime - reservation.StartTime).TotalHours;
+                var duration = (endTimeOfDay - startTimeOfDay).TotalHours;
                 reservation.TotalPrice = (decimal)duration * facility.PricePerHour;
 
-                // Check for conflicts with existing reservations (both Pending, Approved, and PaymentPending)
-                var hasConflict = await _context.FacilityReservations
-                    .AnyAsync(r => r.FacilityId == reservation.FacilityId &&
-                                 r.ReservationDate.Date == reservation.ReservationDate.Date &&
-                                 (r.Status == ReservationStatus.Approved || 
-                                  r.Status == ReservationStatus.Pending || 
-                                  r.Status == ReservationStatus.PaymentPending) &&
-                                 !r.IsDeleted &&
-                                 ((r.StartTime <= reservation.StartTime && reservation.StartTime < r.EndTime) ||
-                                  (r.StartTime < reservation.EndTime && reservation.EndTime <= r.EndTime) ||
-                                  (reservation.StartTime <= r.StartTime && r.StartTime < reservation.EndTime) ||
-                                  (reservation.StartTime < r.EndTime && r.EndTime <= reservation.EndTime)));
+                // Check for conflicts with existing reservations (only Approved and PaymentPending)
+                var conflictingReservation = await _context.FacilityReservations
+                    .Where(r => r.FacilityId == reservation.FacilityId &&
+                               r.ReservationDate.Date == reservation.ReservationDate.Date &&
+                               (r.Status == ReservationStatus.Approved || 
+                                r.Status == ReservationStatus.PaymentPending) &&
+                               !r.IsDeleted &&
+                               ((r.StartTime <= reservation.StartTime && reservation.StartTime < r.EndTime) ||
+                                (r.StartTime < reservation.EndTime && reservation.EndTime <= r.EndTime) ||
+                                (reservation.StartTime <= r.StartTime && r.StartTime < reservation.EndTime) ||
+                                (reservation.StartTime < r.EndTime && r.EndTime <= reservation.EndTime)))
+                    .FirstOrDefaultAsync();
 
-                if (hasConflict)
+                if (conflictingReservation != null)
                 {
-                    ModelState.AddModelError("", "The selected time slot is already booked or pending approval.");
-                    TempData["ErrorMessage"] = "The selected time slot is already booked or pending approval.";
+                    string conflictMessage = $"The selected time slot conflicts with an existing reservation from {conflictingReservation.StartTime.ToString("h:mm tt")} to {conflictingReservation.EndTime.ToString("h:mm tt")}. Please select a different time.";
+                    ModelState.AddModelError("", conflictMessage);
+                    TempData["ErrorMessage"] = conflictMessage;
                     return RedirectToAction(nameof(Details), new { id = reservation.FacilityId });
                 }
 
@@ -176,6 +191,14 @@ namespace CommunityPortal.Controllers
 
                 _context.Add(reservation);
                 await _context.SaveChangesAsync();
+                
+                // Clear the form values from TempData after successful submission
+                TempData.Remove("ReservationDate");
+                TempData.Remove("StartTime");
+                TempData.Remove("EndTime");
+                TempData.Remove("GuestCount");
+                TempData.Remove("SpecialRequests");
+                
                 TempData["SuccessMessage"] = "Your reservation has been submitted successfully and is pending approval.";
                 return RedirectToAction(nameof(MyReservations));
             }
@@ -209,8 +232,9 @@ namespace CommunityPortal.Controllers
             }
 
             // Special check for reservations that are happening soon (within 24 hours)
-            if (reservation.ReservationDate.Date == DateTime.Today && 
-                (DateTime.Now.TimeOfDay > reservation.StartTime.Add(new TimeSpan(-2, 0, 0))))
+            var reservationStart = reservation.StartTime;
+            if (reservationStart.Date == DateTime.Today && 
+                (DateTime.Now > reservationStart.AddHours(-2)))
             {
                 TempData["ErrorMessage"] = "Reservations cannot be cancelled less than 2 hours before the start time.";
                 return RedirectToAction(nameof(MyReservations));
@@ -254,6 +278,11 @@ namespace CommunityPortal.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Set current date for OpeningTime and ClosingTime but keep the time component
+                var today = DateTime.Today;
+                facility.OpeningTime = today.Add(facility.OpeningTime.TimeOfDay);
+                facility.ClosingTime = today.Add(facility.ClosingTime.TimeOfDay);
+                
                 if (image != null && image.Length > 0)
                 {
                     var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "facilities");
@@ -315,7 +344,12 @@ namespace CommunityPortal.Controllers
                     {
                         return NotFound();
                     }
-
+                    
+                    // Set current date for OpeningTime and ClosingTime but keep the time component
+                    var today = DateTime.Today;
+                    facility.OpeningTime = today.Add(facility.OpeningTime.TimeOfDay);
+                    facility.ClosingTime = today.Add(facility.ClosingTime.TimeOfDay);
+                    
                     if (image != null && image.Length > 0)
                     {
                         var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "facilities");
@@ -405,7 +439,10 @@ namespace CommunityPortal.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> UpdateReservationStatus(int id, ReservationStatus status, string? rejectionReason)
         {
-            var reservation = await _context.FacilityReservations.FindAsync(id);
+            var reservation = await _context.FacilityReservations
+                .Include(r => r.Facility)
+                .FirstOrDefaultAsync(r => r.Id == id);
+            
             if (reservation == null)
             {
                 return NotFound();
@@ -421,6 +458,26 @@ namespace CommunityPortal.Controllers
             if (status == ReservationStatus.Approved && reservation.Status == ReservationStatus.Pending)
             {
                 status = ReservationStatus.PaymentPending;
+                
+                // Find and reject all conflicting reservations
+                var conflictingReservations = await _context.FacilityReservations
+                    .Where(r => r.Id != reservation.Id &&
+                            r.FacilityId == reservation.FacilityId &&
+                            r.ReservationDate.Date == reservation.ReservationDate.Date &&
+                            r.Status == ReservationStatus.Pending &&
+                            !r.IsDeleted &&
+                            ((r.StartTime <= reservation.StartTime && reservation.StartTime < r.EndTime) ||
+                             (r.StartTime < reservation.EndTime && reservation.EndTime <= r.EndTime) ||
+                             (reservation.StartTime <= r.StartTime && r.StartTime < reservation.EndTime) ||
+                             (reservation.StartTime < r.EndTime && r.EndTime <= reservation.EndTime)))
+                    .ToListAsync();
+                    
+                foreach (var conflictingReservation in conflictingReservations)
+                {
+                    conflictingReservation.Status = ReservationStatus.Rejected;
+                    conflictingReservation.RejectionReason = "This time slot has been booked by another reservation.";
+                    conflictingReservation.UpdatedAt = DateTime.UtcNow;
+                }
             }
 
             reservation.Status = status;
@@ -688,8 +745,9 @@ namespace CommunityPortal.Controllers
             
             var reservation = await _context.FacilityReservations
                 .Include(r => r.Facility)
+                .Include(r => r.User)
                 .FirstOrDefaultAsync(r => r.Id == id && 
-                    (r.UserId == user.Id || User.IsInRole("admin")));
+                    (r.UserId == user.Id || User.IsInRole("admin") || User.IsInRole("homeowners")));
             
             if (reservation == null)
             {
@@ -731,6 +789,27 @@ namespace CommunityPortal.Controllers
                 reservation.PaymentVerificationDate = DateTime.UtcNow;
                 reservation.PaymentVerificationNotes = verificationNotes;
                 reservation.PaymentVerifiedByUserId = user.Id;
+                
+                // Find and reject all conflicting reservations
+                var conflictingReservations = await _context.FacilityReservations
+                    .Where(r => r.Id != reservation.Id &&
+                            r.FacilityId == reservation.FacilityId &&
+                            r.ReservationDate.Date == reservation.ReservationDate.Date &&
+                            r.Status == ReservationStatus.Pending &&
+                            !r.IsDeleted &&
+                            ((r.StartTime <= reservation.StartTime && reservation.StartTime < r.EndTime) ||
+                             (r.StartTime < reservation.EndTime && reservation.EndTime <= r.EndTime) ||
+                             (reservation.StartTime <= r.StartTime && r.StartTime < reservation.EndTime) ||
+                             (reservation.StartTime < r.EndTime && r.EndTime <= reservation.EndTime)))
+                    .ToListAsync();
+                    
+                foreach (var conflictingReservation in conflictingReservations)
+                {
+                    conflictingReservation.Status = ReservationStatus.Rejected;
+                    conflictingReservation.RejectionReason = "This time slot has been booked by another reservation.";
+                    conflictingReservation.UpdatedAt = DateTime.UtcNow;
+                }
+                
                 TempData["SuccessMessage"] = $"Payment verified successfully for reservation #{reservation.Id} by {reservation.User.Email}.";
             }
             else
