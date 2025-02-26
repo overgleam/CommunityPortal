@@ -52,7 +52,7 @@
                         <p class="card-text">@facility.Description</p>
                         <div class="facility-details">
                             <p><strong>Type:</strong> @facility.Type</p>
-                            <p><strong>Operating Hours:</strong> @facility.OpeningTime.ToString("hh\\:mm") - @facility.ClosingTime.ToString("hh\\:mm")</p>
+                            <p><strong>Operating Hours:</strong> @($"{facility.OpeningTime.Hours:D2}:{facility.OpeningTime.Minutes:D2} {(facility.OpeningTime.Hours < 12 ? "AM" : "PM")} - {facility.ClosingTime.Hours:D2}:{facility.ClosingTime.Minutes:D2} {(facility.ClosingTime.Hours < 12 ? "AM" : "PM")}")</p>
                             <p><strong>Maximum Occupancy:</strong> @facility.MaximumOccupancy persons</p>
                             <p><strong>Price:</strong> $@facility.PricePerHour/hour</p>
                         </div>

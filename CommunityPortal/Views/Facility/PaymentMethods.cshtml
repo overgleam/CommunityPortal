@@ -1,0 +1,69 @@
+@model IEnumerable<CommunityPortal.Models.Facility.PaymentMethod>
+@{
+    ViewData["Title"] = "Payment Methods";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Payment Methods</h1>
+        <a asp-action="CreatePaymentMethod" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Payment Method
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Details</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var method in Model)
+                        {
+                            <tr>
+                                <td>@method.Name</td>
+                                <td>@method.Type</td>
+                                <td>@method.Details</td>
+                                <td>
+                                    <span class="badge @(method.IsActive ? "bg-success" : "bg-danger")">
+                                        @(method.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-action="EditPaymentMethod" asp-route-id="@method.Id" class="btn btn-sm btn-info">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <form asp-action="TogglePaymentMethodStatus" method="post" style="display: inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@method.Id" />
+                                            <button type="submit" class="btn btn-sm @(method.IsActive ? "btn-warning" : "btn-success")"
+                                                    onclick="return confirm('Are you sure you want to @(method.IsActive ? "deactivate" : "activate") this payment method?')">
+                                                <i class="fas @(method.IsActive ? "fa-ban" : "fa-check")"></i>
+                                                @(method.IsActive ? "Deactivate" : "Activate")
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">
+                    No payment methods have been added yet.
+                </div>
+            }
+        </div>
+    </div>
+</div> 

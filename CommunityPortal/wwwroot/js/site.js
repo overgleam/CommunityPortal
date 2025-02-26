@@ -2,8 +2,8 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
-$(document).ready(function () {
-    setTimeout(function () {
-        $('.alert').alert('close');
-    }, 5000);
-});
+//$(document).ready(function () {
+//    setTimeout(function () {
+//        $('.alert').alert('close');
+//    }, 5000);
+//});

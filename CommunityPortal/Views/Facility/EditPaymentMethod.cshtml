@@ -1,0 +1,80 @@
+@model CommunityPortal.Models.Facility.PaymentMethod
+@{
+    ViewData["Title"] = "Edit Payment Method";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Edit Payment Method</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditPaymentMethod" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Name</label>
+                            <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Type" class="form-label">Type</label>
+                            <select asp-for="Type" class="form-select" required>
+                                <option value="">-- Select Type --</option>
+                                <option value="Bank">Bank Transfer</option>
+                                <option value="GCash">GCash</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="Type" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Details" class="form-label">Details</label>
+                            <input asp-for="Details" class="form-control" required />
+                            <span asp-validation-for="Details" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="qrCodeImage" class="form-label">QR Code Image (Optional)</label>
+                            <input type="file" id="qrCodeImage" name="qrCodeImage" class="form-control" accept="image/*" />
+                            <div class="form-text">Upload a new QR code image or leave empty to keep existing one.</div>
+                            
+                            @if (!string.IsNullOrEmpty(Model.QRCodeFileName))
+                            {
+                                <div class="mt-2">
+                                    <img src="~/uploads/payment_qr_codes/@Model.QRCodeFileName" alt="QR Code" class="img-thumbnail" style="max-width: 200px;" />
+                                    <div class="form-text">Current QR Code</div>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Instructions" class="form-label">Instructions</label>
+                            <textarea asp-for="Instructions" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Instructions" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label asp-for="IsActive" class="form-check-label">Active</label>
+                        </div>
+                        
+                        <div class="text-end">
+                            <a asp-action="PaymentMethods" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Update Payment Method</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

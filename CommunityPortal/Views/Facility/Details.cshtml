@@ -22,7 +22,7 @@
                     <hr />
                     <div class="facility-details">
                         <p><strong>Type:</strong> @Model.Type</p>
-                        <p><strong>Operating Hours:</strong> @Model.OpeningTime.ToString("hh\\:mm") - @Model.ClosingTime.ToString("hh\\:mm")</p>
+                        <p><strong>Operating Hours:</strong> @($"{Model.OpeningTime.Hours:D2}:{Model.OpeningTime.Minutes:D2} {(Model.OpeningTime.Hours < 12 ? "AM" : "PM")} - {Model.ClosingTime.Hours:D2}:{Model.ClosingTime.Minutes:D2} {(Model.ClosingTime.Hours < 12 ? "AM" : "PM")}")</p>
                         <p><strong>Maximum Occupancy:</strong> @Model.MaximumOccupancy persons</p>
                         <p><strong>Price:</strong> $@Model.PricePerHour/hour</p>
                     </div>
@@ -47,15 +47,15 @@
                         <div class="mb-3">
                             <label class="form-label">Start Time</label>
                             <input type="time" name="StartTime" id="startTime" class="form-control" required 
-                                   min="@Model.OpeningTime.ToString("hh\\:mm")" 
-                                   max="@Model.ClosingTime.ToString("hh\\:mm")" />
+                                   min="@($"{Model.OpeningTime.Hours:D2}:{Model.OpeningTime.Minutes:D2}")" 
+                                   max="@($"{Model.ClosingTime.Hours:D2}:{Model.ClosingTime.Minutes:D2}")" />
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">End Time</label>
                             <input type="time" name="EndTime" id="endTime" class="form-control" required 
-                                   min="@Model.OpeningTime.ToString("hh\\:mm")" 
-                                   max="@Model.ClosingTime.ToString("hh\\:mm")" />
+                                   min="@($"{Model.OpeningTime.Hours:D2}:{Model.OpeningTime.Minutes:D2}")" 
+                                   max="@($"{Model.ClosingTime.Hours:D2}:{Model.ClosingTime.Minutes:D2}")" />
                         </div>
 
                         <div class="mb-3">
@@ -218,6 +218,10 @@
                 showValidationError('Please enter a valid number of guests');
                 return;
             }
+            if (parseInt(guestCount) > @Model.MaximumOccupancy) {
+                showValidationError(`Number of guests cannot exceed the maximum occupancy of ${@Model.MaximumOccupancy}`);
+                return;
+            }
 
             // Calculate duration and price
             const start = new Date(`2000-01-01T${startTime}`);
@@ -225,9 +229,18 @@
             const durationHours = (end - start) / (1000 * 60 * 60);
             const totalPrice = durationHours * pricePerHour;
 
+            // Format times to 12-hour format with AM/PM
+            const formatTime = (timeStr) => {
+                const [hours, minutes] = timeStr.split(':');
+                const time = new Date();
+                time.setHours(hours);
+                time.setMinutes(minutes);
+                return time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            };
+
             // Update confirmation modal
             document.getElementById('confirmDate').textContent = new Date(date).toLocaleDateString();
-            document.getElementById('confirmTime').textContent = `${startTime} - ${endTime}`;
+            document.getElementById('confirmTime').textContent = `${formatTime(startTime)} - ${formatTime(endTime)}`;
             document.getElementById('confirmGuests').textContent = guestCount;
             document.getElementById('confirmPrice').textContent = `$${totalPrice.toFixed(2)}`;
 
@@ -236,7 +249,33 @@
         }
 
         function submitReservation() {
-            document.getElementById('reservationForm').submit();
+            // Add the total price as a hidden field before submitting
+            const form = document.getElementById('reservationForm');
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            
+            // Calculate duration and price
+            const start = new Date(`2000-01-01T${startTime}`);
+            const end = new Date(`2000-01-01T${endTime}`);
+            const durationHours = (end - start) / (1000 * 60 * 60);
+            const totalPrice = durationHours * pricePerHour;
+            
+            // Check if the hidden input already exists
+            let hiddenPriceInput = document.getElementById('totalPriceInput');
+            if (!hiddenPriceInput) {
+                // Create and append a hidden input field for total price
+                hiddenPriceInput = document.createElement('input');
+                hiddenPriceInput.type = 'hidden';
+                hiddenPriceInput.name = 'TotalPrice';
+                hiddenPriceInput.id = 'totalPriceInput';
+                form.appendChild(hiddenPriceInput);
+            }
+            
+            // Set the value
+            hiddenPriceInput.value = totalPrice.toFixed(2);
+            
+            // Submit the form
+            form.submit();
         }
     </script>
 } 

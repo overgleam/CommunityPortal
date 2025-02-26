@@ -428,8 +428,26 @@ namespace CommunityPortal.Migrations
                     b.Property<bool>("IsPaid")
                         .HasColumnType("bit");
 
+                    b.Property<string>("PaymentMethod")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PaymentTransactionId")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PaymentVerificationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentVerificationNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentVerifiedByUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ReceiptFileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReceiptUploadDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("RejectionReason")
                         .HasColumnType("nvarchar(max)");
@@ -459,9 +477,55 @@ namespace CommunityPortal.Migrations
 
                     b.HasIndex("FacilityId");
 
+                    b.HasIndex("PaymentVerifiedByUserId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("FacilityReservations");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Facility.PaymentMethod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Instructions")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("QRCodeFileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PaymentMethods");
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.Feedback", b =>
@@ -1077,12 +1141,18 @@ namespace CommunityPortal.Migrations
                         .HasForeignKey("FacilityId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "PaymentVerifiedBy")
+                        .WithMany()
+                        .HasForeignKey("PaymentVerifiedByUserId");
+
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Facility");
+
+                    b.Navigation("PaymentVerifiedBy");
 
                     b.Navigation("User");
                 });

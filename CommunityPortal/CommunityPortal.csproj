@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <Folder Include="Models\Documents\" />
+    <Folder Include="Models\Billing\" />
     <Folder Include="Models\ServiceRequest\" />
     <Folder Include="wwwroot\uploads\documents\" />
   </ItemGroup>

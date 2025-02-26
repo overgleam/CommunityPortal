@@ -99,22 +99,66 @@ namespace CommunityPortal.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Get the facility
+                var facility = await _context.Facilities
+                    .FirstOrDefaultAsync(f => f.Id == reservation.FacilityId && !f.IsDeleted);
+                
+                if (facility == null)
+                {
+                    return NotFound();
+                }
+                
+                // Get the current user
                 var user = await _userManager.GetUserAsync(User);
                 reservation.UserId = user.Id;
                 reservation.CreatedAt = DateTime.UtcNow;
                 reservation.Status = ReservationStatus.Pending;
+                
+                // Validate operating hours
+                if (reservation.StartTime < facility.OpeningTime || reservation.EndTime > facility.ClosingTime)
+                {
+                    ModelState.AddModelError("", "Reservation time must be within facility operating hours.");
+                    TempData["ErrorMessage"] = "Reservation time must be within facility operating hours.";
+                    return RedirectToAction(nameof(Details), new { id = reservation.FacilityId });
+                }
+                
+                // Validate end time is after start time
+                if (reservation.EndTime <= reservation.StartTime)
+                {
+                    ModelState.AddModelError("", "End time must be after start time.");
+                    TempData["ErrorMessage"] = "End time must be after start time.";
+                    return RedirectToAction(nameof(Details), new { id = reservation.FacilityId });
+                }
+                
+                // Validate maximum occupancy
+                if (reservation.GuestCount > facility.MaximumOccupancy)
+                {
+                    ModelState.AddModelError("", $"The number of guests exceeds the maximum occupancy ({facility.MaximumOccupancy}).");
+                    TempData["ErrorMessage"] = $"The number of guests exceeds the maximum occupancy ({facility.MaximumOccupancy}).";
+                    return RedirectToAction(nameof(Details), new { id = reservation.FacilityId });
+                }
+                
+                // Calculate total price based on duration and hourly rate
+                var duration = (reservation.EndTime - reservation.StartTime).TotalHours;
+                reservation.TotalPrice = (decimal)duration * facility.PricePerHour;
 
-                // Check for conflicts
+                // Check for conflicts with existing reservations (both Pending, Approved, and PaymentPending)
                 var hasConflict = await _context.FacilityReservations
                     .AnyAsync(r => r.FacilityId == reservation.FacilityId &&
                                  r.ReservationDate.Date == reservation.ReservationDate.Date &&
-                                 r.Status == ReservationStatus.Approved &&
+                                 (r.Status == ReservationStatus.Approved || 
+                                  r.Status == ReservationStatus.Pending || 
+                                  r.Status == ReservationStatus.PaymentPending) &&
+                                 !r.IsDeleted &&
                                  ((r.StartTime <= reservation.StartTime && reservation.StartTime < r.EndTime) ||
-                                  (r.StartTime < reservation.EndTime && reservation.EndTime <= r.EndTime)));
+                                  (r.StartTime < reservation.EndTime && reservation.EndTime <= r.EndTime) ||
+                                  (reservation.StartTime <= r.StartTime && r.StartTime < reservation.EndTime) ||
+                                  (reservation.StartTime < r.EndTime && r.EndTime <= reservation.EndTime)));
 
                 if (hasConflict)
                 {
-                    ModelState.AddModelError("", "The selected time slot is already booked.");
+                    ModelState.AddModelError("", "The selected time slot is already booked or pending approval.");
+                    TempData["ErrorMessage"] = "The selected time slot is already booked or pending approval.";
                     return RedirectToAction(nameof(Details), new { id = reservation.FacilityId });
                 }
 
@@ -126,14 +170,17 @@ namespace CommunityPortal.Controllers
                 if (hasBlackout)
                 {
                     ModelState.AddModelError("", "The facility is not available on the selected date due to maintenance or special event.");
+                    TempData["ErrorMessage"] = "The facility is not available on the selected date due to maintenance or special event.";
                     return RedirectToAction(nameof(Details), new { id = reservation.FacilityId });
                 }
 
                 _context.Add(reservation);
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Your reservation has been submitted successfully and is pending approval.";
                 return RedirectToAction(nameof(MyReservations));
             }
 
+            TempData["ErrorMessage"] = "Please check your reservation details and try again.";
             return RedirectToAction(nameof(Details), new { id = reservation.FacilityId });
         }
 
@@ -144,23 +191,36 @@ namespace CommunityPortal.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             var reservation = await _context.FacilityReservations
+                .Include(r => r.Facility)
                 .FirstOrDefaultAsync(r => r.Id == id && r.UserId == user.Id);
 
             if (reservation == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Reservation not found or you don't have permission to cancel it.";
+                return RedirectToAction(nameof(MyReservations));
             }
 
             if (reservation.Status != ReservationStatus.Pending && 
-                reservation.Status != ReservationStatus.Approved)
+                reservation.Status != ReservationStatus.Approved &&
+                reservation.Status != ReservationStatus.PaymentPending)
             {
-                return BadRequest("Cannot cancel this reservation.");
+                TempData["ErrorMessage"] = $"Cannot cancel this reservation with status: {reservation.Status}.";
+                return RedirectToAction(nameof(MyReservations));
+            }
+
+            // Special check for reservations that are happening soon (within 24 hours)
+            if (reservation.ReservationDate.Date == DateTime.Today && 
+                (DateTime.Now.TimeOfDay > reservation.StartTime.Add(new TimeSpan(-2, 0, 0))))
+            {
+                TempData["ErrorMessage"] = "Reservations cannot be cancelled less than 2 hours before the start time.";
+                return RedirectToAction(nameof(MyReservations));
             }
 
             reservation.Status = ReservationStatus.Cancelled;
             reservation.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
-
+            
+            TempData["SuccessMessage"] = $"Your reservation for {reservation.Facility.Name} on {reservation.ReservationDate.ToShortDateString()} has been cancelled successfully.";
             return RedirectToAction(nameof(MyReservations));
         }
 
@@ -357,6 +417,12 @@ namespace CommunityPortal.Controllers
                 return RedirectToAction(nameof(ManageReservations));
             }
 
+            // If approving a reservation, set it to PaymentPending
+            if (status == ReservationStatus.Approved && reservation.Status == ReservationStatus.Pending)
+            {
+                status = ReservationStatus.PaymentPending;
+            }
+
             reservation.Status = status;
             reservation.RejectionReason = rejectionReason;
             reservation.UpdatedAt = DateTime.UtcNow;
@@ -394,9 +460,354 @@ namespace CommunityPortal.Controllers
             return RedirectToAction(nameof(Manage));
         }
 
+        // GET: /Facility/PaymentMethods
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> PaymentMethods()
+        {
+            var paymentMethods = await _context.PaymentMethods.ToListAsync();
+            return View(paymentMethods);
+        }
+
+        // GET: /Facility/CreatePaymentMethod
+        [Authorize(Roles = "admin")]
+        public IActionResult CreatePaymentMethod()
+        {
+            return View();
+        }
+
+        // POST: /Facility/CreatePaymentMethod
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> CreatePaymentMethod(PaymentMethod paymentMethod, IFormFile? qrCodeImage)
+        {
+            if (ModelState.IsValid)
+            {
+                // Handle QR code image upload if provided
+                if (qrCodeImage != null && qrCodeImage.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "payment_qr_codes");
+                    Directory.CreateDirectory(uploadsFolder); // Ensure directory exists
+                    
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(qrCodeImage.FileName);
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await qrCodeImage.CopyToAsync(fileStream);
+                    }
+                    
+                    paymentMethod.QRCodeFileName = uniqueFileName;
+                }
+                
+                paymentMethod.CreatedAt = DateTime.UtcNow;
+                _context.Add(paymentMethod);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(PaymentMethods));
+            }
+            
+            return View(paymentMethod);
+        }
+
+        // POST: /Facility/TogglePaymentMethodStatus/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> TogglePaymentMethodStatus(int id)
+        {
+            var paymentMethod = await _context.PaymentMethods.FindAsync(id);
+            
+            if (paymentMethod == null)
+            {
+                return NotFound();
+            }
+            
+            paymentMethod.IsActive = !paymentMethod.IsActive;
+            paymentMethod.UpdatedAt = DateTime.UtcNow;
+            
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(PaymentMethods));
+        }
+
+        // GET: /Facility/EditPaymentMethod/5
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> EditPaymentMethod(int id)
+        {
+            var paymentMethod = await _context.PaymentMethods.FindAsync(id);
+            
+            if (paymentMethod == null)
+            {
+                return NotFound();
+            }
+            
+            return View(paymentMethod);
+        }
+
+        // POST: /Facility/EditPaymentMethod/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> EditPaymentMethod(int id, PaymentMethod paymentMethod, IFormFile? qrCodeImage)
+        {
+            if (id != paymentMethod.Id)
+            {
+                return NotFound();
+            }
+            
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var existingPaymentMethod = await _context.PaymentMethods.FindAsync(id);
+                    
+                    if (existingPaymentMethod == null)
+                    {
+                        return NotFound();
+                    }
+                    
+                    // Handle QR code image upload if provided
+                    if (qrCodeImage != null && qrCodeImage.Length > 0)
+                    {
+                        var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "payment_qr_codes");
+                        Directory.CreateDirectory(uploadsFolder); // Ensure directory exists
+                        
+                        // Delete old file if exists
+                        if (!string.IsNullOrEmpty(existingPaymentMethod.QRCodeFileName))
+                        {
+                            var oldFilePath = Path.Combine(uploadsFolder, existingPaymentMethod.QRCodeFileName);
+                            if (System.IO.File.Exists(oldFilePath))
+                            {
+                                System.IO.File.Delete(oldFilePath);
+                            }
+                        }
+                        
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(qrCodeImage.FileName);
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                        
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await qrCodeImage.CopyToAsync(fileStream);
+                        }
+                        
+                        existingPaymentMethod.QRCodeFileName = uniqueFileName;
+                    }
+                    
+                    existingPaymentMethod.Name = paymentMethod.Name;
+                    existingPaymentMethod.Type = paymentMethod.Type;
+                    existingPaymentMethod.Details = paymentMethod.Details;
+                    existingPaymentMethod.Instructions = paymentMethod.Instructions;
+                    existingPaymentMethod.UpdatedAt = DateTime.UtcNow;
+                    
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!PaymentMethodExists(paymentMethod.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(PaymentMethods));
+            }
+            return View(paymentMethod);
+        }
+
+        // POST: /Facility/UploadReceiptForReservation
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadReceiptForReservation(int id, IFormFile receiptFile, string paymentMethod)
+        {
+            // Get current user
+            var user = await _userManager.GetUserAsync(User);
+            
+            // Get reservation
+            var reservation = await _context.FacilityReservations
+                .FirstOrDefaultAsync(r => r.Id == id && r.UserId == user.Id);
+            
+            if (reservation == null)
+            {
+                return NotFound();
+            }
+            
+            // Ensure reservation is in PaymentPending status
+            if (reservation.Status != ReservationStatus.PaymentPending)
+            {
+                ModelState.AddModelError("", "Receipt can only be uploaded for reservations that are awaiting payment.");
+                return RedirectToAction(nameof(MyReservations));
+            }
+            
+            // Handle receipt file upload
+            if (receiptFile != null && receiptFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "receipts");
+                Directory.CreateDirectory(uploadsFolder); // Ensure directory exists
+                
+                // Delete old file if exists
+                if (!string.IsNullOrEmpty(reservation.ReceiptFileName))
+                {
+                    var oldFilePath = Path.Combine(uploadsFolder, reservation.ReceiptFileName);
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+                
+                var uniqueFileName = $"receipt_{reservation.Id}_{Guid.NewGuid()}_{Path.GetFileName(receiptFile.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await receiptFile.CopyToAsync(fileStream);
+                }
+                
+                // Update reservation
+                reservation.ReceiptFileName = uniqueFileName;
+                reservation.ReceiptUploadDate = DateTime.UtcNow;
+                reservation.PaymentMethod = paymentMethod;
+                reservation.UpdatedAt = DateTime.UtcNow;
+                
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                ModelState.AddModelError("", "Receipt file is required.");
+                return RedirectToAction(nameof(MyReservations));
+            }
+            
+            return RedirectToAction(nameof(MyReservations));
+        }
+
+        // GET: /Facility/PaymentDetails/5
+        public async Task<IActionResult> PaymentDetails(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            
+            var reservation = await _context.FacilityReservations
+                .Include(r => r.Facility)
+                .FirstOrDefaultAsync(r => r.Id == id && 
+                    (r.UserId == user.Id || User.IsInRole("admin")));
+            
+            if (reservation == null)
+            {
+                return NotFound();
+            }
+            
+            var paymentMethods = await _context.PaymentMethods
+                .Where(p => p.IsActive)
+                .ToListAsync();
+            
+            ViewBag.PaymentMethods = paymentMethods;
+            
+            return View(reservation);
+        }
+
+        // POST: /Facility/VerifyPayment/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> VerifyPayment(int id, bool isPaymentVerified, string verificationNotes)
+        {
+            var reservation = await _context.FacilityReservations
+                .Include(r => r.Facility)
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == id);
+            
+            if (reservation == null)
+            {
+                TempData["ErrorMessage"] = "Reservation not found.";
+                return RedirectToAction(nameof(ManageReservations));
+            }
+            
+            var user = await _userManager.GetUserAsync(User);
+            
+            if (isPaymentVerified)
+            {
+                reservation.Status = ReservationStatus.Approved;
+                reservation.IsPaid = true;
+                reservation.PaymentVerificationDate = DateTime.UtcNow;
+                reservation.PaymentVerificationNotes = verificationNotes;
+                reservation.PaymentVerifiedByUserId = user.Id;
+                TempData["SuccessMessage"] = $"Payment verified successfully for reservation #{reservation.Id} by {reservation.User.Email}.";
+            }
+            else
+            {
+                // If payment is rejected, keep it in PaymentPending state but add notes
+                // so user can reupload a correct receipt
+                reservation.PaymentVerificationNotes = verificationNotes;
+                // Clear the previous receipt so user can upload a new one
+                if (!string.IsNullOrEmpty(reservation.ReceiptFileName))
+                {
+                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "receipts");
+                    var oldFilePath = Path.Combine(uploadsFolder, reservation.ReceiptFileName);
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                    reservation.ReceiptFileName = null;
+                    reservation.ReceiptUploadDate = null;
+                }
+                TempData["SuccessMessage"] = $"Payment rejected for reservation #{reservation.Id}. User notified to upload new payment receipt.";
+            }
+            
+            reservation.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            
+            return RedirectToAction(nameof(ManageReservations));
+        }
+
+        // POST: /Facility/AdminCancelReservation/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> AdminCancelReservation(int id, string cancellationReason)
+        {
+            var reservation = await _context.FacilityReservations
+                .Include(r => r.Facility)
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == id);
+            
+            if (reservation == null)
+            {
+                TempData["ErrorMessage"] = "Reservation not found.";
+                return RedirectToAction(nameof(ManageReservations));
+            }
+            
+            if (string.IsNullOrWhiteSpace(cancellationReason))
+            {
+                TempData["ErrorMessage"] = "Cancellation reason is required.";
+                return RedirectToAction(nameof(ManageReservations));
+            }
+            
+            // Admin can cancel any reservation that is not already cancelled, rejected, or completed
+            if (reservation.Status == ReservationStatus.Cancelled ||
+                reservation.Status == ReservationStatus.Rejected ||
+                reservation.Status == ReservationStatus.Completed)
+            {
+                TempData["ErrorMessage"] = $"Cannot cancel this reservation due to its current status ({reservation.Status}).";
+                return RedirectToAction(nameof(ManageReservations));
+            }
+            
+            reservation.Status = ReservationStatus.Cancelled;
+            reservation.RejectionReason = cancellationReason; // Reuse the rejection reason field for cancellation notes
+            reservation.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = $"Reservation #{reservation.Id} for {reservation.Facility.Name} by {reservation.User.Email} has been cancelled successfully.";
+            return RedirectToAction(nameof(ManageReservations));
+        }
+
         private bool FacilityExists(int id)
         {
             return _context.Facilities.Any(e => e.Id == id);
+        }
+
+        private bool PaymentMethodExists(int id)
+        {
+            return _context.PaymentMethods.Any(p => p.Id == id);
         }
 
         #endregion

@@ -1,0 +1,207 @@
+@model CommunityPortal.Models.Facility.FacilityReservation
+@{
+    ViewData["Title"] = "Payment Details";
+    var paymentMethods = ViewBag.PaymentMethods as List<CommunityPortal.Models.Facility.PaymentMethod>;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Reservation Payment Details</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Facility Details</h5>
+                            <p><strong>Name:</strong> @Model.Facility.Name</p>
+                            <p><strong>Type:</strong> @Model.Facility.Type</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Reservation Details</h5>
+                            <p><strong>Date:</strong> @Model.ReservationDate.ToShortDateString()</p>
+                            <p><strong>Time:</strong> @Model.StartTime.ToString("hh\\:mm") - @Model.EndTime.ToString("hh\\:mm")</p>
+                            <p><strong>Status:</strong> <span class="badge @GetStatusBadgeClass(Model.Status)">@Model.Status</span></p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h5>Payment Information</h5>
+                        <p><strong>Total Amount Due:</strong> $@Model.TotalPrice</p>
+                        <p><i class="fas fa-info-circle"></i> Please pay the full amount to complete your reservation.</p>
+                    </div>
+
+                    @if (Model.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending && string.IsNullOrEmpty(Model.ReceiptFileName))
+                    {
+                        <div class="mt-4">
+                            <h5>Upload Payment Receipt</h5>
+                            <p>Please select your payment method and upload your receipt to confirm your reservation.</p>
+
+                            <form asp-action="UploadReceiptForReservation" method="post" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.Id" />
+
+                                <div class="mb-3">
+                                    <label for="paymentMethod" class="form-label">Payment Method Used</label>
+                                    <select id="paymentMethod" name="paymentMethod" class="form-select" required>
+                                        <option value="">-- Select Payment Method --</option>
+                                        @foreach (var method in paymentMethods)
+                                        {
+                                            <option value="@method.Name">@method.Name</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="receiptFile" class="form-label">Receipt Image</label>
+                                    <input type="file" id="receiptFile" name="receiptFile" class="form-control" required accept="image/*" />
+                                    <div class="form-text">Upload a clear image of your payment receipt.</div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">Upload Receipt</button>
+                            </form>
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(Model.ReceiptFileName))
+                    {
+                        <div class="mt-4">
+                            <h5>Receipt Uploaded</h5>
+                            <p>You have uploaded a receipt on @Model.ReceiptUploadDate?.ToString("MMMM dd, yyyy, hh:mm tt")</p>
+                            
+                            <div class="mt-2">
+                                <img src="~/uploads/receipts/@Model.ReceiptFileName" alt="Receipt" class="img-thumbnail" style="max-width: 300px;" />
+                            </div>
+                            
+                            <p class="mt-2">
+                                <strong>Payment Method:</strong> @Model.PaymentMethod<br />
+                                <strong>Status:</strong> 
+                                @if (Model.IsPaid)
+                                {
+                                    <span class="badge bg-success">Verified</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">Pending Verification</span>
+                                }
+                            </p>
+
+                            @if (!Model.IsPaid && Model.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending)
+                            {
+                                <div class="alert alert-warning mt-2">
+                                    <i class="fas fa-clock"></i> Your payment is being verified by the administrator. You will be notified once the verification is complete.
+                                </div>
+                            }
+                            
+                            @if (!string.IsNullOrEmpty(Model.PaymentVerificationNotes))
+                            {
+                                <div class="alert alert-info mt-2">
+                                    <strong>Admin Notes:</strong> @Model.PaymentVerificationNotes
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Payment Methods</h5>
+                </div>
+                <div class="card-body">
+                    @if (paymentMethods != null && paymentMethods.Any())
+                    {
+                        <div class="accordion" id="paymentMethodsAccordion">
+                            @foreach (var method in paymentMethods)
+                            {
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading-@method.Id">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                                data-bs-target="#collapse-@method.Id" aria-expanded="false" aria-controls="collapse-@method.Id">
+                                            @method.Name (@method.Type)
+                                        </button>
+                                    </h2>
+                                    <div id="collapse-@method.Id" class="accordion-collapse collapse" 
+                                         aria-labelledby="heading-@method.Id" data-bs-parent="#paymentMethodsAccordion">
+                                        <div class="accordion-body">
+                                            <p><strong>Details:</strong> @method.Details</p>
+                                            
+                                            @if (!string.IsNullOrEmpty(method.Instructions))
+                                            {
+                                                <p><strong>Instructions:</strong> @method.Instructions</p>
+                                            }
+                                            
+                                            @if (!string.IsNullOrEmpty(method.QRCodeFileName))
+                                            {
+                                                <div class="text-center mt-2">
+                                                    <img src="~/uploads/payment_qr_codes/@method.QRCodeFileName" alt="QR Code" class="img-fluid" style="max-width: 200px;" />
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            No payment methods have been set up yet. Please contact the administrator.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (User.IsInRole("admin") && !string.IsNullOrEmpty(Model.ReceiptFileName) && !Model.IsPaid)
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Verify Payment (Admin Only)</h4>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="VerifyPayment" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            
+                            <div class="mb-3">
+                                <label for="verificationNotes" class="form-label">Verification Notes</label>
+                                <textarea id="verificationNotes" name="verificationNotes" class="form-control" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" name="isPaymentVerified" value="true" class="btn btn-success">
+                                    <i class="fas fa-check"></i> Verify Payment
+                                </button>
+                                <button type="submit" name="isPaymentVerified" value="false" class="btn btn-danger">
+                                    <i class="fas fa-times"></i> Reject Payment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    private string GetStatusBadgeClass(CommunityPortal.Models.Facility.ReservationStatus status)
+    {
+        return status switch
+        {
+            CommunityPortal.Models.Facility.ReservationStatus.Pending => "bg-warning",
+            CommunityPortal.Models.Facility.ReservationStatus.Approved => "bg-success",
+            CommunityPortal.Models.Facility.ReservationStatus.PaymentPending => "bg-info",
+            CommunityPortal.Models.Facility.ReservationStatus.Rejected => "bg-danger",
+            CommunityPortal.Models.Facility.ReservationStatus.Cancelled => "bg-secondary",
+            CommunityPortal.Models.Facility.ReservationStatus.Completed => "bg-primary",
+            _ => "bg-secondary"
+        };
+    }
+} 

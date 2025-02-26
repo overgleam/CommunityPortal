@@ -4,12 +4,17 @@
 }
 
 <div class="container mt-4">
-    <h1>Manage Facility Reservations</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Manage Facility Reservations</h1>
+        <a asp-action="PaymentMethods" class="btn btn-primary">
+            <i class="fas fa-credit-card"></i> Manage Payment Methods
+        </a>
+    </div>
 
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover" id="reservations-table">
                     <thead>
                         <tr>
                             <th>Facility</th>
@@ -18,6 +23,7 @@
                             <th>Time</th>
                             <th>Guests</th>
                             <th>Status</th>
+                            <th>Payment</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -28,7 +34,7 @@
                                 <td>@reservation.Facility.Name</td>
                                 <td>@reservation.User.Email</td>
                                 <td>@reservation.ReservationDate.ToShortDateString()</td>
-                                <td>@reservation.StartTime.ToString("hh\\:mm") - @reservation.EndTime.ToString("hh\\:mm")</td>
+                                <td>@($"{reservation.StartTime.Hours:D2}:{reservation.StartTime.Minutes:D2} {(reservation.StartTime.Hours < 12 ? "AM" : "PM")} - {reservation.EndTime.Hours:D2}:{reservation.EndTime.Minutes:D2} {(reservation.EndTime.Hours < 12 ? "AM" : "PM")}")</td>
                                 <td>@reservation.GuestCount</td>
                                 <td>
                                     <span class="badge @GetStatusBadgeClass(reservation.Status)">
@@ -36,11 +42,42 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-info" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#reservationModal-@reservation.Id">
-                                        View Details
-                                    </button>
+                                    @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending)
+                                    {
+                                        if (!string.IsNullOrEmpty(reservation.ReceiptFileName))
+                                        {
+                                            <span class="badge bg-warning">Receipt Uploaded</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Awaiting Receipt</span>
+                                        }
+                                    }
+                                    else if (reservation.IsPaid)
+                                    {
+                                        <span class="badge bg-success">Paid</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-info" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#reservationModal-@reservation.Id">
+                                            <i class="fas fa-eye"></i> Details
+                                        </button>
+                                        
+                                        @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending && 
+                                            !string.IsNullOrEmpty(reservation.ReceiptFileName))
+                                        {
+                                            <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-receipt"></i> Verify Payment
+                                            </a>
+                                        }
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -78,9 +115,31 @@
                         <div class="col-md-6">
                             <h6>Reservation Details</h6>
                             <p><strong>Date:</strong> @reservation.ReservationDate.ToShortDateString()</p>
-                            <p><strong>Time:</strong> @reservation.StartTime.ToString("hh\\:mm") - @reservation.EndTime.ToString("hh\\:mm")</p>
+                            <p><strong>Time:</strong> @($"{reservation.StartTime.Hours:D2}:{reservation.StartTime.Minutes:D2} {(reservation.StartTime.Hours < 12 ? "AM" : "PM")} - {reservation.EndTime.Hours:D2}:{reservation.EndTime.Minutes:D2} {(reservation.EndTime.Hours < 12 ? "AM" : "PM")}")</p>
                             <p><strong>Guest Count:</strong> @reservation.GuestCount</p>
                             <p><strong>Total Price:</strong> $@reservation.TotalPrice</p>
+                            <p>
+                                <strong>Payment Status:</strong>
+                                @if (reservation.IsPaid)
+                                {
+                                    <span class="badge bg-success">Paid</span>
+                                }
+                                else if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending)
+                                {
+                                    if (!string.IsNullOrEmpty(reservation.ReceiptFileName))
+                                    {
+                                        <span class="badge bg-warning">Receipt Uploaded - Needs Verification</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Awaiting Payment</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">N/A</span>
+                                }
+                            </p>
                         </div>
                     </div>
 
@@ -93,23 +152,43 @@
                         }
                     </div>
 
-                    @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Pending)
+                    @if (!string.IsNullOrEmpty(reservation.ReceiptFileName))
                     {
                         <div class="mt-3">
-                            <h6>Update Status</h6>
+                            <h6>Payment Receipt</h6>
+                            <p>
+                                <strong>Uploaded:</strong> @(reservation.ReceiptUploadDate?.ToString("MMMM dd, yyyy, hh:mm tt") ?? "N/A")<br/>
+                                <strong>Method:</strong> @(reservation.PaymentMethod ?? "N/A")
+                            </p>
+                            <div class="mt-2">
+                                <img src="~/uploads/receipts/@reservation.ReceiptFileName" alt="Receipt" class="img-thumbnail" style="max-width: 300px;" />
+                            </div>
+                        </div>
+                    }
+
+                    <div class="mt-4 border-top pt-3">
+                        <h6>Actions</h6>
+                        
+                        @if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Pending)
+                        {
                             <div class="d-flex gap-2">
                                 <form asp-action="UpdateReservationStatus" method="post" style="display: inline;">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@reservation.Id" />
                                     <input type="hidden" name="status" value="@CommunityPortal.Models.Facility.ReservationStatus.Approved" />
                                     <button type="submit" class="btn btn-success">
-                                        Approve
+                                        <i class="fas fa-check"></i> Approve
                                     </button>
                                 </form>
 
                                 <button type="button" class="btn btn-danger" 
-                                        onclick="showRejectForm(@reservation.Id)">
-                                    Reject
+                                        onclick="showForm('rejectForm-@reservation.Id')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                                
+                                <button type="button" class="btn btn-warning" 
+                                        onclick="showForm('cancelForm-@reservation.Id')">
+                                    <i class="fas fa-ban"></i> Cancel
                                 </button>
                             </div>
 
@@ -125,22 +204,105 @@
                                     <button type="submit" class="btn btn-danger">Confirm Rejection</button>
                                 </form>
                             </div>
-                        </div>
-                    }
-                    else if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Approved)
-                    {
-                        <div class="mt-3">
-                            <h6>Complete Reservation</h6>
-                            <form asp-action="UpdateReservationStatus" method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@reservation.Id" />
-                                <input type="hidden" name="status" value="@CommunityPortal.Models.Facility.ReservationStatus.Completed" />
-                                <button type="submit" class="btn btn-success">
-                                    Mark as Completed
+                            
+                            <div id="cancelForm-@reservation.Id" style="display: none;" class="mt-3">
+                                <form asp-action="AdminCancelReservation" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@reservation.Id" />
+                                    <div class="mb-3">
+                                        <label class="form-label">Cancellation Reason</label>
+                                        <textarea name="cancellationReason" class="form-control" rows="3" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning">Confirm Cancellation</button>
+                                </form>
+                            </div>
+                        }
+                        else if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.PaymentPending)
+                        {
+                            <div class="d-flex gap-2">
+                                @if (!string.IsNullOrEmpty(reservation.ReceiptFileName))
+                                {
+                                    <form asp-action="VerifyPayment" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@reservation.Id" />
+                                        <input type="hidden" name="isPaymentVerified" value="true" />
+                                        <input type="hidden" name="verificationNotes" value="Payment verified by admin." />
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check"></i> Verify Payment
+                                        </button>
+                                    </form>
+
+                                    <button type="button" class="btn btn-danger" 
+                                            onclick="showForm('rejectPaymentForm-@reservation.Id')">
+                                        <i class="fas fa-times"></i> Reject Payment
+                                    </button>
+                                }
+                                
+                                <button type="button" class="btn btn-warning" 
+                                        onclick="showForm('cancelForm-@reservation.Id')">
+                                    <i class="fas fa-ban"></i> Cancel Reservation
                                 </button>
-                            </form>
-                        </div>
-                    }
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(reservation.ReceiptFileName))
+                            {
+                                <div id="rejectPaymentForm-@reservation.Id" style="display: none;" class="mt-3">
+                                    <form asp-action="VerifyPayment" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@reservation.Id" />
+                                        <input type="hidden" name="isPaymentVerified" value="false" />
+                                        <div class="mb-3">
+                                            <label for="verificationNotes" class="form-label">Rejection Reason</label>
+                                            <textarea id="verificationNotes" name="verificationNotes" class="form-control" rows="3" required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-danger">Reject Payment</button>
+                                    </form>
+                                </div>
+                            }
+                            
+                            <div id="cancelForm-@reservation.Id" style="display: none;" class="mt-3">
+                                <form asp-action="AdminCancelReservation" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@reservation.Id" />
+                                    <div class="mb-3">
+                                        <label class="form-label">Cancellation Reason</label>
+                                        <textarea name="cancellationReason" class="form-control" rows="3" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning">Confirm Cancellation</button>
+                                </form>
+                            </div>
+                        }
+                        else if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Approved)
+                        {
+                            <div class="d-flex gap-2">
+                                <form asp-action="UpdateReservationStatus" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@reservation.Id" />
+                                    <input type="hidden" name="status" value="@CommunityPortal.Models.Facility.ReservationStatus.Completed" />
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-check-double"></i> Mark as Completed
+                                    </button>
+                                </form>
+                                
+                                <button type="button" class="btn btn-warning" 
+                                        onclick="showForm('cancelForm-@reservation.Id')">
+                                    <i class="fas fa-ban"></i> Cancel Reservation
+                                </button>
+                            </div>
+                            
+                            <div id="cancelForm-@reservation.Id" style="display: none;" class="mt-3">
+                                <form asp-action="AdminCancelReservation" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@reservation.Id" />
+                                    <div class="mb-3">
+                                        <label class="form-label">Cancellation Reason</label>
+                                        <textarea name="cancellationReason" class="form-control" rows="3" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning">Confirm Cancellation</button>
+                                </form>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
@@ -148,10 +310,32 @@
 }
 
 @section Scripts {
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <script>
-        function showRejectForm(reservationId) {
-            document.getElementById(`rejectForm-${reservationId}`).style.display = 'block';
+        function showForm(formId) {
+            // Hide all forms first
+            document.querySelectorAll('[id^="rejectForm-"], [id^="cancelForm-"], [id^="rejectPaymentForm-"]').forEach(form => {
+                form.style.display = 'none';
+            });
+            
+            // Show the requested form
+            document.getElementById(formId).style.display = 'block';
         }
+        
+        $(document).ready(function() {
+            $('#reservations-table').DataTable({
+                order: [[2, 'desc']],  // Sort by date column descending
+                language: {
+                    search: "Search reservations:",
+                    lengthMenu: "Show _MENU_ reservations per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ reservations",
+                    emptyTable: "No reservations found"
+                }
+            });
+        });
     </script>
 }
 
@@ -162,10 +346,11 @@
         {
             CommunityPortal.Models.Facility.ReservationStatus.Pending => "bg-warning",
             CommunityPortal.Models.Facility.ReservationStatus.Approved => "bg-success",
+            CommunityPortal.Models.Facility.ReservationStatus.PaymentPending => "bg-info",
             CommunityPortal.Models.Facility.ReservationStatus.Rejected => "bg-danger",
             CommunityPortal.Models.Facility.ReservationStatus.Cancelled => "bg-secondary",
-            CommunityPortal.Models.Facility.ReservationStatus.Completed => "bg-info",
-            _ => "bg-primary"
+            CommunityPortal.Models.Facility.ReservationStatus.Completed => "bg-primary",
+            _ => "bg-secondary"
         };
     }
 } 

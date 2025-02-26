@@ -28,6 +28,7 @@ namespace CommunityPortal.Data
         public DbSet<BlackoutDate> BlackoutDates { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<Document> Documents { get; set; }
+        public DbSet<PaymentMethod> PaymentMethods { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
