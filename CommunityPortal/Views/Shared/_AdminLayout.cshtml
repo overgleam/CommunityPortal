@@ -118,6 +118,9 @@
                                     <a asp-controller="Facility" asp-action="ManageReservations" class="list-group-item list-group-item-action">
                                         <i class="material-icons">event_note</i> Manage Reservations
                                     </a>
+                                    <a asp-controller="Facility" asp-action="PaymentMethods" class="list-group-item list-group-item-action">
+                                        <i class="material-icons">credit_card</i> Manage Payment Methods
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -205,6 +208,9 @@
                                 </a>
                                 <a asp-controller="Documents" asp-action="Index" class="list-group-item list-group-item-action">
                                     <i class="material-icons">insert_drive_file</i> Documents
+                                </a>
+                                <a asp-controller="Poll" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">poll</i> Polls & Surveys
                                 </a>
                                 @if (User.IsInRole("admin"))
                                 {

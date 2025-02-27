@@ -1,0 +1,96 @@
+@model IEnumerable<CommunityPortal.Models.Poll.Poll>
+
+@{
+    ViewData["Title"] = "Polls & Surveys";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">@ViewData["Title"]</h1>
+        @if (User.IsInRole("admin"))
+        {
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>Create New Poll
+            </a>
+        }
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            @if (User.IsInRole("admin"))
+            {
+                <p>No polls have been created yet. Use the "Create New Poll" button to create one.</p>
+            }
+            else
+            {
+                <p>There are no active polls or surveys at this time.</p>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0 text-truncate">@item.Title</h5>
+                            <span class="badge @(item.Status == CommunityPortal.Models.Enums.PollStatus.Published ? "bg-success" : 
+                                    item.Status == CommunityPortal.Models.Enums.PollStatus.Draft ? "bg-secondary" :
+                                    item.Status == CommunityPortal.Models.Enums.PollStatus.Closed ? "bg-danger" : "bg-info")">
+                                @item.Status
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text text-muted mb-3">
+                                <small>
+                                    <i class="far fa-calendar-alt me-1"></i>
+                                    @item.StartDate.ToShortDateString() - @item.EndDate.ToShortDateString()
+                                </small>
+                            </p>
+                            <p class="card-text mb-4">@(item.Description?.Length > 100 ? item.Description.Substring(0, 100) + "..." : item.Description)</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">
+                                    <i class="fas fa-info-circle me-2"></i>Details
+                                </a>
+                                @if (User.IsInRole("admin"))
+                                {
+                                    <div>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Results" asp-route-id="@item.Id" class="btn btn-outline-info">
+                                            <i class="fas fa-chart-bar"></i>
+                                        </a>
+                                    </div>
+                                }
+                                @if (User.IsInRole("homeowners") && 
+                                     item.Status == CommunityPortal.Models.Enums.PollStatus.Published &&
+                                     item.StartDate <= DateTime.UtcNow &&
+                                     item.EndDate >= DateTime.UtcNow)
+                                {
+                                    <a asp-action="Respond" asp-route-id="@item.Id" class="btn btn-outline-success">
+                                        <i class="material-icons align-middle">how_to_vote</i> Respond
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted">
+                            <small>Created by @item.CreatedBy.FullName on @item.CreatedAt.ToShortDateString()</small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div> 

@@ -709,6 +709,203 @@ namespace CommunityPortal.Migrations
                     b.ToTable("Homeowners");
                 });
 
+            modelBuilder.Entity("CommunityPortal.Models.Poll.Poll", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastUpdatedById")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TargetAudience")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("LastUpdatedById");
+
+                    b.ToTable("Polls");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Poll.PollQuestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MaxRating")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MinRating")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("QuestionText")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("QuestionType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PollId");
+
+                    b.ToTable("PollQuestions");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Poll.PollQuestionAnswer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool?>("BoolAnswer")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RatingAnswer")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ResponseId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SelectedOptionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TextAnswer")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId");
+
+                    b.HasIndex("ResponseId");
+
+                    b.HasIndex("SelectedOptionId");
+
+                    b.ToTable("PollQuestionAnswers");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Poll.PollQuestionOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OptionText")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("PollQuestionOptions");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Poll.PollResponse", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RespondentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PollId");
+
+                    b.HasIndex("RespondentId");
+
+                    b.ToTable("PollResponses");
+                });
+
             modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceCategory", b =>
                 {
                     b.Property<int>("Id")
@@ -1241,6 +1438,87 @@ namespace CommunityPortal.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("CommunityPortal.Models.Poll.Poll", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "LastUpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("LastUpdatedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("LastUpdatedBy");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Poll.PollQuestion", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.Poll.Poll", "Poll")
+                        .WithMany("Questions")
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Poll");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Poll.PollQuestionAnswer", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.Poll.PollQuestion", "Question")
+                        .WithMany("Answers")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CommunityPortal.Models.Poll.PollResponse", "Response")
+                        .WithMany("Answers")
+                        .HasForeignKey("ResponseId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("CommunityPortal.Models.Poll.PollQuestionOption", "SelectedOption")
+                        .WithMany()
+                        .HasForeignKey("SelectedOptionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Question");
+
+                    b.Navigation("Response");
+
+                    b.Navigation("SelectedOption");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Poll.PollQuestionOption", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.Poll.PollQuestion", "Question")
+                        .WithMany("Options")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Poll.PollResponse", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.Poll.Poll", "Poll")
+                        .WithMany("Responses")
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "Respondent")
+                        .WithMany()
+                        .HasForeignKey("RespondentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Poll");
+
+                    b.Navigation("Respondent");
+                });
+
             modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceFeedback", b =>
                 {
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "Homeowner")
@@ -1388,6 +1666,25 @@ namespace CommunityPortal.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Poll.Poll", b =>
+                {
+                    b.Navigation("Questions");
+
+                    b.Navigation("Responses");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Poll.PollQuestion", b =>
+                {
+                    b.Navigation("Answers");
+
+                    b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Poll.PollResponse", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.ServiceRequest.ServiceCategory", b =>

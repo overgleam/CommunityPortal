@@ -1,0 +1,242 @@
+@model CommunityPortal.Models.Poll.Poll
+
+@{
+    ViewData["Title"] = "Poll Results: " + Model.Title;
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Polls & Surveys</a></li>
+            <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.Title</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Results</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0">Results: @Model.Title</h1>
+            <div>
+                <button type="button" class="btn btn-outline-primary" id="printResults">
+                    <i class="fas fa-print me-2"></i>Print Results
+                </button>
+                @* We could add CSV export and other options here in the future *@
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Status:</strong> <span class="badge @(Model.Status == CommunityPortal.Models.Enums.PollStatus.Published ? "bg-success" : 
+                            Model.Status == CommunityPortal.Models.Enums.PollStatus.Draft ? "bg-secondary" :
+                            Model.Status == CommunityPortal.Models.Enums.PollStatus.Closed ? "bg-danger" : "bg-info")">
+                        @Model.Status
+                    </span></p>
+                    <p class="mb-1"><strong>Start Date:</strong> @Model.StartDate.ToShortDateString()</p>
+                    <p class="mb-1"><strong>End Date:</strong> @Model.EndDate.ToShortDateString()</p>
+                    <p class="mb-1"><strong>Target Audience:</strong> @Model.TargetAudience</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Total Responses:</strong> @Model.Responses.Count</p>
+                    <p class="mb-1"><strong>Created By:</strong> @Model.CreatedBy.FullName</p>
+                    <p class="mb-1"><strong>Created On:</strong> @Model.CreatedAt.ToShortDateString()</p>
+                </div>
+            </div>
+
+            <div id="results-container">
+                @if (!Model.Responses.Any())
+                {
+                    <div class="alert alert-info">
+                        <p>No responses have been received for this poll yet.</p>
+                    </div>
+                }
+                else
+                {
+                    if (!Model.Questions.Any())
+                    {
+                        <div class="alert alert-warning">
+                            <p>This poll does not have any questions.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            @foreach (var question in Model.Questions.OrderBy(q => q.DisplayOrder))
+                            {
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">@question.QuestionText</h5>
+                                            <small class="text-muted">@question.QuestionType</small>
+                                        </div>
+                                        <div class="card-body">
+                                            @{
+                                                // Get all answers for this question
+                                                var answers = Model.Responses
+                                                    .SelectMany(r => r.Answers)
+                                                    .Where(a => a.QuestionId == question.Id)
+                                                    .ToList();
+                                                
+                                                var totalAnswers = answers.Count;
+                                                if (totalAnswers == 0)
+                                                {
+                                                    <div class="alert alert-info">
+                                                        No responses for this question.
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    switch (question.QuestionType)
+                                                    {
+                                                        case CommunityPortal.Models.Enums.QuestionType.MultipleChoice:
+                                                        case CommunityPortal.Models.Enums.QuestionType.SingleChoice:
+                                                            if (question.Options.Any())
+                                                            {
+                                                                var optionCounts = new Dictionary<int, int>();
+                                                                foreach (var option in question.Options)
+                                                                {
+                                                                    optionCounts[option.Id] = answers.Count(a => a.SelectedOptionId == option.Id);
+                                                                }
+
+                                                                <div class="mb-3">
+                                                                    @foreach (var option in question.Options.OrderBy(o => o.DisplayOrder))
+                                                                    {
+                                                                        var count = optionCounts.ContainsKey(option.Id) ? optionCounts[option.Id] : 0;
+                                                                        var percentage = totalAnswers > 0 ? (count * 100.0 / totalAnswers) : 0;
+                                                                        
+                                                                        <div class="mb-2">
+                                                                            <div class="d-flex justify-content-between mb-1">
+                                                                                <span>@option.OptionText</span>
+                                                                                <span>@count (@percentage.ToString("0.0")%)</span>
+                                                                            </div>
+                                                                            <div class="progress">
+                                                                                <div class="progress-bar" role="progressbar" style="width: @percentage%;" 
+                                                                                    aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                                                            </div>
+                                                                        </div>
+                                                                    }
+                                                                </div>
+                                                            }
+                                                            break;
+                                                            
+                                                        case CommunityPortal.Models.Enums.QuestionType.Rating:
+                                                            var ratings = answers.Where(a => a.RatingAnswer.HasValue)
+                                                                .Select(a => a.RatingAnswer.Value)
+                                                                .ToList();
+                                                            
+                                                            if (ratings.Any())
+                                                            {
+                                                                var averageRating = ratings.Average();
+                                                                var ratingDistribution = ratings
+                                                                    .GroupBy(r => r)
+                                                                    .OrderBy(g => g.Key)
+                                                                    .ToDictionary(g => g.Key, g => g.Count());
+                                                                
+                                                                <div class="mb-3">
+                                                                    <div class="text-center mb-3">
+                                                                        <div class="display-4">@averageRating.ToString("0.0")</div>
+                                                                        <div class="text-muted">Average Rating</div>
+                                                                    </div>
+                                                                    
+                                                                    <div class="mb-3">
+                                                                        @for (int i = question.MinRating.Value; i <= question.MaxRating.Value; i++)
+                                                                        {
+                                                                            var count = ratingDistribution.ContainsKey(i) ? ratingDistribution[i] : 0;
+                                                                            var percentage = totalAnswers > 0 ? (count * 100.0 / totalAnswers) : 0;
+                                                                            
+                                                                            <div class="mb-2">
+                                                                                <div class="d-flex justify-content-between mb-1">
+                                                                                    <span>@i</span>
+                                                                                    <span>@count (@percentage.ToString("0.0")%)</span>
+                                                                                </div>
+                                                                                <div class="progress">
+                                                                                    <div class="progress-bar" role="progressbar" style="width: @percentage%;" 
+                                                                                        aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                                                                </div>
+                                                                            </div>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                            break;
+                                                            
+                                                        case CommunityPortal.Models.Enums.QuestionType.YesNo:
+                                                            var yesNoAnswers = answers.Where(a => a.BoolAnswer.HasValue).ToList();
+                                                            var yesCount = yesNoAnswers.Count(a => a.BoolAnswer.Value);
+                                                            var noCount = yesNoAnswers.Count(a => !a.BoolAnswer.Value);
+                                                            var yesPercentage = yesNoAnswers.Any() ? (yesCount * 100.0 / yesNoAnswers.Count) : 0;
+                                                            var noPercentage = yesNoAnswers.Any() ? (noCount * 100.0 / yesNoAnswers.Count) : 0;
+                                                            
+                                                            <div class="mb-3">
+                                                                <div class="mb-2">
+                                                                    <div class="d-flex justify-content-between mb-1">
+                                                                        <span>Yes</span>
+                                                                        <span>@yesCount (@yesPercentage.ToString("0.0")%)</span>
+                                                                    </div>
+                                                                    <div class="progress">
+                                                                        <div class="progress-bar bg-success" role="progressbar" style="width: @yesPercentage%;" 
+                                                                            aria-valuenow="@yesPercentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="mb-2">
+                                                                    <div class="d-flex justify-content-between mb-1">
+                                                                        <span>No</span>
+                                                                        <span>@noCount (@noPercentage.ToString("0.0")%)</span>
+                                                                    </div>
+                                                                    <div class="progress">
+                                                                        <div class="progress-bar bg-danger" role="progressbar" style="width: @noPercentage%;" 
+                                                                            aria-valuenow="@noPercentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            break;
+                                                            
+                                                        case CommunityPortal.Models.Enums.QuestionType.OpenEnded:
+                                                            var textAnswers = answers.Where(a => !string.IsNullOrEmpty(a.TextAnswer))
+                                                                .Select(a => a.TextAnswer)
+                                                                .ToList();
+                                                            
+                                                            <div class="mb-3">
+                                                                <p><strong>@textAnswers.Count</strong> text responses</p>
+                                                                <div class="list-group">
+                                                                    @foreach (var text in textAnswers)
+                                                                    {
+                                                                        <div class="list-group-item">
+                                                                            @text
+                                                                        </div>
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Poll Details
+                </a>
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                    <i class="fas fa-edit me-2"></i>Edit Poll
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('printResults').addEventListener('click', function() {
+                window.print();
+            });
+        });
+    </script>
+} 

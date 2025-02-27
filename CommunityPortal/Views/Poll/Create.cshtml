@@ -1,0 +1,99 @@
+@model CommunityPortal.Models.Poll.Poll
+
+@{
+    ViewData["Title"] = "Create Poll";
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Polls & Surveys</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Create New</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label">Title <span class="text-danger">*</span></label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="StartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                        <input asp-for="StartDate" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="EndDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                        <input asp-for="EndDate" type="date" class="form-control" value="@DateTime.Now.AddDays(7).ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="TargetAudience" class="form-label">Target Audience <span class="text-danger">*</span></label>
+                    <select asp-for="TargetAudience" class="form-select" asp-items="Html.GetEnumSelectList<CommunityPortal.Models.Enums.PollTargetAudience>()">
+                    </select>
+                    <span asp-validation-for="TargetAudience" class="text-danger"></span>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> After creating the poll, you'll be able to add questions to it.
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Create
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Set minimum date for start date to today
+        document.addEventListener('DOMContentLoaded', function () {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('StartDate').min = today;
+            
+            // Add event listener to update end date min value when start date changes
+            document.getElementById('StartDate').addEventListener('change', function() {
+                document.getElementById('EndDate').min = this.value;
+                
+                // If end date is before start date, update it
+                if (document.getElementById('EndDate').value < this.value) {
+                    document.getElementById('EndDate').value = this.value;
+                }
+            });
+            
+            // Initialize end date min value
+            if (document.getElementById('StartDate').value) {
+                document.getElementById('EndDate').min = document.getElementById('StartDate').value;
+            } else {
+                document.getElementById('EndDate').min = today;
+            }
+        });
+    </script>
+} 

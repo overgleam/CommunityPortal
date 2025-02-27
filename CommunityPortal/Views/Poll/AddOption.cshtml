@@ -1,0 +1,93 @@
+@model CommunityPortal.Models.Poll.PollQuestionOption
+
+@{
+    ViewData["Title"] = "Add Option";
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Polls & Surveys</a></li>
+            <li class="breadcrumb-item"><a asp-action="Edit" asp-route-id="@ViewBag.PollId">Edit Poll</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Add Option</li>
+        </ol>
+    </nav>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+            @if (ViewBag.QuestionText != null)
+            {
+                <small class="text-muted">Adding option to question: @ViewBag.QuestionText</small>
+            }
+        </div>
+        <div class="card-body">
+            <form asp-action="AddOption" method="post" id="addOptionForm">
+                <input type="hidden" name="QuestionId" value="@ViewBag.QuestionId" />
+                <div asp-validation-summary="All" class="alert alert-danger" style="display: none;"></div>
+
+                <div class="mb-3">
+                    <label for="OptionText" class="form-label">Option Text <span class="text-danger">*</span></label>
+                    <input name="OptionText" id="OptionText" class="form-control" required value="@(Model?.OptionText ?? "")" />
+                    <span class="text-danger field-validation-valid" data-valmsg-for="OptionText" data-valmsg-replace="true"></span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Edit" asp-route-id="@ViewBag.PollId" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Poll
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submitButton">
+                        <i class="fas fa-save me-2"></i>Add Option
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('addOptionForm');
+            const submitButton = document.getElementById('submitButton');
+            
+            // Form validation
+            form.addEventListener('submit', function(e) {
+                console.log('Form submission attempted');
+                
+                if (!form.checkValidity()) {
+                    console.log('Form validation failed');
+                    e.preventDefault();
+                    
+                    // Show validation summary
+                    document.querySelector('[asp-validation-summary]').style.display = 'block';
+                    return false;
+                }
+                
+                // Debug output of the form data being submitted
+                console.log('Form is being submitted with data:');
+                const formData = new FormData(form);
+                for (let [key, value] of formData.entries()) {
+                    console.log(key + ': ' + value);
+                }
+                
+                // Disable the button to prevent double submission
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Adding...';
+                
+                console.log('Form submission proceeding');
+                return true;
+            });
+        });
+    </script>
+} 

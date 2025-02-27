@@ -1,0 +1,231 @@
+@model CommunityPortal.Models.Poll.PollQuestion
+
+@{
+    ViewData["Title"] = "Add Question";
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Polls & Surveys</a></li>
+            <li class="breadcrumb-item"><a asp-action="Edit" asp-route-id="@ViewBag.PollId">Edit Poll</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Add Question</li>
+        </ol>
+    </nav>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Debug Information -->
+    @if (ViewBag.ValidationErrors != null && ((List<string>)ViewBag.ValidationErrors).Any())
+    {
+        <div class="alert alert-warning">
+            <h5>Validation Debugging Information</h5>
+            <p>ModelState.IsValid: @ViewBag.ModelStateIsValid</p>
+            <p>Error Count: @ViewBag.ModelStateErrorCount</p>
+            <ul>
+                @foreach (var error in (List<string>)ViewBag.ValidationErrors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+            @if (ViewBag.PollTitle != null)
+            {
+                <small class="text-muted">Adding to poll: @ViewBag.PollTitle</small>
+            }
+        </div>
+        <div class="card-body">
+            <form asp-action="AddQuestion" method="post" id="addQuestionForm">
+                <input type="hidden" name="PollId" value="@ViewBag.PollId" />
+                <div asp-validation-summary="All" class="alert alert-danger" style="display: none;"></div>
+
+                <div class="mb-3">
+                    <label for="QuestionText" class="form-label">Question Text <span class="text-danger">*</span></label>
+                    <textarea name="QuestionText" id="QuestionText" class="form-control" rows="2" required>@(Model?.QuestionText ?? "")</textarea>
+                    <span class="text-danger field-validation-valid" data-valmsg-for="QuestionText" data-valmsg-replace="true"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="QuestionType" class="form-label">Question Type <span class="text-danger">*</span></label>
+                    <select name="QuestionType" id="QuestionType" class="form-select" required>
+                        @foreach (var item in ViewBag.QuestionTypes)
+                        {
+                            if (Model != null && Model.QuestionType.ToString() == item.Text)
+                            {
+                                <option value="@item.Value" selected>@item.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        }
+                    </select>
+                    <span class="text-danger field-validation-valid" data-valmsg-for="QuestionType" data-valmsg-replace="true"></span>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input name="IsRequired" id="IsRequired" type="checkbox" class="form-check-input" value="true" @(Model != null && Model.IsRequired ? "checked" : "") />
+                        <input name="IsRequired" type="hidden" value="false" />
+                        <label class="form-check-label" for="IsRequired">Required Question</label>
+                    </div>
+                </div>
+
+                <div id="ratingOptions" class="mb-3 row" style="display: none;">
+                    <div class="col-md-6">
+                        <label for="MinRating" class="form-label">Minimum Rating</label>
+                        <input name="MinRating" id="MinRating" class="form-control" type="number" min="0" value="@(Model?.MinRating ?? 1)" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="MaxRating" class="form-label">Maximum Rating</label>
+                        <input name="MaxRating" id="MaxRating" class="form-control" type="number" min="1" value="@(Model?.MaxRating ?? 5)" />
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span id="typeInstructions">
+                        Select a question type to see more information.
+                    </span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Edit" asp-route-id="@ViewBag.PollId" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Poll
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submitButton">
+                        <i class="fas fa-save me-2"></i>Add Question
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const questionTypeSelect = document.getElementById('QuestionType');
+            const ratingOptions = document.getElementById('ratingOptions');
+            const typeInstructions = document.getElementById('typeInstructions');
+            const minRatingInput = document.getElementById('MinRating');
+            const maxRatingInput = document.getElementById('MaxRating');
+            const form = document.getElementById('addQuestionForm');
+            const submitButton = document.getElementById('submitButton');
+            
+            // Debug logging for form values
+            console.log('Initial form state:');
+            console.log('PollId:', document.querySelector('input[name="PollId"]').value);
+            console.log('QuestionType:', questionTypeSelect.value);
+            
+            const updateDisplay = () => {
+                const questionType = questionTypeSelect.value;
+                
+                // Debug logging
+                console.log('Question type changed to:', questionType);
+                
+                // Hide/show rating options based on question type
+                if (questionType === '2') { // Rating type
+                    ratingOptions.style.display = 'flex';
+                    minRatingInput.setAttribute('required', 'required');
+                    maxRatingInput.setAttribute('required', 'required');
+                } else {
+                    ratingOptions.style.display = 'none';
+                    minRatingInput.removeAttribute('required');
+                    maxRatingInput.removeAttribute('required');
+                }
+                
+                // Update instructions based on question type
+                switch (questionType) {
+                    case '0': // MultipleChoice
+                        typeInstructions.textContent = 'Multiple Choice: Allows selecting multiple options from a list. You\'ll be able to add options after creating the question.';
+                        break;
+                    case '1': // SingleChoice
+                        typeInstructions.textContent = 'Single Choice: Allows selecting only one option from a list. You\'ll be able to add options after creating the question.';
+                        break;
+                    case '2': // Rating
+                        typeInstructions.textContent = 'Rating: Allows rating on a numeric scale. Specify the minimum and maximum values for the rating scale.';
+                        break;
+                    case '3': // OpenEnded
+                        typeInstructions.textContent = 'Open Ended: Allows free-form text responses.';
+                        break;
+                    case '4': // YesNo
+                        typeInstructions.textContent = 'Yes/No: Simple yes or no question.';
+                        break;
+                    default:
+                        typeInstructions.textContent = 'Select a question type to see more information.';
+                }
+            };
+            
+            // Form validation
+            form.addEventListener('submit', function(e) {
+                // Log form submission attempt
+                console.log('Form submission attempted');
+                
+                if (!form.checkValidity()) {
+                    console.log('Form validation failed');
+                    e.preventDefault();
+                    
+                    // Show validation summary
+                    document.querySelector('[asp-validation-summary]').style.display = 'block';
+                    return false;
+                }
+                
+                // Custom validation for rating questions
+                if (questionTypeSelect.value === '2') { // Rating type
+                    const min = parseInt(minRatingInput.value);
+                    const max = parseInt(maxRatingInput.value);
+                    
+                    console.log('Rating validation - Min:', min, 'Max:', max);
+                    
+                    if (isNaN(min) || isNaN(max)) {
+                        console.log('Invalid rating values');
+                        e.preventDefault();
+                        alert('Please enter valid minimum and maximum rating values.');
+                        return false;
+                    }
+                    
+                    if (min >= max) {
+                        console.log('Min rating greater than or equal to max rating');
+                        e.preventDefault();
+                        alert('Maximum rating must be greater than minimum rating.');
+                        return false;
+                    }
+                }
+                
+                // Debug output of the form data being submitted
+                console.log('Form is being submitted with data:');
+                const formData = new FormData(form);
+                for (let [key, value] of formData.entries()) {
+                    console.log(key + ': ' + value);
+                }
+                
+                // Disable the button to prevent double submission
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Adding...';
+                
+                console.log('Form submission proceeding');
+                return true;
+            });
+            
+            // Set up event listener
+            questionTypeSelect.addEventListener('change', updateDisplay);
+            
+            // Initialize based on current selection
+            updateDisplay();
+        });
+    </script>
+} 

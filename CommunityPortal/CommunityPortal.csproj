@@ -42,10 +42,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Migrations\" />
     <Folder Include="Models\Documents\" />
     <Folder Include="Models\Billing\" />
+    <Folder Include="Models\Poll\" />
     <Folder Include="Models\ServiceRequest\" />
+    <Folder Include="Views\Poll\" />
     <Folder Include="wwwroot\uploads\documents\" />
   </ItemGroup>
 </Project>

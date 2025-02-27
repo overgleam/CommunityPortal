@@ -15,5 +15,28 @@ namespace CommunityPortal.Models
         public string? ProfileImagePath { get; set; }
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
+
+        // Improved FullName property to handle cases where related entities might not be loaded
+        public string FullName 
+        { 
+            get 
+            { 
+                if (Homeowner != null)
+                {
+                    return $"{Homeowner.FirstName} {Homeowner.LastName}".Trim();
+                }
+                else if (Staff != null)
+                {
+                    return $"{Staff.FirstName} {Staff.LastName}".Trim();
+                }
+                else if (Administrator != null)
+                {
+                    return $"{Administrator.FirstName} {Administrator.LastName}".Trim();
+                }
+                
+                // Fallback to the email username part if no name is available
+                return UserName?.Split('@')[0] ?? "Unknown User";
+            } 
+        }
     }
 }

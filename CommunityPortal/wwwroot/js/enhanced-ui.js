@@ -154,22 +154,35 @@ function displayNotifications() {
  * Highlight the active page in the sidebar and expand its parent accordion
  */
 function highlightActivePage() {
-    const currentLocation = window.location.pathname;
+    // Normalize the current path by removing any trailing slash (except for the root)
+    let currentLocation = window.location.pathname;
+    if (currentLocation !== "/" && currentLocation.endsWith("/")) {
+        currentLocation = currentLocation.slice(0, -1);
+    }
+
     const sidebarLinks = document.querySelectorAll('.sidebar-accordion .list-group-item');
-    
+
     sidebarLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href && currentLocation.includes(href) && href !== '/') {
-            link.classList.add('active');
-            
-            // If inside accordion, open the parent accordion
-            const accordionBody = link.closest('.accordion-collapse');
-            if (accordionBody) {
-                accordionBody.classList.add('show');
-                const accordionButton = document.querySelector(`[data-bs-target="#${accordionBody.id}"]`);
-                if (accordionButton) {
-                    accordionButton.classList.remove('collapsed');
-                    accordionButton.setAttribute('aria-expanded', 'true');
+        let href = link.getAttribute('href');
+        if (href) {
+            // Normalize the href as well
+            if (href !== "/" && href.endsWith("/")) {
+                href = href.slice(0, -1);
+            }
+
+            // Use exact match (or you could extend to allow a trailing slash)
+            if (currentLocation === href) {
+                link.classList.add('active');
+
+                // If the link is inside an accordion, expand its parent
+                const accordionBody = link.closest('.accordion-collapse');
+                if (accordionBody) {
+                    accordionBody.classList.add('show');
+                    const accordionButton = document.querySelector(`[data-bs-target="#${accordionBody.id}"]`);
+                    if (accordionButton) {
+                        accordionButton.classList.remove('collapsed');
+                        accordionButton.setAttribute('aria-expanded', 'true');
+                    }
                 }
             }
         }

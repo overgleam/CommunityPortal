@@ -6,6 +6,7 @@ using CommunityPortal.Models.Facility;
 using CommunityPortal.Models.Event;
 using CommunityPortal.Models.ServiceRequest;
 using CommunityPortal.Models.Documents;
+using CommunityPortal.Models.Poll;
 
 namespace CommunityPortal.Data
 {
@@ -29,6 +30,11 @@ namespace CommunityPortal.Data
         public DbSet<Event> Events { get; set; }
         public DbSet<Document> Documents { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
+        public DbSet<Poll> Polls { get; set; }
+        public DbSet<PollQuestion> PollQuestions { get; set; }
+        public DbSet<PollQuestionOption> PollQuestionOptions { get; set; }
+        public DbSet<PollResponse> PollResponses { get; set; }
+        public DbSet<PollQuestionAnswer> PollQuestionAnswers { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -243,6 +249,82 @@ namespace CommunityPortal.Data
                 .HasOne(d => d.DeletedBy)
                 .WithMany()
                 .HasForeignKey(d => d.DeletedById)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            // Poll configurations
+            builder.Entity<Poll>()
+                .HasQueryFilter(p => !p.IsDeleted);
+
+            builder.Entity<PollQuestion>()
+                .HasQueryFilter(q => !q.IsDeleted);
+
+            builder.Entity<PollResponse>()
+                .HasQueryFilter(r => !r.IsDeleted);
+
+            builder.Entity<PollQuestionAnswer>()
+                .HasQueryFilter(a => !a.IsDeleted);
+
+            builder.Entity<PollQuestionOption>()
+                .HasQueryFilter(o => !o.IsDeleted);
+
+            builder.Entity<Poll>()
+                .HasOne(p => p.CreatedBy)
+                .WithMany()
+                .HasForeignKey(p => p.CreatedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Poll>()
+                .HasOne(p => p.LastUpdatedBy)
+                .WithMany()
+                .HasForeignKey(p => p.LastUpdatedById)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            builder.Entity<PollQuestion>()
+                .HasOne(q => q.Poll)
+                .WithMany(p => p.Questions)
+                .HasForeignKey(q => q.PollId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<PollQuestionOption>()
+                .HasOne(o => o.Question)
+                .WithMany(q => q.Options)
+                .HasForeignKey(o => o.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired(false);
+
+            builder.Entity<PollResponse>()
+                .HasOne(r => r.Poll)
+                .WithMany(p => p.Responses)
+                .HasForeignKey(r => r.PollId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired(false);
+
+            builder.Entity<PollResponse>()
+                .HasOne(r => r.Respondent)
+                .WithMany()
+                .HasForeignKey(r => r.RespondentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<PollQuestionAnswer>()
+                .HasOne(a => a.Response)
+                .WithMany(r => r.Answers)
+                .HasForeignKey(a => a.ResponseId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired(false);
+
+            builder.Entity<PollQuestionAnswer>()
+                .HasOne(a => a.Question)
+                .WithMany(q => q.Answers)
+                .HasForeignKey(a => a.QuestionId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            builder.Entity<PollQuestionAnswer>()
+                .HasOne(a => a.SelectedOption)
+                .WithMany()
+                .HasForeignKey(a => a.SelectedOptionId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired(false);
         }
