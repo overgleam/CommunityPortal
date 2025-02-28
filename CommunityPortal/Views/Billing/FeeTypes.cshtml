@@ -59,17 +59,17 @@
                                             <p class="text-xs font-weight-bold mb-0">@item.DefaultAmount.ToString("C")</p>
                                         </td>
                                         <td>
-                                            <span class="badge badge-sm bg-gradient-@(item.IsRecurring ? "success" : "secondary")">
+                                            <span class="badge @(item.IsRecurring ? "bg-success" : "bg-secondary")">
                                                 @(item.IsRecurring ? "Yes" : "No")
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="badge badge-sm bg-gradient-@(item.IsRequired ? "info" : "secondary")">
+                                            <span class="badge @(item.IsRequired ? "bg-info" : "bg-secondary")">
                                                 @(item.IsRequired ? "Yes" : "No")
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="badge badge-sm bg-gradient-@(item.IsActive ? "success" : "danger")">
+                                            <span class="badge @(item.IsActive ? "bg-success" : "bg-danger")">
                                                 @(item.IsActive ? "Active" : "Inactive")
                                             </span>
                                         </td>

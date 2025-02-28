@@ -100,7 +100,7 @@
                                                 var statusColor = payment.Status == "Verified" ? "success" :
                                                                  payment.Status == "Rejected" ? "danger" : "warning";
                                             }
-                                            <span class="badge badge-sm bg-gradient-@statusColor">
+                                            <span class="badge bg-@statusColor">
                                                 @payment.Status
                                             </span>
                                         </td>

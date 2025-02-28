@@ -177,34 +177,14 @@
                                         </span>
                                         @if (!string.IsNullOrEmpty(payment.Notes))
                                         {
-                                            <button type="button" class="btn btn-sm btn-link ms-1" 
-                                                    data-bs-toggle="modal" data-bs-target="#paymentNotesModal-@payment.Id">
+                                            <button type="button" class="btn btn-sm btn-link ms-1 view-payment-notes" 
+                                                    data-payment-id="@payment.Id"
+                                                    data-payment-status="@payment.Status"
+                                                    data-payment-notes="@payment.Notes"
+                                                    data-verified-at="@(payment.VerifiedAt.HasValue ? payment.VerifiedAt.Value.ToString("MMM dd, yyyy HH:mm") : "")"
+                                                    data-verified-by="@payment.VerifiedBy">
                                                 <i class="bi bi-info-circle"></i>
                                             </button>
-                                            
-                                            <!-- Payment Notes Modal -->
-                                            <div class="modal fade" id="paymentNotesModal-@payment.Id" tabindex="-1" aria-labelledby="paymentNotesModalLabel-@payment.Id" aria-hidden="true">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header @(payment.Status == "Verified" ? "bg-success" : payment.Status == "Rejected" ? "bg-danger" : "bg-warning") text-white">
-                                                            <h5 class="modal-title" id="paymentNotesModalLabel-@payment.Id">Payment @payment.Status Notes</h5>
-                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p style="white-space: pre-line;">@payment.Notes</p>
-                                                            @if (payment.VerifiedAt.HasValue)
-                                                            {
-                                                                <hr>
-                                                                <p class="text-muted mb-0">Verified on: @payment.VerifiedAt.Value.ToString("MMM dd, yyyy HH:mm")</p>
-                                                                <p class="text-muted mb-0">Verified by: @payment.VerifiedBy</p>
-                                                            }
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
                                         }
                                     </td>
                                     <td>
@@ -270,4 +250,63 @@
             </p>
         </div>
     }
-</div> 
+</div>
+
+<!-- Payment Notes Modal - Single instance -->
+<div class="modal fade" id="paymentNotesModal" tabindex="-1" aria-labelledby="paymentNotesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" id="modalHeader">
+                <h5 class="modal-title" id="paymentNotesModalLabel">Payment Notes</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="paymentNotesContent" style="white-space: pre-line;"></p>
+                <div id="verificationInfo" style="display: none;">
+                    <hr>
+                    <p class="text-muted mb-0" id="verifiedOnText"></p>
+                    <p class="text-muted mb-0" id="verifiedByText"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Handle payment notes modal
+            $('.view-payment-notes').click(function() {
+                const paymentId = $(this).data('payment-id');
+                const status = $(this).data('payment-status');
+                const notes = $(this).data('payment-notes');
+                const verifiedAt = $(this).data('verified-at');
+                const verifiedBy = $(this).data('verified-by');
+                
+                // Set header color based on status
+                let headerClass = status === "Verified" ? "bg-success" : 
+                                  status === "Rejected" ? "bg-danger" : "bg-warning";
+                
+                // Update modal content
+                $('#modalHeader').attr('class', 'modal-header ' + headerClass + ' text-white');
+                $('#paymentNotesModalLabel').text('Payment ' + status + ' Notes');
+                $('#paymentNotesContent').text(notes);
+                
+                // Show verification info if available
+                if (verifiedAt && verifiedAt !== "") {
+                    $('#verifiedOnText').text('Verified on: ' + verifiedAt);
+                    $('#verifiedByText').text('Verified by: ' + verifiedBy);
+                    $('#verificationInfo').show();
+                } else {
+                    $('#verificationInfo').hide();
+                }
+                
+                // Show the modal
+                $('#paymentNotesModal').modal('show');
+            });
+        });
+    </script>
+} 
