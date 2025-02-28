@@ -1,0 +1,106 @@
+@model CommunityPortal.Models.Billing.CreatePaymentViewModel
+@{
+    ViewData["Title"] = "Make Payment";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Make Payment</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="MakePayment" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="All" class="alert alert-danger"></div>
+                        <input type="hidden" asp-for="BillId" />
+                        <input type="hidden" asp-for="HomeownerId" />
+
+                        <div class="row mb-3">
+                            <label asp-for="Amount" class="col-sm-4 col-form-label">Payment Amount</label>
+                            <div class="col-sm-8">
+                                <div class="input-group">
+                                    <span class="input-group-text">₱</span>
+                                    <input asp-for="Amount" class="form-control" />
+                                </div>
+                                <span asp-validation-for="Amount" class="text-danger"></span>
+                                <small class="form-text text-muted">Enter the amount you wish to pay.</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label asp-for="PaymentDate" class="col-sm-4 col-form-label">Payment Date</label>
+                            <div class="col-sm-8">
+                                <input asp-for="PaymentDate" class="form-control" type="date" />
+                                <span asp-validation-for="PaymentDate" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label asp-for="PaymentMethodId" class="col-sm-4 col-form-label">Payment Method</label>
+                            <div class="col-sm-8">
+                                <select asp-for="PaymentMethodId" asp-items="Model.PaymentMethods" class="form-select">
+                                    <option value="">-- Select Payment Method --</option>
+                                </select>
+                                <span asp-validation-for="PaymentMethodId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label asp-for="TransactionReference" class="col-sm-4 col-form-label">Transaction Reference</label>
+                            <div class="col-sm-8">
+                                <input asp-for="TransactionReference" class="form-control" />
+                                <span asp-validation-for="TransactionReference" class="text-danger"></span>
+                                <small class="form-text text-muted">E.g., receipt number, transaction ID, check number, etc.</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label asp-for="PaymentProofImage" class="col-sm-4 col-form-label">Payment Proof</label>
+                            <div class="col-sm-8">
+                                <input asp-for="PaymentProofImage" class="form-control" type="file" accept="image/*" />
+                                <span asp-validation-for="PaymentProofImage" class="text-danger"></span>
+                                <small class="form-text text-muted">Upload a photo or screenshot of your payment receipt.</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label asp-for="Notes" class="col-sm-4 col-form-label">Notes</label>
+                            <div class="col-sm-8">
+                                <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Notes" class="text-danger"></span>
+                                <small class="form-text text-muted">Any additional information about this payment.</small>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <div class="d-flex">
+                                <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                                <div>
+                                    <strong>Important:</strong> Your payment will be verified by the administration. 
+                                    Once verified, your bill status will be updated accordingly. Please ensure you 
+                                    provide a clear image of your payment proof.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-8 offset-sm-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-credit-card"></i> Submit Payment
+                                </button>
+                                <a asp-action="BillDetails" asp-route-id="@Model.BillId" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

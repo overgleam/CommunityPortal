@@ -1,0 +1,263 @@
+@model CommunityPortal.Models.Billing.BillDetailsViewModel
+@{
+    ViewData["Title"] = "Bill Details";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Bill Details</h1>
+        <div>
+            @if (User.IsInRole("admin") || User.IsInRole("staff"))
+            {
+                <a href="@Url.Action("EditBill", new { id = Model.Bill.Id })" class="btn btn-primary me-2">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a href="@Url.Action("DownloadBill", new { id = Model.Bill.Id })" class="btn btn-secondary me-2">
+                    <i class="bi bi-download"></i> Download
+                </a>
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+            }
+            else
+            {
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            }
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Bill Header -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Bill Summary</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted">Billing Information</h6>
+                    <p class="mb-1"><strong>Bill #:</strong> @Model.Bill.Id</p>
+                    <p class="mb-1"><strong>Billing Period:</strong> @Model.Bill.BillingPeriod</p>
+                    <p class="mb-1"><strong>Bill Date:</strong> @Model.Bill.BillingDate.ToString("MMMM dd, yyyy")</p>
+                    <p class="mb-1"><strong>Due Date:</strong> @Model.Bill.DueDate.ToString("MMMM dd, yyyy")</p>
+                    <p class="mb-1">
+                        <strong>Status:</strong>
+                        <span class="badge @(Model.Bill.Status == "Overdue" ? "bg-danger" : 
+                                 Model.Bill.Status == "Paid" ? "bg-success" : 
+                                 Model.Bill.Status == "Partially Paid" ? "bg-warning" : "bg-secondary")">
+                            @Model.Bill.Status
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted">Homeowner Information</h6>
+                    <p class="mb-1"><strong>Name:</strong> @Model.Homeowner.FirstName @Model.Homeowner.LastName</p>
+                    <p class="mb-1"><strong>Address:</strong> Block @Model.Homeowner.BlockNumber, House @Model.Homeowner.HouseNumber</p>
+                    <p class="mb-1"><strong>Full Address:</strong> @Model.Homeowner.Address</p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="text-muted">Payment Summary</h5>
+                        </div>
+                        <div class="text-end">
+                            <h4>Total Amount: <span class="text-primary">@Model.Bill.TotalAmount.ToString("C2")</span></h4>
+                            <p class="mb-1">Paid Amount: <span class="text-success">@Model.Bill.PaidAmount.ToString("C2")</span></p>
+                            <p class="mb-1">Balance: <span class="text-@(Model.Bill.BalanceAmount > 0 ? "danger" : "success")">@Model.Bill.BalanceAmount.ToString("C2")</span></p>
+                            @if (Model.Bill.IsPenaltyApplied)
+                            {
+                                <p class="mb-1 text-danger">
+                                    Penalty: @Model.Bill.PenaltyAmount.ToString("C2")
+                                    <small class="text-muted">(5% after 30 days)</small>
+                                </p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if (Model.Bill.Status != "Paid" && User.IsInRole("homeowners"))
+            {
+                <div class="row mt-3">
+                    <div class="col-12 text-end">
+                        <a href="@Url.Action("MakePayment", new { id = Model.Bill.Id })" class="btn btn-primary">
+                            <i class="bi bi-credit-card"></i> Make Payment
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Bill Items -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Bill Items</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Fee Type</th>
+                            <th>Amount</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.BillItems)
+                        {
+                            <tr>
+                                <td>@item.Description</td>
+                                <td>@item.FeeType.Name</td>
+                                <td>@item.Amount.ToString("C2")</td>
+                                <td>@(string.IsNullOrEmpty(item.Notes) ? "-" : item.Notes)</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2" class="text-end">Total:</th>
+                            <th>@Model.Bill.TotalAmount.ToString("C2")</th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Payment History</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Payments.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Payment Date</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var payment in Model.Payments)
+                            {
+                                <tr>
+                                    <td>@payment.PaymentDate.ToString("MMM dd, yyyy")</td>
+                                    <td>@payment.Amount.ToString("C2")</td>
+                                    <td>@payment.PaymentMethod.Name</td>
+                                    <td>@payment.TransactionReference</td>
+                                    <td>
+                                        <span class="badge @(payment.Status == "Verified" ? "bg-success" : 
+                                                  payment.Status == "Rejected" ? "bg-danger" : "bg-warning")">
+                                            @payment.Status
+                                        </span>
+                                        @if (!string.IsNullOrEmpty(payment.Notes))
+                                        {
+                                            <button type="button" class="btn btn-sm btn-link ms-1" 
+                                                    data-bs-toggle="modal" data-bs-target="#paymentNotesModal-@payment.Id">
+                                                <i class="bi bi-info-circle"></i>
+                                            </button>
+                                            
+                                            <!-- Payment Notes Modal -->
+                                            <div class="modal fade" id="paymentNotesModal-@payment.Id" tabindex="-1" aria-labelledby="paymentNotesModalLabel-@payment.Id" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header @(payment.Status == "Verified" ? "bg-success" : payment.Status == "Rejected" ? "bg-danger" : "bg-warning") text-white">
+                                                            <h5 class="modal-title" id="paymentNotesModalLabel-@payment.Id">Payment @payment.Status Notes</h5>
+                                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p style="white-space: pre-line;">@payment.Notes</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (payment.PaymentProofFile != null)
+                                        {
+                                            <a href="@Url.Content($"~/uploads/payments/{payment.PaymentProofFile}")" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-image"></i> Proof
+                                            </a>
+                                        }
+                                        @if (User.IsInRole("admin") || User.IsInRole("staff"))
+                                        {
+                                            if (payment.Status == "Pending")
+                                            {
+                                                <a href="@Url.Action("VerifyPayment", new { id = payment.Id })" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-check-lg"></i> Review
+                                                </a>
+                                            }
+                                        }
+                                        @if (User.IsInRole("homeowners") && payment.Status == "Pending")
+                                        {
+                                            <form asp-action="CancelPayment" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this payment?');">
+                                                <input type="hidden" name="id" value="@payment.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-x-circle"></i> Cancel
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle"></i> No payments have been made for this bill yet.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Bill Notes -->
+    @if (!string.IsNullOrEmpty(Model.Bill.Notes))
+    {
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Notes</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">@Model.Bill.Notes</p>
+            </div>
+        </div>
+    }
+
+    @if (User.IsInRole("homeowners"))
+    {
+        <div class="text-center mb-4">
+            <p>
+                If you have any questions about your bill, please contact the administration office at
+                <a href="mailto:admin@communityportal.com">admin@communityportal.com</a> or call (123) 456-7890.
+            </p>
+        </div>
+    }
+</div> 

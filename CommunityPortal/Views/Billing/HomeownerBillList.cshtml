@@ -1,0 +1,103 @@
+@model CommunityPortal.Models.Billing.BillListViewModel
+@{
+    ViewData["Title"] = "My Bills";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Bills</h1>
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Bill #</th>
+                            <th>Period</th>
+                            <th>Billing Date</th>
+                            <th>Due Date</th>
+                            <th>Total Amount</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Bills.Any())
+                        {
+                            foreach (var bill in Model.Bills)
+                            {
+                                <tr>
+                                    <td>@bill.Id</td>
+                                    <td>@bill.BillingPeriod</td>
+                                    <td>@bill.BillingDate.ToString("MMM dd, yyyy")</td>
+                                    <td>@bill.DueDate.ToString("MMM dd, yyyy")</td>
+                                    <td>@bill.TotalAmount.ToString("C2")</td>
+                                    <td>@bill.BalanceAmount.ToString("C2")</td>
+                                    <td>
+                                        <span class="badge @(bill.Status == "Overdue" ? "bg-danger" : 
+                                                bill.Status == "Paid" ? "bg-success" : 
+                                                bill.Status == "Partially Paid" ? "bg-warning" : "bg-secondary")">
+                                            @bill.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="@Url.Action("BillDetails", new { id = bill.Id })" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i> Details
+                                            </a>
+                                            @if (bill.Status != "Paid")
+                                            {
+                                                <a href="@Url.Action("MakePayment", new { id = bill.Id })" class="btn btn-sm btn-primary">
+                                                    <i class="bi bi-credit-card"></i> Pay
+                                                </a>
+                                            }
+                                            <a href="@Url.Action("DownloadBill", new { id = bill.Id })" class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-download"></i> PDF
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center">No bills found.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Model.PaginationInfo.TotalPages > 1)
+            {
+                <div class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination">
+                            @for (int i = 1; i <= Model.PaginationInfo.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.PaginationInfo.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("AllBills", new { page = i })">@i</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Any billing list specific scripts
+        });
+    </script>
+} 

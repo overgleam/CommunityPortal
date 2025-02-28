@@ -7,6 +7,7 @@ using CommunityPortal.Models.Event;
 using CommunityPortal.Models.ServiceRequest;
 using CommunityPortal.Models.Documents;
 using CommunityPortal.Models.Poll;
+using CommunityPortal.Models.Billing;
 
 namespace CommunityPortal.Data
 {
@@ -35,6 +36,11 @@ namespace CommunityPortal.Data
         public DbSet<PollQuestionOption> PollQuestionOptions { get; set; }
         public DbSet<PollResponse> PollResponses { get; set; }
         public DbSet<PollQuestionAnswer> PollQuestionAnswers { get; set; }
+        public DbSet<Bill> Bills { get; set; }
+        public DbSet<BillItem> BillItems { get; set; }
+        public DbSet<FeeType> FeeTypes { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<BillingSettings> BillingSettings { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -327,6 +333,112 @@ namespace CommunityPortal.Data
                 .HasForeignKey(a => a.SelectedOptionId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired(false);
+
+            // Billing-related configurations
+            builder.Entity<Bill>()
+                .HasOne(b => b.Homeowner)
+                .WithMany()
+                .HasForeignKey(b => b.HomeownerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<BillItem>()
+                .HasOne(bi => bi.Bill)
+                .WithMany(b => b.BillItems)
+                .HasForeignKey(bi => bi.BillId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<BillItem>()
+                .HasOne(bi => bi.FeeType)
+                .WithMany(ft => ft.BillItems)
+                .HasForeignKey(bi => bi.FeeTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Payment>()
+                .HasOne(p => p.Bill)
+                .WithMany(b => b.Payments)
+                .HasForeignKey(p => p.BillId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Payment>()
+                .HasOne(p => p.Homeowner)
+                .WithMany()
+                .HasForeignKey(p => p.HomeownerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Payment>()
+                .HasOne(p => p.PaymentMethod)
+                .WithMany()
+                .HasForeignKey(p => p.PaymentMethodId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Seed default FeeTypes
+            builder.Entity<FeeType>().HasData(
+                new FeeType 
+                { 
+                    Id = 1, 
+                    Name = "Association Dues",
+                    Description = "Monthly homeowner association dues",
+                    DefaultAmount = 2000.00M,
+                    Category = "Association Dues",
+                    IsRecurring = true,
+                    IsRequired = true
+                },
+                new FeeType 
+                { 
+                    Id = 2, 
+                    Name = "Security and Maintenance",
+                    Description = "Fees for security personnel and maintenance of common areas",
+                    DefaultAmount = 1000.00M,
+                    Category = "Security and Maintenance",
+                    IsRecurring = true,
+                    IsRequired = true
+                },
+                new FeeType 
+                { 
+                    Id = 3, 
+                    Name = "Emergency Fund",
+                    Description = "Contribution to emergency fund for unforeseen community needs",
+                    DefaultAmount = 200.00M,
+                    Category = "Emergency Fund",
+                    IsRecurring = true,
+                    IsRequired = true
+                },
+                new FeeType 
+                { 
+                    Id = 4, 
+                    Name = "Facility Upkeep",
+                    Description = "Maintenance and upkeep of community facilities",
+                    DefaultAmount = 500.00M,
+                    Category = "Facility Upkeep",
+                    IsRecurring = true,
+                    IsRequired = true
+                },
+                new FeeType 
+                { 
+                    Id = 5, 
+                    Name = "Administrative Expenses",
+                    Description = "Expenses related to administrative functions",
+                    DefaultAmount = 300.00M,
+                    Category = "Administrative",
+                    IsRecurring = true,
+                    IsRequired = true
+                }
+            );
+
+            // Seed default BillingSettings
+            builder.Entity<BillingSettings>().HasData(
+                new BillingSettings
+                {
+                    Id = 1,
+                    Name = "Default Billing Settings",
+                    Description = "Default configuration for billing operations",
+                    LateFeePercentage = 5.00M,
+                    LateFeeDays = 30,
+                    BillingCycleDay = 1,
+                    PaymentDueDays = 15,
+                    CreatedBy = "system"
+                }
+            );
         }
 
         public override int SaveChanges()

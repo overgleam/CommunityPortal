@@ -131,6 +131,364 @@ namespace CommunityPortal.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("CommunityPortal.Models.Billing.Bill", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("BalanceAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("BillingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("BillingPeriod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("HomeownerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPenaltyApplied")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("PaidDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentReference")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PenaltyAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HomeownerId");
+
+                    b.ToTable("Bills");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Billing.BillItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("BillId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("FeeTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BillId");
+
+                    b.HasIndex("FeeTypeId");
+
+                    b.ToTable("BillItems");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Billing.BillingSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BillingCycleDay")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LateFeeDays")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("LateFeePercentage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("PaymentDueDays")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BillingSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BillingCycleDay = 1,
+                            CreatedAt = new DateTime(2025, 2, 28, 15, 21, 59, 279, DateTimeKind.Utc).AddTicks(5665),
+                            CreatedBy = "system",
+                            Description = "Default configuration for billing operations",
+                            IsActive = true,
+                            LateFeeDays = 30,
+                            LateFeePercentage = 5.00m,
+                            Name = "Default Billing Settings",
+                            PaymentDueDays = 15
+                        });
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Billing.FeeType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DefaultAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRecurring")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FeeTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Category = "Association Dues",
+                            CreatedAt = new DateTime(2025, 2, 28, 15, 21, 59, 279, DateTimeKind.Utc).AddTicks(5570),
+                            DefaultAmount = 2000.00m,
+                            Description = "Monthly homeowner association dues",
+                            IsActive = true,
+                            IsRecurring = true,
+                            IsRequired = true,
+                            Name = "Association Dues"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Category = "Security and Maintenance",
+                            CreatedAt = new DateTime(2025, 2, 28, 15, 21, 59, 279, DateTimeKind.Utc).AddTicks(5585),
+                            DefaultAmount = 1000.00m,
+                            Description = "Fees for security personnel and maintenance of common areas",
+                            IsActive = true,
+                            IsRecurring = true,
+                            IsRequired = true,
+                            Name = "Security and Maintenance"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Category = "Emergency Fund",
+                            CreatedAt = new DateTime(2025, 2, 28, 15, 21, 59, 279, DateTimeKind.Utc).AddTicks(5588),
+                            DefaultAmount = 200.00m,
+                            Description = "Contribution to emergency fund for unforeseen community needs",
+                            IsActive = true,
+                            IsRecurring = true,
+                            IsRequired = true,
+                            Name = "Emergency Fund"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Category = "Facility Upkeep",
+                            CreatedAt = new DateTime(2025, 2, 28, 15, 21, 59, 279, DateTimeKind.Utc).AddTicks(5589),
+                            DefaultAmount = 500.00m,
+                            Description = "Maintenance and upkeep of community facilities",
+                            IsActive = true,
+                            IsRecurring = true,
+                            IsRequired = true,
+                            Name = "Facility Upkeep"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Category = "Administrative",
+                            CreatedAt = new DateTime(2025, 2, 28, 15, 21, 59, 279, DateTimeKind.Utc).AddTicks(5591),
+                            DefaultAmount = 300.00m,
+                            Description = "Expenses related to administrative functions",
+                            IsActive = true,
+                            IsRecurring = true,
+                            IsRequired = true,
+                            Name = "Administrative Expenses"
+                        });
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Billing.Payment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("BillId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("HomeownerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PaymentMethodId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentProofFile")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TransactionReference")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("VerifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BillId");
+
+                    b.HasIndex("HomeownerId");
+
+                    b.HasIndex("PaymentMethodId");
+
+                    b.ToTable("Payments");
+                });
+
             modelBuilder.Entity("CommunityPortal.Models.ChatMessage", b =>
                 {
                     b.Property<int>("Id")
@@ -1279,6 +1637,63 @@ namespace CommunityPortal.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("CommunityPortal.Models.Billing.Bill", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.Homeowner", "Homeowner")
+                        .WithMany()
+                        .HasForeignKey("HomeownerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Homeowner");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Billing.BillItem", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.Billing.Bill", "Bill")
+                        .WithMany("BillItems")
+                        .HasForeignKey("BillId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CommunityPortal.Models.Billing.FeeType", "FeeType")
+                        .WithMany("BillItems")
+                        .HasForeignKey("FeeTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Bill");
+
+                    b.Navigation("FeeType");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Billing.Payment", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.Billing.Bill", "Bill")
+                        .WithMany("Payments")
+                        .HasForeignKey("BillId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CommunityPortal.Models.Homeowner", "Homeowner")
+                        .WithMany()
+                        .HasForeignKey("HomeownerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CommunityPortal.Models.Facility.PaymentMethod", "PaymentMethod")
+                        .WithMany()
+                        .HasForeignKey("PaymentMethodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Bill");
+
+                    b.Navigation("Homeowner");
+
+                    b.Navigation("PaymentMethod");
+                });
+
             modelBuilder.Entity("CommunityPortal.Models.ChatMessage", b =>
                 {
                     b.HasOne("CommunityPortal.Models.ApplicationUser", "Recipient")
@@ -1651,6 +2066,18 @@ namespace CommunityPortal.Migrations
                     b.Navigation("Homeowner");
 
                     b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Billing.Bill", b =>
+                {
+                    b.Navigation("BillItems");
+
+                    b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Billing.FeeType", b =>
+                {
+                    b.Navigation("BillItems");
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.Facility.Facility", b =>

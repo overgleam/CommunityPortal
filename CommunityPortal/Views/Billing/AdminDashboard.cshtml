@@ -1,0 +1,220 @@
+@model CommunityPortal.Models.Billing.AdminBillingDashboardViewModel
+@{
+    ViewData["Title"] = "Billing Dashboard";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Billing Analytics</h1>
+        <a href="@Url.Action("CreateBill")" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Create New Bill
+        </a>
+    </div>
+
+    <!-- Period Selector -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" action="@Url.Action("AdminDashboard")" class="row g-3">
+                <div class="col-md-6">
+                    <h5>Showing data for: <span class="text-primary">@Model.PeriodLabel</span></h5>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" name="period" id="periodSelect">
+                        <option value="ThisMonth" selected="@(Model.SelectedPeriod == "ThisMonth")">This Month</option>
+                        <option value="Last30Days" selected="@(Model.SelectedPeriod == "Last30Days")">Last 30 Days</option>
+                        <option value="Last3Months" selected="@(Model.SelectedPeriod == "Last3Months")">Last 3 Months</option>
+                        <option value="Last6Months" selected="@(Model.SelectedPeriod == "Last6Months")">Last 6 Months</option>
+                        <option value="ThisYear" selected="@(Model.SelectedPeriod == "ThisYear")">This Year</option>
+                        <option value="AllTime" selected="@(Model.SelectedPeriod == "AllTime")">All Time</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Apply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row">
+        <div class="col-12 col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <i class="bi bi-cash-coin text-success fs-1 me-2"></i>
+                    </div>
+                    <h5 class="text-muted">Total Revenue</h5>
+                    <h2 class="text-success font-weight-bold">@Model.TotalRevenue.ToString("C2")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <i class="bi bi-hourglass-split text-warning fs-1 me-2"></i>
+                    </div>
+                    <h5 class="text-muted">Outstanding Amount</h5>
+                    <h2 class="text-warning font-weight-bold">@Model.OutstandingAmount.ToString("C2")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <i class="bi bi-exclamation-triangle text-danger fs-1 me-2"></i>
+                    </div>
+                    <h5 class="text-muted">Overdue Amount</h5>
+                    <h2 class="text-danger font-weight-bold">@Model.OverdueAmount.ToString("C2")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="d-flex align-items-center justify-content-center mb-2">
+                        <i class="bi bi-file-text text-primary fs-1 me-2"></i>
+                    </div>
+                    <h5 class="text-muted">Total Bills</h5>
+                    <h2 class="text-primary font-weight-bold">@Model.TotalBills</h2>
+                    <div class="mt-2">
+                        <span class="badge bg-success">@Model.PaidBills Paid</span>
+                        <span class="badge bg-danger">@Model.OverdueBills Overdue</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Monthly Revenue</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Bills -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Bills</h5>
+                    <a href="@Url.Action("Index")" class="btn btn-sm btn-light">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Bill #</th>
+                                    <th>Homeowner</th>
+                                    <th>Billing Period</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.RecentBills.Any())
+                                {
+                                    foreach (var bill in Model.RecentBills)
+                                    {
+                                        <tr>
+                                            <td>@bill.Id</td>
+                                            <td>@(bill.Homeowner.FirstName + " " + bill.Homeowner.LastName)</td>
+                                            <td>@bill.BillingPeriod</td>
+                                            <td>@bill.TotalAmount.ToString("C2")</td>
+                                            <td>
+                                                <span class="badge @(bill.Status == "Overdue" ? "bg-danger" : 
+                                                         bill.Status == "Paid" ? "bg-success" : 
+                                                         bill.Status == "Partially Paid" ? "bg-warning" : "bg-secondary")">
+                                                    @bill.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("BillDetails", new { id = bill.Id })" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center">No recent bills found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Set up the period selector to auto-submit
+            $('#periodSelect').change(function() {
+                $(this).closest('form').submit();
+            });
+
+            // Set up the revenue chart
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", Model.MonthlyRevenue.Select(x => $"'{x.Month}'")))],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [@string.Join(",", Model.MonthlyRevenue.Select(x => x.Amount))],
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return '₱' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += '₱' + context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+} 

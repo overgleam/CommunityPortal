@@ -1,0 +1,177 @@
+@model CommunityPortal.Models.Billing.HomeownerBillingDashboardViewModel
+@{
+    ViewData["Title"] = "Billing Dashboard";
+}
+
+<div class="container py-4">
+    <h1 class="mb-4">Billing Dashboard</h1>
+
+    <div class="row">
+        <!-- Summary Cards -->
+        <div class="col-12 col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="text-muted">Total Due</h5>
+                    <h2 class="text-danger font-weight-bold">@Model.TotalDue.ToString("C2")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="text-muted">Total Paid</h5>
+                    <h2 class="text-success font-weight-bold">@Model.TotalPaid.ToString("C2")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="text-muted">Total Bills</h5>
+                    <h2 class="text-primary font-weight-bold">@Model.TotalBills</h2>
+                    <p class="text-success mb-0">@Model.PaidBills Paid</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="text-muted">Overdue Bills</h5>
+                    <h2 class="@(Model.OverdueBills > 0 ? "text-danger" : "text-success") font-weight-bold">
+                        @Model.OverdueBills
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Bill Section -->
+    @if (Model.CurrentBill != null)
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Current Bill</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Billing Period: @Model.CurrentBill.BillingPeriod</h5>
+                                <p class="mb-1">Bill Date: @Model.CurrentBill.BillingDate.ToString("MMM dd, yyyy")</p>
+                                <p class="mb-1">Due Date: @Model.CurrentBill.DueDate.ToString("MMM dd, yyyy")</p>
+                                <p class="mb-1">Status: 
+                                    <span class="badge @(Model.CurrentBill.Status == "Overdue" ? "bg-danger" : 
+                                             Model.CurrentBill.Status == "Paid" ? "bg-success" : 
+                                             Model.CurrentBill.Status == "Partially Paid" ? "bg-warning" : "bg-secondary")">
+                                        @Model.CurrentBill.Status
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <h5>Total Amount: @Model.CurrentBill.TotalAmount.ToString("C2")</h5>
+                                <p class="mb-1">Amount Paid: @Model.CurrentBill.PaidAmount.ToString("C2")</p>
+                                <p class="mb-1">Balance: @Model.CurrentBill.BalanceAmount.ToString("C2")</p>
+                                @if (Model.CurrentBill.IsPenaltyApplied)
+                                {
+                                    <p class="text-danger mb-1">Penalty: @Model.CurrentBill.PenaltyAmount.ToString("C2")</p>
+                                }
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12 text-end">
+                                <a href="@Url.Action("BillDetails", new { id = Model.CurrentBill.Id })" class="btn btn-outline-primary me-2">
+                                    View Details
+                                </a>
+                                @if (Model.CurrentBill.Status != "Paid")
+                                {
+                                    <a href="@Url.Action("MakePayment", new { id = Model.CurrentBill.Id })" class="btn btn-primary">
+                                        Make Payment
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Recent Bills Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Recent Bills</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Bill #</th>
+                                    <th>Period</th>
+                                    <th>Date</th>
+                                    <th>Due Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.RecentBills.Any())
+                                {
+                                    foreach (var bill in Model.RecentBills)
+                                    {
+                                        <tr>
+                                            <td>@bill.Id</td>
+                                            <td>@bill.BillingPeriod</td>
+                                            <td>@bill.BillingDate.ToString("MMM dd, yyyy")</td>
+                                            <td>@bill.DueDate.ToString("MMM dd, yyyy")</td>
+                                            <td>@bill.TotalAmount.ToString("C2")</td>
+                                            <td>
+                                                <span class="badge @(bill.Status == "Overdue" ? "bg-danger" : 
+                                                         bill.Status == "Paid" ? "bg-success" : 
+                                                         bill.Status == "Partially Paid" ? "bg-warning" : "bg-secondary")">
+                                                    @bill.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="@Url.Action("BillDetails", new { id = bill.Id })" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                                @if (bill.Status != "Paid")
+                                                {
+                                                    <a href="@Url.Action("MakePayment", new { id = bill.Id })" class="btn btn-sm btn-primary ms-1">
+                                                        <i class="bi bi-credit-card"></i> Pay
+                                                    </a>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center">No bills found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="@Url.Action("AllBills")" class="btn btn-outline-primary">View All Bills</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Any dashboard-specific JavaScript
+        });
+    </script>
+} 

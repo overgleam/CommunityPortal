@@ -1,0 +1,283 @@
+@model CommunityPortal.Models.Billing.EditBillViewModel
+@{
+    ViewData["Title"] = "Edit Bill";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Edit Bill</h1>
+        <div>
+            <a href="@Url.Action("BillDetails", new { id = Model.Id })" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Details
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <form asp-action="EditBill" method="post" id="editBillForm">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="HomeownerId" class="form-label">Homeowner</label>
+                            <select asp-for="HomeownerId" asp-items="Model.Homeowners" class="form-select">
+                                <option value="">-- Select Homeowner --</option>
+                            </select>
+                            <span asp-validation-for="HomeownerId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="BillingPeriod" class="form-label">Billing Period</label>
+                            <input asp-for="BillingPeriod" class="form-control" />
+                            <span asp-validation-for="BillingPeriod" class="text-danger"></span>
+                            <small class="form-text text-muted">E.g., "January 2023" or "Q1 2023"</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="BillingDate" class="form-label">Billing Date</label>
+                            <input asp-for="BillingDate" class="form-control" type="date" />
+                            <span asp-validation-for="BillingDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="DueDate" class="form-label">Due Date</label>
+                            <input asp-for="DueDate" class="form-control" type="date" />
+                            <span asp-validation-for="DueDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Notes" class="form-label">Notes</label>
+                    <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Notes" class="text-danger"></span>
+                </div>
+
+                <h4 class="mt-4 mb-3">Bill Items</h4>
+                <div id="billItemsContainer">
+                    @for (int i = 0; i < Model.BillItems.Count; i++)
+                    {
+                        <div class="bill-item card mb-3">
+                            <div class="card-body">
+                                <input type="hidden" asp-for="BillItems[i].Id" />
+                                <div class="row">
+                                    <div class="col-md-11">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Fee Type</label>
+                                                    <select asp-for="BillItems[i].FeeTypeId" asp-items="Model.BillItems[i].FeeTypes" class="form-select fee-type-select">
+                                                        <option value="">-- Select Fee Type --</option>
+                                                    </select>
+                                                    <span asp-validation-for="BillItems[i].FeeTypeId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Amount</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">₱</span>
+                                                        <input asp-for="BillItems[i].Amount" class="form-control bill-item-amount" />
+                                                    </div>
+                                                    <span asp-validation-for="BillItems[i].Amount" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Description</label>
+                                                    <input asp-for="BillItems[i].Description" class="form-control" />
+                                                    <span asp-validation-for="BillItems[i].Description" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="mb-0">
+                                                    <label class="form-label">Notes</label>
+                                                    <textarea asp-for="BillItems[i].Notes" class="form-control" rows="2"></textarea>
+                                                    <span asp-validation-for="BillItems[i].Notes" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 d-flex align-items-center justify-content-center">
+                                        <button type="button" class="btn btn-outline-danger remove-bill-item" title="Remove Item">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="d-flex justify-content-between mb-4">
+                    <button type="button" id="addBillItemBtn" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle"></i> Add Bill Item
+                    </button>
+                    <div>
+                        <h5>Total: <span id="billTotal" class="text-primary">₱0.00</span></h5>
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-lg btn-primary">
+                        <i class="bi bi-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            // Function to calculate the total
+            function calculateTotal() {
+                let total = 0;
+                $('.bill-item-amount').each(function () {
+                    const amount = parseFloat($(this).val()) || 0;
+                    total += amount;
+                });
+                $('#billTotal').text('₱' + total.toFixed(2));
+            }
+
+            // Calculate total initially
+            calculateTotal();
+
+            // Recalculate when amount changes
+            $(document).on('input', '.bill-item-amount', function () {
+                calculateTotal();
+            });
+
+            // Handle fee type selection change
+            $(document).on('change', '.fee-type-select', function () {
+                const selectedOption = $(this).find('option:selected');
+                const amountInput = $(this).closest('.row').find('.bill-item-amount');
+                const descriptionInput = $(this).closest('.bill-item').find('input[name$=".Description"]');
+                
+                // Extract amount from the text (format is "Name - $Amount")
+                if (selectedOption.text()) {
+                    const text = selectedOption.text();
+                    const match = text.match(/([\d,]+\.\d{2})$/);
+                    if (match) {
+                        const amount = match[1].replace(',', '');
+                        amountInput.val(amount);
+                    }
+                    
+                    // Set description based on selected fee type
+                    const feeTypeName = text.split(' - ')[0];
+                    if (feeTypeName && !descriptionInput.val()) {
+                        descriptionInput.val(feeTypeName);
+                    }
+                }
+                
+                calculateTotal();
+            });
+
+            // Add bill item
+            $('#addBillItemBtn').click(function () {
+                const index = $('.bill-item').length;
+                const template = `
+                    <div class="bill-item card mb-3">
+                        <div class="card-body">
+                            <input type="hidden" name="BillItems[${index}].Id" value="0" />
+                            <div class="row">
+                                <div class="col-md-11">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Fee Type</label>
+                                                <select name="BillItems[${index}].FeeTypeId" class="form-select fee-type-select">
+                                                    <option value="">-- Select Fee Type --</option>
+                                                    @foreach (var item in Model.BillItems.FirstOrDefault()?.FeeTypes ?? new List<SelectListItem>())
+                                                    {
+                                                        <option value="@item.Value">@item.Text</option>
+                                                    }
+                                                </select>
+                                                <span class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Amount</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">₱</span>
+                                                    <input name="BillItems[${index}].Amount" class="form-control bill-item-amount" />
+                                                </div>
+                                                <span class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
+                                                <label class="form-label">Description</label>
+                                                <input name="BillItems[${index}].Description" class="form-control" />
+                                                <span class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="mb-0">
+                                                <label class="form-label">Notes</label>
+                                                <textarea name="BillItems[${index}].Notes" class="form-control" rows="2"></textarea>
+                                                <span class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-1 d-flex align-items-center justify-content-center">
+                                    <button type="button" class="btn btn-outline-danger remove-bill-item" title="Remove Item">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#billItemsContainer').append(template);
+            });
+
+            // Remove bill item
+            $(document).on('click', '.remove-bill-item', function () {
+                $(this).closest('.bill-item').remove();
+                // Reindex the remaining items
+                $('.bill-item').each(function (idx) {
+                    $(this).find('select, input, textarea').each(function () {
+                        const name = $(this).attr('name');
+                        if (name) {
+                            const newName = name.replace(/\[\d+\]/, '[' + idx + ']');
+                            $(this).attr('name', newName);
+                        }
+                    });
+                });
+                calculateTotal();
+            });
+
+            // Form submission validation
+            $('#editBillForm').submit(function (e) {
+                if ($('.bill-item').length === 0) {
+                    alert('Please add at least one bill item before submitting.');
+                    e.preventDefault();
+                    return false;
+                }
+                return true;
+            });
+        });
+    </script>
+} 

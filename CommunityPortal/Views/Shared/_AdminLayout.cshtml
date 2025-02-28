@@ -222,6 +222,40 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Billing Management Group -->
+                <div class="accordion-item">
+                    <h3 class="accordion-header" id="billingManagementHeading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#billingManagementCollapse" aria-expanded="false" aria-controls="billingManagementCollapse">
+                            <i class="material-icons">payments</i> Billing Management
+                        </button>
+                    </h3>
+                    <div id="billingManagementCollapse" class="accordion-collapse collapse" aria-labelledby="billingManagementHeading">
+                        <div class="accordion-body">
+                            <div class="list-group list-group-flush">
+                                <a asp-controller="Billing" asp-action="AdminDashboard" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">dashboard</i> Billing Dashboard
+                                </a>
+                                <a asp-controller="Billing" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">list</i> Manage Bills
+                                </a>
+                                <a asp-controller="Billing" asp-action="CreateBill" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">add_circle</i> Create New Bill
+                                </a>
+                                @if (User.IsInRole("admin"))
+                                {
+                                    <a asp-controller="FeeType" asp-action="Index" class="list-group-item list-group-item-action">
+                                        <i class="material-icons">category</i> Manage Fee Types
+                                    </a>
+                                    <a asp-controller="Billing" asp-action="BillingSettings" class="list-group-item list-group-item-action">
+                                        <i class="material-icons">settings</i> Billing Settings
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -260,6 +294,12 @@
                                 </a></li>
                                 <li><a class="dropdown-item" asp-controller="Event" asp-action="Create">
                                     <i class="material-icons align-middle me-2">event</i> Create Event
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="Billing" asp-action="CreateBill">
+                                    <i class="material-icons align-middle me-2">add_circle</i> Create New Bill
+                                </a></li>
+                                <li><a class="dropdown-item" asp-controller="Billing" asp-action="AdminDashboard">
+                                    <i class="material-icons align-middle me-2">dashboard</i> Billing Dashboard
                                 </a></li>
                             </ul>
                         </div>
