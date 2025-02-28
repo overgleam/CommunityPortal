@@ -7,6 +7,7 @@ using CommunityPortal.Data;
 using CommunityPortal.Models;
 using CommunityPortal.Models.Poll;
 using CommunityPortal.Models.Enums;
+using System.Collections.Generic;
 
 namespace CommunityPortal.Controllers
 {
@@ -34,13 +35,13 @@ namespace CommunityPortal.Controllers
 
                 var isAdmin = User.IsInRole("admin");
                 var isHomeowner = User.IsInRole("homeowners");
-                var isBoardMember = User.IsInRole("BoardMember");
+                var isStaff = User.IsInRole("staff");
 
                 List<Poll> polls;
 
-                if (isAdmin)
+                if (isAdmin || isStaff)
                 {
-                    // Admins can see all non-deleted polls
+                    // Admins and staff can see all non-deleted polls
                     polls = await _context.Polls
                         .Include(p => p.CreatedBy)
                         .Where(p => !p.IsDeleted)
@@ -56,8 +57,7 @@ namespace CommunityPortal.Controllers
                                     p.StartDate <= DateTime.UtcNow &&
                                     p.EndDate >= DateTime.UtcNow &&
                                     !p.IsDeleted &&
-                                    (p.TargetAudience == PollTargetAudience.AllHomeowners ||
-                                     (p.TargetAudience == PollTargetAudience.BoardMembers && isBoardMember)))
+                                    p.TargetAudience == PollTargetAudience.AllHomeowners)
                         .OrderByDescending(p => p.CreatedAt)
                         .ToListAsync();
 
@@ -83,7 +83,7 @@ namespace CommunityPortal.Controllers
                 Console.WriteLine($"Error loading polls: {ex.Message}");
                 
                 // Return a friendly error view with the error message
-                TempData["Error"] = $"An error occurred while loading polls: {ex.Message}";
+                TempData["ErrorMessage"] = $"An error occurred while loading polls: {ex.Message}";
                 return View(new List<Poll>());
             }
         }
@@ -132,13 +132,13 @@ namespace CommunityPortal.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"An error occurred: {ex.Message}";
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }
 
         // GET: Poll/Create
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,staff")]
         public IActionResult Create()
         {
             return View();
@@ -147,7 +147,7 @@ namespace CommunityPortal.Controllers
         // POST: Poll/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> Create([Bind("Title,Description,StartDate,EndDate,TargetAudience")] Poll poll)
         {
             // Get current user before validation
@@ -212,7 +212,7 @@ namespace CommunityPortal.Controllers
         }
 
         // GET: Poll/Edit/5
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -243,7 +243,7 @@ namespace CommunityPortal.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"An error occurred while loading the poll: {ex.Message}";
+                TempData["ErrorMessage"] = $"An error occurred while loading the poll: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -251,7 +251,7 @@ namespace CommunityPortal.Controllers
         // POST: Poll/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,StartDate,EndDate,TargetAudience,Status")] Poll poll)
         {
             if (id != poll.Id)
@@ -292,7 +292,7 @@ namespace CommunityPortal.Controllers
                     _context.Update(existingPoll);
                     await _context.SaveChangesAsync();
                     
-                    TempData["Success"] = "Poll updated successfully!";
+                    TempData["SuccessMessage"] = "Poll updated successfully!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException ex)
@@ -337,7 +337,7 @@ namespace CommunityPortal.Controllers
         // POST: Poll/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var poll = await _context.Polls
@@ -380,7 +380,7 @@ namespace CommunityPortal.Controllers
         }
 
         // GET: Poll/AddQuestion/5
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> AddQuestion(int? id)
         {
             if (id == null)
@@ -417,7 +417,7 @@ namespace CommunityPortal.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"An error occurred while loading the poll: {ex.Message}";
+                TempData["ErrorMessage"] = $"An error occurred while loading the poll: {ex.Message}";
                 return RedirectToAction(nameof(Edit), new { id });
             }
         }
@@ -425,7 +425,7 @@ namespace CommunityPortal.Controllers
         // POST: Poll/AddQuestion/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> AddQuestion([Bind("PollId,QuestionText,QuestionType,IsRequired,MinRating,MaxRating")] PollQuestion question)
         {
             try
@@ -495,7 +495,7 @@ namespace CommunityPortal.Controllers
                         // Explicitly load the options collection to prevent tracking errors
                         await _context.Entry(question).Collection(q => q.Options).LoadAsync();
 
-                        TempData["Success"] = "Question added successfully!";
+                        TempData["SuccessMessage"] = "Question added successfully!";
                         return RedirectToAction(nameof(Edit), new { id = question.PollId });
                     }
                     catch (Exception ex) {
@@ -536,7 +536,7 @@ namespace CommunityPortal.Controllers
         }
 
         // GET: Poll/AddOption/5
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> AddOption(int? id)
         {
             if (id == null)
@@ -559,7 +559,7 @@ namespace CommunityPortal.Controllers
                 if (question.QuestionType != QuestionType.MultipleChoice && 
                     question.QuestionType != QuestionType.SingleChoice)
                 {
-                    TempData["Error"] = "Only Multiple Choice and Single Choice questions can have options.";
+                    TempData["ErrorMessage"] = "Only Multiple Choice and Single Choice questions can have options.";
                     return RedirectToAction(nameof(Edit), new { id = question.PollId });
                 }
 
@@ -572,7 +572,7 @@ namespace CommunityPortal.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in AddOption GET: {ex.Message}");
-                TempData["Error"] = $"An error occurred: {ex.Message}";
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -580,7 +580,7 @@ namespace CommunityPortal.Controllers
         // POST: Poll/AddOption/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> AddOption(int QuestionId, string OptionText)
         {
             try
@@ -599,7 +599,7 @@ namespace CommunityPortal.Controllers
                         
                     if (question == null)
                     {
-                        TempData["Error"] = "The specified question does not exist.";
+                        TempData["ErrorMessage"] = "The specified question does not exist.";
                         return RedirectToAction(nameof(Index));
                     }
                     
@@ -607,7 +607,7 @@ namespace CommunityPortal.Controllers
                     if (question.QuestionType != QuestionType.MultipleChoice && 
                         question.QuestionType != QuestionType.SingleChoice)
                     {
-                        TempData["Error"] = "Only Multiple Choice and Single Choice questions can have options.";
+                        TempData["ErrorMessage"] = "Only Multiple Choice and Single Choice questions can have options.";
                         return RedirectToAction(nameof(Edit), new { id = question.PollId });
                     }
 
@@ -629,14 +629,14 @@ namespace CommunityPortal.Controllers
                         _context.PollQuestionOptions.Add(option);
                         await _context.SaveChangesAsync();
 
-                        TempData["Success"] = "Option added successfully!";
+                        TempData["SuccessMessage"] = "Option added successfully!";
                         return RedirectToAction(nameof(Edit), new { id = question.PollId });
                     }
                     catch (Exception ex) {
                         if (ex.InnerException != null) {
-                            TempData["Error"] = $"Database error: {ex.InnerException.Message}";
+                            TempData["ErrorMessage"] = $"Database error: {ex.InnerException.Message}";
                         } else {
-                            TempData["Error"] = $"Error adding option: {ex.Message}";
+                            TempData["ErrorMessage"] = $"Error adding option: {ex.Message}";
                         }
                         
                         return RedirectToAction(nameof(AddOption), new { id = QuestionId });
@@ -650,7 +650,7 @@ namespace CommunityPortal.Controllers
                     
                 if (pollQuestion == null)
                 {
-                    TempData["Error"] = "The specified question does not exist.";
+                    TempData["ErrorMessage"] = "The specified question does not exist.";
                     return RedirectToAction(nameof(Index));
                 }
                 
@@ -664,7 +664,7 @@ namespace CommunityPortal.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"An unexpected error occurred: {ex.Message}";
+                TempData["ErrorMessage"] = $"An unexpected error occurred: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -706,7 +706,7 @@ namespace CommunityPortal.Controllers
 
                 if (hasResponded)
                 {
-                    TempData["Message"] = "You have already responded to this poll.";
+                    TempData["SuccessMessage"] = "You have already responded to this poll.";
                     return RedirectToAction(nameof(Details), new { id });
                 }
 
@@ -721,339 +721,289 @@ namespace CommunityPortal.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"An error occurred: {ex.Message}";
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }
 
         // POST: Poll/SubmitResponse
         [HttpPost]
-        [Authorize(Roles = "admin, homeowners")]
+        [Authorize(Roles = "homeowners")]
         public async Task<IActionResult> SubmitResponse(int pollId, IFormCollection form)
         {
-            try
+            // Use a transaction to ensure atomicity for the entire operation
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                // Verify the poll exists and is published
-                var poll = await _context.Polls
-                    .Include(p => p.Questions)
-                        .ThenInclude(q => q.Options)
-                    .FirstOrDefaultAsync(p => p.Id == pollId && p.Status == PollStatus.Published && !p.IsDeleted);
-
-                if (poll == null)
+                try
                 {
-                    TempData["Error"] = "The poll does not exist or is not currently active.";
-                    return RedirectToAction(nameof(Index));
-                }
+                    // Verify the poll exists and is published
+                    var poll = await _context.Polls
+                        .Include(p => p.Questions)
+                            .ThenInclude(q => q.Options)
+                        .FirstOrDefaultAsync(p => p.Id == pollId && p.Status == PollStatus.Published && !p.IsDeleted);
 
-                // Get current user
-                var currentUser = await _userManager.GetUserAsync(User);
-                if (currentUser == null)
-                {
-                    TempData["Error"] = "You must be logged in to respond to a poll.";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                // Check if the user has already responded
-                var existingResponse = await _context.PollResponses
-                    .AnyAsync(r => r.PollId == pollId && r.RespondentId == currentUser.Id && !r.IsDeleted);
-
-                if (existingResponse)
-                {
-                    TempData["Error"] = "You have already responded to this poll.";
-                    return RedirectToAction(nameof(Details), new { id = pollId });
-                }
-
-                // Get active questions
-                var activeQuestions = poll.Questions.Where(q => !q.IsDeleted).ToList();
-
-                // Check required questions
-                var requiredQuestions = activeQuestions.Where(q => q.IsRequired).ToList();
-                var answers = new Dictionary<string, string>();
-
-                // Process form data
-                foreach (var key in form.Keys)
-                {
-                    // Skip non-question keys
-                    if (key == "pollId")
+                    if (poll == null)
                     {
-                        continue;
-                    }
-                    
-                    // Handle array notation in form field names
-                    string questionIdStr;
-                    bool isMultipleChoice = false;
-                    
-                    if (key.EndsWith("[]"))
-                    {
-                        questionIdStr = key.Substring(0, key.Length - 2);
-                        isMultipleChoice = true;
-                    }
-                    else
-                    {
-                        questionIdStr = key;
-                    }
-                    
-                    // Verify this is a numeric question ID
-                    if (!int.TryParse(questionIdStr, out _))
-                    {
-                        continue;
+                        TempData["ErrorMessage"] = "The poll does not exist or is not currently active.";
+                        return RedirectToAction(nameof(Index));
                     }
 
-                    if (isMultipleChoice)
+                    // Get current user
+                    var currentUser = await _userManager.GetUserAsync(User);
+                    if (currentUser == null)
                     {
-                        // Store values for multiple choice questions
-                        var values = form[key].ToString();
-                        answers[questionIdStr] = values;
-                    }
-                    else
-                    {
-                        // Store values for other question types
-                        answers[questionIdStr] = form[key].ToString();
-                    }
-                }
-
-                // Validate required questions are answered
-                foreach (var question in requiredQuestions)
-                {
-                    if (!answers.ContainsKey(question.Id.ToString()) ||
-                        string.IsNullOrWhiteSpace(answers[question.Id.ToString()]))
-                    {
-                        TempData["Error"] = $"Please answer all required questions.";
-                        return RedirectToAction(nameof(Respond), new { id = pollId });
-                    }
-                }
-
-                // Create new response
-                var response = new PollResponse
-                {
-                    PollId = pollId,
-                    RespondentId = currentUser.Id,
-                    SubmittedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                };
-
-                _context.PollResponses.Add(response);
-                await _context.SaveChangesAsync();
-
-                // Track how many answers are successfully created
-                int successfulAnswers = 0;
-                
-                // Process each answer individually to avoid tracking issues
-                foreach (var entry in answers)
-                {
-                    if (!int.TryParse(entry.Key, out int questionId))
-                    {
-                        continue;
+                        TempData["ErrorMessage"] = "You must be logged in to respond to a poll.";
+                        return RedirectToAction(nameof(Index));
                     }
 
-                    var question = activeQuestions.FirstOrDefault(q => q.Id == questionId);
-                    if (question == null)
+                    // Check if the user has already responded - use FOR UPDATE to lock the rows
+                    var existingResponseCount = await _context.PollResponses
+                        .Where(r => r.PollId == pollId && r.RespondentId == currentUser.Id && !r.IsDeleted)
+                        .CountAsync();
+
+                    if (existingResponseCount > 0)
                     {
-                        continue;
+                        await transaction.RollbackAsync();
+                        TempData["ErrorMessage"] = "You have already responded to this poll.";
+                        return RedirectToAction(nameof(Details), new { id = pollId });
                     }
 
-                    try
+                    // Get active questions
+                    var activeQuestions = poll.Questions.Where(q => !q.IsDeleted).ToList();
+
+                    // Check required questions
+                    var requiredQuestions = activeQuestions.Where(q => q.IsRequired).ToList();
+                    var answers = new Dictionary<string, string>();
+
+                    // Process form data
+                    foreach (var key in form.Keys)
                     {
-                        // Clear tracked entries for this question to avoid conflicts
-                        var existingEntries = _context.ChangeTracker.Entries<PollQuestionAnswer>()
-                            .Where(e => e.Entity.QuestionId == questionId)
-                            .ToList();
-                            
-                        foreach (var existingEntry in existingEntries)
+                        // Skip non-question keys
+                        if (key == "pollId")
                         {
-                            existingEntry.State = EntityState.Detached;
+                            continue;
                         }
-                            
-                        switch (question.QuestionType)
+                        
+                        // Handle array notation in form field names
+                        string questionIdStr;
+                        bool isMultipleChoice = false;
+                        
+                        if (key.EndsWith("[]"))
                         {
-                            case QuestionType.MultipleChoice:
-                                // Handle multiple selections (comma-separated values)
-                                if (!string.IsNullOrEmpty(entry.Value))
-                                {
-                                    var optionValues = entry.Value.Split(',');
-                                    
-                                    foreach (var optionValue in optionValues)
+                            questionIdStr = key.Substring(0, key.Length - 2);
+                            isMultipleChoice = true;
+                        }
+                        else
+                        {
+                            questionIdStr = key;
+                        }
+                        
+                        // Verify this is a numeric question ID
+                        if (!int.TryParse(questionIdStr, out _))
+                        {
+                            continue;
+                        }
+
+                        if (isMultipleChoice)
+                        {
+                            // Store values for multiple choice questions
+                            var values = form[key].ToString();
+                            answers[questionIdStr] = values;
+                        }
+                        else
+                        {
+                            // Store values for other question types
+                            answers[questionIdStr] = form[key].ToString();
+                        }
+                    }
+
+                    // Validate required questions are answered
+                    foreach (var question in requiredQuestions)
+                    {
+                        if (!answers.ContainsKey(question.Id.ToString()) ||
+                            string.IsNullOrWhiteSpace(answers[question.Id.ToString()]))
+                        {
+                            await transaction.RollbackAsync();
+                            TempData["ErrorMessage"] = $"Please answer all required questions.";
+                            return RedirectToAction(nameof(Respond), new { id = pollId });
+                        }
+                    }
+
+                    // Create new response - within transaction scope
+                    var response = new PollResponse
+                    {
+                        PollId = pollId,
+                        RespondentId = currentUser.Id,
+                        SubmittedAt = DateTime.UtcNow,
+                        IsDeleted = false
+                    };
+
+                    _context.PollResponses.Add(response);
+                    await _context.SaveChangesAsync();
+
+                    // Track how many answers are successfully created
+                    int successfulAnswers = 0;
+                    
+                    // Process each answer 
+                    foreach (var entry in answers)
+                    {
+                        if (!int.TryParse(entry.Key, out int questionId))
+                        {
+                            continue;
+                        }
+
+                        var question = activeQuestions.FirstOrDefault(q => q.Id == questionId);
+                        if (question == null)
+                        {
+                            continue;
+                        }
+
+                        try
+                        {
+                            // Clear tracked entries for this question to avoid conflicts
+                            var existingEntries = _context.ChangeTracker.Entries<PollQuestionAnswer>()
+                                .Where(e => e.Entity.QuestionId == questionId)
+                                .ToList();
+                                
+                            foreach (var existingEntry in existingEntries)
+                            {
+                                existingEntry.State = EntityState.Detached;
+                            }
+                                
+                            switch (question.QuestionType)
+                            {
+                                case QuestionType.MultipleChoice:
+                                    // Handle multiple selections (comma-separated values)
+                                    if (!string.IsNullOrEmpty(entry.Value))
                                     {
-                                        if (int.TryParse(optionValue.Trim(), out int optionId))
+                                        var optionValues = entry.Value.Split(',');
+                                        var processedOptionIds = new HashSet<int>(); // Track processed option IDs to prevent duplicates
+                                        
+                                        foreach (var optionValue in optionValues)
                                         {
-                                            // Create a new answer for each selection with a fresh context
-                                            using (var transaction = await _context.Database.BeginTransactionAsync())
+                                            if (int.TryParse(optionValue.Trim(), out int optionId) && !processedOptionIds.Contains(optionId))
                                             {
-                                                try
+                                                // Add to processed set to prevent duplicates
+                                                processedOptionIds.Add(optionId);
+                                                
+                                                // Create answer within the same transaction
+                                                var multiAnswer = new PollQuestionAnswer
                                                 {
-                                                    var multiAnswer = new PollQuestionAnswer
-                                                    {
-                                                        ResponseId = response.Id,
-                                                        QuestionId = questionId,
-                                                        SelectedOptionId = optionId,
-                                                        TextAnswer = string.Empty,
-                                                        IsDeleted = false
-                                                    };
-                                                    
-                                                    _context.PollQuestionAnswers.Add(multiAnswer);
-                                                    await _context.SaveChangesAsync();
-                                                    await transaction.CommitAsync();
-                                                    successfulAnswers++;
-                                                }
-                                                catch
-                                                {
-                                                    await transaction.RollbackAsync();
-                                                    // Continue to the next option
-                                                }
+                                                    ResponseId = response.Id,
+                                                    QuestionId = questionId,
+                                                    SelectedOptionId = optionId,
+                                                    TextAnswer = string.Empty,
+                                                    IsDeleted = false
+                                                };
+                                                
+                                                _context.PollQuestionAnswers.Add(multiAnswer);
+                                                await _context.SaveChangesAsync();
+                                                successfulAnswers++;
                                             }
                                         }
                                     }
-                                }
-                                break;
+                                    break;
                                 
-                            case QuestionType.SingleChoice:
-                                if (int.TryParse(entry.Value, out int singleOptionId))
-                                {
-                                    using (var transaction = await _context.Database.BeginTransactionAsync())
+                                case QuestionType.SingleChoice:
+                                    if (int.TryParse(entry.Value, out int singleOptionId))
                                     {
-                                        try
-                                        {
-                                            var answer = new PollQuestionAnswer
-                                            {
-                                                ResponseId = response.Id,
-                                                QuestionId = questionId,
-                                                SelectedOptionId = singleOptionId,
-                                                TextAnswer = string.Empty,
-                                                IsDeleted = false
-                                            };
-                                            
-                                            _context.PollQuestionAnswers.Add(answer);
-                                            await _context.SaveChangesAsync();
-                                            await transaction.CommitAsync();
-                                            successfulAnswers++;
-                                        }
-                                        catch
-                                        {
-                                            await transaction.RollbackAsync();
-                                        }
-                                    }
-                                }
-                                break;
-                                
-                            case QuestionType.Rating:
-                                if (int.TryParse(entry.Value, out int rating))
-                                {
-                                    using (var transaction = await _context.Database.BeginTransactionAsync())
-                                    {
-                                        try
-                                        {
-                                            var answer = new PollQuestionAnswer
-                                            {
-                                                ResponseId = response.Id,
-                                                QuestionId = questionId,
-                                                RatingAnswer = rating,
-                                                TextAnswer = string.Empty,
-                                                IsDeleted = false
-                                            };
-                                            
-                                            _context.PollQuestionAnswers.Add(answer);
-                                            await _context.SaveChangesAsync();
-                                            await transaction.CommitAsync();
-                                            successfulAnswers++;
-                                        }
-                                        catch
-                                        {
-                                            await transaction.RollbackAsync();
-                                        }
-                                    }
-                                }
-                                break;
-                                
-                            case QuestionType.YesNo:
-                                if (bool.TryParse(entry.Value, out bool boolValue))
-                                {
-                                    using (var transaction = await _context.Database.BeginTransactionAsync())
-                                    {
-                                        try
-                                        {
-                                            var answer = new PollQuestionAnswer
-                                            {
-                                                ResponseId = response.Id,
-                                                QuestionId = questionId,
-                                                BoolAnswer = boolValue,
-                                                TextAnswer = string.Empty,
-                                                IsDeleted = false
-                                            };
-                                            
-                                            _context.PollQuestionAnswers.Add(answer);
-                                            await _context.SaveChangesAsync();
-                                            await transaction.CommitAsync();
-                                            successfulAnswers++;
-                                        }
-                                        catch
-                                        {
-                                            await transaction.RollbackAsync();
-                                        }
-                                    }
-                                }
-                                break;
-                                
-                            case QuestionType.OpenEnded:
-                                using (var transaction = await _context.Database.BeginTransactionAsync())
-                                {
-                                    try
-                                    {
-                                        // Fix: Ensure TextAnswer is properly handled
-                                        var safeText = entry.Value?.Trim() ?? string.Empty;
-                                        // Truncate if needed to match field constraints
-                                        if (safeText.Length > 1000)
-                                        {
-                                            safeText = safeText.Substring(0, 1000);
-                                        }
-                                        
-                                        var textAnswer = new PollQuestionAnswer
+                                        var singleAnswer = new PollQuestionAnswer
                                         {
                                             ResponseId = response.Id,
                                             QuestionId = questionId,
-                                            TextAnswer = safeText,
+                                            SelectedOptionId = singleOptionId,
+                                            TextAnswer = string.Empty,
                                             IsDeleted = false
                                         };
                                         
-                                        _context.PollQuestionAnswers.Add(textAnswer);
+                                        _context.PollQuestionAnswers.Add(singleAnswer);
                                         await _context.SaveChangesAsync();
-                                        await transaction.CommitAsync();
                                         successfulAnswers++;
                                     }
-                                    catch
+                                    break;
+                                
+                                case QuestionType.Rating:
+                                    if (int.TryParse(entry.Value, out int ratingValue))
                                     {
-                                        await transaction.RollbackAsync();
+                                        var ratingAnswer = new PollQuestionAnswer
+                                        {
+                                            ResponseId = response.Id,
+                                            QuestionId = questionId,
+                                            RatingAnswer = ratingValue,
+                                            TextAnswer = string.Empty,
+                                            IsDeleted = false
+                                        };
+                                        
+                                        _context.PollQuestionAnswers.Add(ratingAnswer);
+                                        await _context.SaveChangesAsync();
+                                        successfulAnswers++;
                                     }
-                                }
-                                break;
+                                    break;
+                                
+                                case QuestionType.YesNo:
+                                    if (bool.TryParse(entry.Value, out bool boolValue))
+                                    {
+                                        var boolAnswer = new PollQuestionAnswer
+                                        {
+                                            ResponseId = response.Id,
+                                            QuestionId = questionId,
+                                            BoolAnswer = boolValue,
+                                            TextAnswer = string.Empty,
+                                            IsDeleted = false
+                                        };
+                                        
+                                        _context.PollQuestionAnswers.Add(boolAnswer);
+                                        await _context.SaveChangesAsync();
+                                        successfulAnswers++;
+                                    }
+                                    break;
+                                
+                                case QuestionType.OpenEnded:
+                                    var textAnswer = new PollQuestionAnswer
+                                    {
+                                        ResponseId = response.Id,
+                                        QuestionId = questionId,
+                                        TextAnswer = entry.Value,
+                                        IsDeleted = false
+                                    };
+                                    
+                                    _context.PollQuestionAnswers.Add(textAnswer);
+                                    await _context.SaveChangesAsync();
+                                    successfulAnswers++;
+                                    break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log the error but continue with other questions
+                            // We'll check the successfulAnswers count at the end
                         }
                     }
-                    catch (Exception ex)
+
+                    if (successfulAnswers > 0)
                     {
-                        // Log the error but continue with other questions
-                        // We'll check the successfulAnswers count at the end
+                        await transaction.CommitAsync();
+                        TempData["SuccessMessage"] = "Thank you for your response!";
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        await transaction.RollbackAsync();
+                        TempData["ErrorMessage"] = $"An error occurred while submitting your response. Please try again later.";
+                        return RedirectToAction(nameof(Respond), new { id = pollId });
                     }
                 }
-
-                if (successfulAnswers > 0)
+                catch (Exception ex)
                 {
-                    TempData["Message"] = "Thank you for your response!";
-                    return RedirectToAction(nameof(Index));
-                }
-                else
-                {
-                    TempData["Error"] = $"An error occurred while submitting your response. Please try again later.";
+                    await transaction.RollbackAsync();
+                    TempData["ErrorMessage"] = $"An error occurred while submitting your response: {ex.Message}";
                     return RedirectToAction(nameof(Respond), new { id = pollId });
                 }
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = $"An error occurred while submitting your response: {ex.Message}";
-                return RedirectToAction(nameof(Respond), new { id = pollId });
             }
         }
 
         // GET: Poll/ViewResults/5
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> Results(int? id)
         {
             if (id == null)
@@ -1087,7 +1037,330 @@ namespace CommunityPortal.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"An error occurred: {ex.Message}";
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // GET: Poll/EditQuestion/5
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> EditQuestion(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                var question = await _context.PollQuestions
+                    .Include(q => q.Poll)
+                    .FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted);
+
+                if (question == null)
+                {
+                    return NotFound();
+                }
+
+                ViewBag.PollId = question.PollId;
+                ViewBag.PollTitle = question.Poll.Title;
+                ViewBag.QuestionTypes = new SelectList(Enum.GetValues(typeof(QuestionType))
+                    .Cast<QuestionType>()
+                    .Select(v => new { Value = (int)v, Text = v.ToString() }), "Value", "Text", question.QuestionType);
+
+                return View(question);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"An error occurred while loading the question: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // POST: Poll/EditQuestion/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> EditQuestion(int id, [Bind("Id,PollId,QuestionText,QuestionType,IsRequired,MinRating,MaxRating")] PollQuestion question)
+        {
+            if (id != question.Id)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // Remove validation errors for fields we're going to set manually
+                ModelState.Remove("Poll");
+                
+                // Load existing question to check if it exists
+                var existingQuestion = await _context.PollQuestions
+                    .Include(q => q.Poll)
+                    .Include(q => q.Options.Where(o => !o.IsDeleted))
+                    .FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted);
+
+                if (existingQuestion == null)
+                {
+                    return NotFound();
+                }
+
+                // Validate that rating questions have min and max values
+                if (question.QuestionType == QuestionType.Rating)
+                {
+                    if (!question.MinRating.HasValue || !question.MaxRating.HasValue)
+                    {
+                        ModelState.AddModelError(string.Empty, "Rating questions must have minimum and maximum values.");
+                    }
+                    else if (question.MinRating.Value >= question.MaxRating.Value)
+                    {
+                        ModelState.AddModelError(string.Empty, "Maximum rating must be greater than minimum rating.");
+                    }
+                }
+                else
+                {
+                    // For non-rating questions, set these to null
+                    question.MinRating = null;
+                    question.MaxRating = null;
+                }
+
+                if (string.IsNullOrWhiteSpace(question.QuestionText))
+                {
+                    ModelState.AddModelError("QuestionText", "Question text is required.");
+                }
+
+                if (ModelState.IsValid)
+                {
+                    // Update properties from form
+                    existingQuestion.QuestionText = question.QuestionText;
+                    existingQuestion.IsRequired = question.IsRequired;
+                    
+                    // Check if question type has changed
+                    bool questionTypeChanged = existingQuestion.QuestionType != question.QuestionType;
+                    existingQuestion.QuestionType = question.QuestionType;
+                    
+                    // Set rating values
+                    existingQuestion.MinRating = question.MinRating;
+                    existingQuestion.MaxRating = question.MaxRating;
+
+                    // If the question type has changed and the new type doesn't support options, mark options as deleted
+                    if (questionTypeChanged && 
+                        (question.QuestionType != QuestionType.MultipleChoice && 
+                         question.QuestionType != QuestionType.SingleChoice))
+                    {
+                        foreach (var option in existingQuestion.Options)
+                        {
+                            option.IsDeleted = true;
+                        }
+                    }
+
+                    _context.Update(existingQuestion);
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Question updated successfully!";
+                    return RedirectToAction(nameof(Edit), new { id = existingQuestion.PollId });
+                }
+
+                // If validation fails, reload the form
+                ViewBag.PollId = existingQuestion.PollId;
+                ViewBag.PollTitle = existingQuestion.Poll.Title;
+                ViewBag.QuestionTypes = new SelectList(Enum.GetValues(typeof(QuestionType))
+                    .Cast<QuestionType>()
+                    .Select(v => new { Value = (int)v, Text = v.ToString() }), "Value", "Text", question.QuestionType);
+
+                return View(question);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"An error occurred while updating the question: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // POST: Poll/DeleteQuestion/5
+        [HttpPost, ActionName("DeleteQuestion")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> DeleteQuestion(int id)
+        {
+            try
+            {
+                var question = await _context.PollQuestions
+                    .Include(q => q.Options)
+                    .Include(q => q.Answers)
+                    .FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted);
+
+                if (question == null)
+                {
+                    return NotFound();
+                }
+
+                int pollId = question.PollId;
+
+                // Soft delete the question
+                question.IsDeleted = true;
+
+                // Soft delete related options
+                foreach (var option in question.Options)
+                {
+                    option.IsDeleted = true;
+                }
+
+                // Soft delete related answers
+                foreach (var answer in question.Answers)
+                {
+                    answer.IsDeleted = true;
+                }
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Question deleted successfully!";
+                return RedirectToAction(nameof(Edit), new { id = pollId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"An error occurred while deleting the question: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+        
+        // GET: Poll/EditOption/5
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> EditOption(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                var option = await _context.PollQuestionOptions
+                    .Include(o => o.Question)
+                        .ThenInclude(q => q.Poll)
+                    .FirstOrDefaultAsync(o => o.Id == id && !o.IsDeleted);
+
+                if (option == null)
+                {
+                    return NotFound();
+                }
+
+                ViewBag.QuestionId = option.QuestionId;
+                ViewBag.PollId = option.Question.PollId;
+                ViewBag.QuestionText = option.Question.QuestionText;
+
+                return View(option);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // POST: Poll/EditOption/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> EditOption(int id, [Bind("Id,QuestionId,OptionText")] PollQuestionOption option)
+        {
+            if (id != option.Id)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // Remove validation errors for fields we're going to set manually
+                ModelState.Remove("Question");
+                
+                if (string.IsNullOrWhiteSpace(option.OptionText))
+                {
+                    ModelState.AddModelError("OptionText", "Option text is required.");
+                }
+
+                if (ModelState.IsValid)
+                {
+                    var existingOption = await _context.PollQuestionOptions
+                        .Include(o => o.Question)
+                            .ThenInclude(q => q.Poll)
+                        .FirstOrDefaultAsync(o => o.Id == id && !o.IsDeleted);
+
+                    if (existingOption == null)
+                    {
+                        return NotFound();
+                    }
+
+                    existingOption.OptionText = option.OptionText.Trim();
+                    _context.Update(existingOption);
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Option updated successfully!";
+                    return RedirectToAction(nameof(Edit), new { id = existingOption.Question.PollId });
+                }
+
+                // If validation fails, reload the form
+                var question = await _context.PollQuestions
+                    .Include(q => q.Poll)
+                    .FirstOrDefaultAsync(q => q.Id == option.QuestionId && !q.IsDeleted);
+
+                if (question == null)
+                {
+                    return NotFound();
+                }
+
+                ViewBag.QuestionId = option.QuestionId;
+                ViewBag.PollId = question.PollId;
+                ViewBag.QuestionText = question.QuestionText;
+
+                return View(option);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // POST: Poll/DeleteOption/5
+        [HttpPost, ActionName("DeleteOption")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> DeleteOption(int id)
+        {
+            try
+            {
+                var option = await _context.PollQuestionOptions
+                    .Include(o => o.Question)
+                    .FirstOrDefaultAsync(o => o.Id == id && !o.IsDeleted);
+
+                if (option == null)
+                {
+                    return NotFound();
+                }
+
+                int pollId = option.Question.PollId;
+
+                // Soft delete the option
+                option.IsDeleted = true;
+                
+                // Also update any answers that reference this option
+                var relatedAnswers = await _context.PollQuestionAnswers
+                    .Where(a => a.SelectedOptionId == id && !a.IsDeleted)
+                    .ToListAsync();
+                
+                foreach (var answer in relatedAnswers)
+                {
+                    answer.IsDeleted = true;
+                }
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Option deleted successfully!";
+                return RedirectToAction(nameof(Edit), new { id = pollId });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }

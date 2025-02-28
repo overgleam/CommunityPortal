@@ -14,30 +14,6 @@
         </ol>
     </nav>
 
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    <!-- Debug Information -->
-    @if (ViewBag.ValidationErrors != null && ((List<string>)ViewBag.ValidationErrors).Any())
-    {
-        <div class="alert alert-warning">
-            <h5>Validation Debugging Information</h5>
-            <p>ModelState.IsValid: @ViewBag.ModelStateIsValid</p>
-            <p>Error Count: @ViewBag.ModelStateErrorCount</p>
-            <ul>
-                @foreach (var error in (List<string>)ViewBag.ValidationErrors)
-                {
-                    <li>@error</li>
-                }
-            </ul>
-        </div>
-    }
-
     <div class="card shadow-sm">
         <div class="card-header">
             <h1 class="h3 mb-0">@ViewData["Title"]</h1>

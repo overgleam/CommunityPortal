@@ -48,5 +48,6 @@
     <Folder Include="Models\ServiceRequest\" />
     <Folder Include="Views\Poll\" />
     <Folder Include="wwwroot\uploads\documents\" />
+    <Folder Include="wwwroot\uploads\facilities\" />
   </ItemGroup>
 </Project>

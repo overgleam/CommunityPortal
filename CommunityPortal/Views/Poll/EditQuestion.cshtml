@@ -1,0 +1,89 @@
+@model CommunityPortal.Models.Poll.PollQuestion
+
+@{
+    ViewData["Title"] = "Edit Question";
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Polls</a></li>
+            <li class="breadcrumb-item"><a asp-action="Edit" asp-route-id="@ViewBag.PollId">@ViewBag.PollTitle</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit Question</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h2 class="h4 mb-0">Edit Question</h2>
+        </div>
+        <div class="card-body">
+            <form asp-action="EditQuestion">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PollId" />
+
+                <div class="mb-3">
+                    <label asp-for="QuestionText" class="form-label">Question Text</label>
+                    <input asp-for="QuestionText" class="form-control" />
+                    <span asp-validation-for="QuestionText" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="QuestionType" class="form-label">Question Type</label>
+                    <select asp-for="QuestionType" asp-items="ViewBag.QuestionTypes" class="form-select"></select>
+                    <span asp-validation-for="QuestionType" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="IsRequired" class="form-check-input" />
+                    <label asp-for="IsRequired" class="form-check-label">Required</label>
+                    <span asp-validation-for="IsRequired" class="text-danger"></span>
+                </div>
+
+                <div id="ratingOptions" class="mb-3 border p-3 rounded" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label asp-for="MinRating" class="form-label">Minimum Rating</label>
+                            <input asp-for="MinRating" class="form-control" />
+                            <span asp-validation-for="MinRating" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="MaxRating" class="form-label">Maximum Rating</label>
+                            <input asp-for="MaxRating" class="form-control" />
+                            <span asp-validation-for="MaxRating" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Edit" asp-route-id="@ViewBag.PollId" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            function toggleRatingOptions() {
+                if ($("#QuestionType").val() == "@((int)CommunityPortal.Models.Enums.QuestionType.Rating)") {
+                    $("#ratingOptions").show();
+                } else {
+                    $("#ratingOptions").hide();
+                }
+            }
+            
+            // Initial state
+            toggleRatingOptions();
+            
+            // On change
+            $("#QuestionType").change(toggleRatingOptions);
+        });
+    </script>
+} 

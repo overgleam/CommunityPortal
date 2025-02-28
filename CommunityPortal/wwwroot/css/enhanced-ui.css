@@ -272,6 +272,11 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+/* Ensure dropdown menu appears above other elements */
+.dropdown-menu[aria-labelledby="userDropdown"] {
+    z-index: 1050;
+}
+
 .user-info {
     margin-left: 0.75rem;
 }

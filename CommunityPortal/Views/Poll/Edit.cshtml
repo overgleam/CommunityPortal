@@ -13,22 +13,6 @@
         </ol>
     </nav>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     <div class="row">
         <div class="col-md-8">
             <div class="card shadow-sm mb-4">
@@ -124,7 +108,20 @@
                                 <div class="list-group-item">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h5 class="mb-1">@question.QuestionText</h5>
-                                        <span class="badge bg-info">@question.QuestionType</span>
+                                        <div>
+                                            <span class="badge bg-info me-2">@question.QuestionType</span>
+                                            <div class="btn-group btn-group-sm">
+                                                <a asp-action="EditQuestion" asp-route-id="@question.Id" class="btn btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        data-bs-toggle="modal" data-bs-target="#deleteQuestionModal" 
+                                                        data-question-id="@question.Id" 
+                                                        data-question-text="@question.QuestionText">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <p class="mb-1 text-muted">
                                         <small>@(question.IsRequired ? "Required" : "Optional")</small>
@@ -141,7 +138,20 @@
                                                     <ul class="list-group list-group-flush mt-2">
                                                         @foreach (var option in question.Options.OrderBy(o => o.DisplayOrder))
                                                         {
-                                                            <li class="list-group-item bg-light">@option.OptionText</li>
+                                                            <li class="list-group-item bg-light d-flex justify-content-between align-items-center">
+                                                                <span>@option.OptionText</span>
+                                                                <div class="btn-group btn-group-sm">
+                                                                    <a asp-action="EditOption" asp-route-id="@option.Id" class="btn btn-outline-primary btn-sm">
+                                                                        <i class="fas fa-edit"></i>
+                                                                    </a>
+                                                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                                            data-bs-toggle="modal" data-bs-target="#deleteOptionModal" 
+                                                                            data-option-id="@option.Id" 
+                                                                            data-option-text="@option.OptionText">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </li>
                                                         }
                                                     </ul>
                                                 </div>
@@ -198,6 +208,54 @@
     </div>
 </div>
 
+<!-- Delete Question Confirmation Modal -->
+<div class="modal fade" id="deleteQuestionModal" tabindex="-1" aria-labelledby="deleteQuestionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteQuestionModalLabel">Confirm Delete Question</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this question? This action cannot be undone.</p>
+                <p><strong>Question:</strong> <span id="questionToDelete"></span></p>
+                <p class="text-danger">Warning: All related options and answers will also be deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form asp-action="DeleteQuestion" method="post">
+                    <input type="hidden" id="deleteQuestionId" name="id" />
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Option Confirmation Modal -->
+<div class="modal fade" id="deleteOptionModal" tabindex="-1" aria-labelledby="deleteOptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteOptionModalLabel">Confirm Delete Option</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this option? This action cannot be undone.</p>
+                <p><strong>Option:</strong> <span id="optionToDelete"></span></p>
+                <p class="text-danger">Warning: Any answers using this option will be affected.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form asp-action="DeleteOption" method="post">
+                    <input type="hidden" id="deleteOptionId" name="id" />
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
@@ -226,6 +284,32 @@
             // Initialize end date min value
             if (startDateInput.value) {
                 document.getElementById('EndDate').min = startDateInput.value;
+            }
+            
+            // Question delete modal
+            const deleteQuestionModal = document.getElementById('deleteQuestionModal');
+            if (deleteQuestionModal) {
+                deleteQuestionModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const questionId = button.getAttribute('data-question-id');
+                    const questionText = button.getAttribute('data-question-text');
+                    
+                    document.getElementById('deleteQuestionId').value = questionId;
+                    document.getElementById('questionToDelete').textContent = questionText;
+                });
+            }
+            
+            // Option delete modal
+            const deleteOptionModal = document.getElementById('deleteOptionModal');
+            if (deleteOptionModal) {
+                deleteOptionModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const optionId = button.getAttribute('data-option-id');
+                    const optionText = button.getAttribute('data-option-text');
+                    
+                    document.getElementById('deleteOptionId').value = optionId;
+                    document.getElementById('optionToDelete').textContent = optionText;
+                });
             }
         });
     </script>

@@ -14,14 +14,6 @@
         </ol>
     </nav>
     
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     <div class="card shadow-sm mb-4">
         <div class="card-header">
             <h1 class="h3 mb-0">@Model.Title</h1>
@@ -189,6 +181,9 @@
                     if (checkbox.checked) {
                         checkboxGroups[name].push(checkbox.value);
                     }
+                    
+                    // Disable the original checkbox to prevent it from being submitted
+                    checkbox.disabled = true;
                 });
                 
                 // For each group, create a hidden input with all selected values

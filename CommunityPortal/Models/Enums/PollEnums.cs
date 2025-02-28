@@ -11,8 +11,7 @@ namespace CommunityPortal.Models.Enums
     public enum PollTargetAudience
     {
         AllHomeowners,
-        SpecificHomeowners,
-        BoardMembers
+        SpecificHomeowners
     }
 
     public enum QuestionType

@@ -1,0 +1,45 @@
+@model CommunityPortal.Models.Poll.PollQuestionOption
+
+@{
+    ViewData["Title"] = "Edit Option";
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Polls</a></li>
+            <li class="breadcrumb-item"><a asp-action="Edit" asp-route-id="@ViewBag.PollId">Poll</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit Option</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h2 class="h4 mb-0">Edit Option</h2>
+            <p class="mb-0 text-muted">For question: @ViewBag.QuestionText</p>
+        </div>
+        <div class="card-body">
+            <form asp-action="EditOption">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="QuestionId" />
+
+                <div class="mb-3">
+                    <label asp-for="OptionText" class="form-label">Option Text</label>
+                    <input asp-for="OptionText" class="form-control" />
+                    <span asp-validation-for="OptionText" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Edit" asp-route-id="@ViewBag.PollId" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 
