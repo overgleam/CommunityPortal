@@ -880,6 +880,40 @@ namespace CommunityPortal.Controllers
             return RedirectToAction(nameof(ManageReservations));
         }
 
+        // POST: /Facility/MarkReservationComplete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> MarkReservationComplete(int id, string? completionNotes)
+        {
+            var reservation = await _context.FacilityReservations
+                .Include(r => r.Facility)
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == id);
+            
+            if (reservation == null)
+            {
+                TempData["ErrorMessage"] = "Reservation not found.";
+                return RedirectToAction(nameof(ManageReservations));
+            }
+            
+            // Verify the reservation is approved and paid
+            if (reservation.Status != ReservationStatus.Approved || !reservation.IsPaid)
+            {
+                TempData["ErrorMessage"] = "Only approved and paid reservations can be marked as complete.";
+                return RedirectToAction(nameof(ManageReservations));
+            }
+            
+            reservation.Status = ReservationStatus.Completed;
+            reservation.CompletionNotes = completionNotes;
+            reservation.CompletedDate = DateTime.UtcNow;
+            reservation.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = $"Reservation #{reservation.Id} for {reservation.Facility.Name} has been marked as complete.";
+            return RedirectToAction(nameof(ManageReservations));
+        }
+
         private bool FacilityExists(int id)
         {
             return _context.Facilities.Any(e => e.Id == id);

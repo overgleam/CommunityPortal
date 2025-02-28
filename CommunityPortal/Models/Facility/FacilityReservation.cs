@@ -46,6 +46,10 @@ namespace CommunityPortal.Models.Facility
         public DateTime? PaymentVerificationDate { get; set; }
         public string? PaymentVerifiedByUserId { get; set; }
 
+        // Completion properties
+        public string? CompletionNotes { get; set; }
+        public DateTime? CompletedDate { get; set; }
+
         public bool IsDeleted { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }

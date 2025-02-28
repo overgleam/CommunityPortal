@@ -234,6 +234,26 @@
                             </div>
                         </div>
                     }
+                    else if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Completed)
+                    {
+                        <div class="card border-0 shadow-sm mt-4 border-start border-success border-4">
+                            <div class="card-body">
+                                <h6 class="card-title d-flex align-items-center mb-3 text-success">
+                                    <i class="material-icons me-2">task_alt</i>
+                                    Completion Information
+                                </h6>
+                                <p class="mb-2"><strong>Completed On:</strong> @(reservation.CompletedDate?.ToString("MMMM dd, yyyy, hh:mm tt") ?? "N/A")</p>
+                                @if (!string.IsNullOrEmpty(reservation.CompletionNotes))
+                                {
+                                    <p class="mb-0"><strong>Notes:</strong> @reservation.CompletionNotes</p>
+                                }
+                                else
+                                {
+                                    <p class="mb-0"><em>No completion notes provided.</em></p>
+                                }
+                            </div>
+                        </div>
+                    }
 
                     @if (!string.IsNullOrEmpty(reservation.ReceiptFileName))
                     {
@@ -328,6 +348,45 @@
                                     <i class="material-icons align-middle me-1">receipt</i> Verify Payment
                                 </a>
                             }
+                            else if (reservation.Status == CommunityPortal.Models.Facility.ReservationStatus.Approved && reservation.IsPaid)
+                            {
+                                <div class="d-flex gap-2">
+                                    <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-success rounded-pill">
+                                        <i class="material-icons align-middle me-1">receipt</i> View Payment
+                                    </a>
+                                    
+                                    <button type="button" class="btn btn-primary rounded-pill" 
+                                            onclick="confirmComplete(@reservation.Id, '@reservation.ReservationDate.Date.ToString("yyyy-MM-dd")')">
+                                        <i class="material-icons align-middle me-1">check_circle</i> Mark as Complete
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-danger rounded-pill"
+                                            onclick="showForm('cancelForm-@reservation.Id')">
+                                        <i class="material-icons align-middle me-1">cancel</i> Cancel Reservation
+                                    </button>
+                                </div>
+                                
+                                <div id="cancelForm-@reservation.Id" style="display: none;" class="mt-3 p-3 border rounded bg-light">
+                                    <form asp-action="AdminCancelReservation" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@reservation.Id" />
+                                        
+                                        <div class="mb-3">
+                                            <label for="cancellationReason-@reservation.Id" class="form-label">Reason for Cancellation</label>
+                                            <textarea id="cancellationReason-@reservation.Id" name="cancellationReason" class="form-control" rows="3" required></textarea>
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="material-icons align-middle me-1">send</i> Confirm Cancellation
+                                            </button>
+                                            <button type="button" class="btn btn-secondary" onclick="hideForm('cancelForm-@reservation.Id')">
+                                                <i class="material-icons align-middle me-1">close</i> Cancel
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            }
                             else if (reservation.IsPaid)
                             {
                                 <a asp-action="PaymentDetails" asp-route-id="@reservation.Id" class="btn btn-success rounded-pill">
@@ -348,10 +407,55 @@
     </div>
 }
 
+<!-- Complete Reservation Confirmation Modal -->
+<div class="modal fade" id="completeReservationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title">
+                    <i class="material-icons align-middle me-2">check_circle</i>
+                    Confirm Completion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="reservation-date-warning" class="alert alert-warning mb-4" style="display: none;">
+                    <i class="material-icons align-middle me-2">warning</i>
+                    <span>The reservation is not yet past the date. Do you still wish to mark this as complete?</span>
+                </div>
+                
+                <form id="completeForm" asp-action="MarkReservationComplete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="completeReservationId" name="id" value="" />
+                    
+                    <div class="mb-3">
+                        <label for="completionNotes" class="form-label">Completion Notes (Optional)</label>
+                        <textarea id="completionNotes" name="completionNotes" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">
+                    <i class="material-icons align-middle me-1">close</i>
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-primary rounded-pill" onclick="submitCompleteForm()">
+                    <i class="material-icons align-middle me-1">check</i>
+                    Mark as Complete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script>
+        function hideForm(formId) {
+            document.getElementById(formId).style.display = 'none';
+        }
+        
         function showForm(formId) {
             // Hide all forms first
             document.querySelectorAll('[id^="rejectForm-"], [id^="cancelForm-"], [id^="rejectPaymentForm-"]').forEach(form => {
@@ -360,6 +464,31 @@
             
             // Show the requested form
             document.getElementById(formId).style.display = 'block';
+        }
+        
+        function confirmComplete(reservationId, reservationDate) {
+            // Set the reservation ID in the hidden form field
+            document.getElementById('completeReservationId').value = reservationId;
+            
+            // Check if reservation date is in the future
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const resDate = new Date(reservationDate);
+            
+            // Show warning if reservation date is today or in the future
+            if (resDate >= today) {
+                document.getElementById('reservation-date-warning').style.display = 'block';
+            } else {
+                document.getElementById('reservation-date-warning').style.display = 'none';
+            }
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('completeReservationModal'));
+            modal.show();
+        }
+        
+        function submitCompleteForm() {
+            document.getElementById('completeForm').submit();
         }
         
         $(document).ready(function() {
