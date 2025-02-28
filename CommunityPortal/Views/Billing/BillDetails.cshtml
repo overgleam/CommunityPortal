@@ -49,6 +49,10 @@
                     <p class="mb-1"><strong>Billing Period:</strong> @Model.Bill.BillingPeriod</p>
                     <p class="mb-1"><strong>Bill Date:</strong> @Model.Bill.BillingDate.ToString("MMMM dd, yyyy")</p>
                     <p class="mb-1"><strong>Due Date:</strong> @Model.Bill.DueDate.ToString("MMMM dd, yyyy")</p>
+                    @if (Model.Bill.Status == "Paid" && Model.Bill.PaidDate.HasValue)
+                    {
+                        <p class="mb-1"><strong>Paid Date:</strong> @Model.Bill.PaidDate.Value.ToString("MMMM dd, yyyy")</p>
+                    }
                     <p class="mb-1">
                         <strong>Status:</strong>
                         <span class="badge @(Model.Bill.Status == "Overdue" ? "bg-danger" : 
@@ -188,6 +192,12 @@
                                                         </div>
                                                         <div class="modal-body">
                                                             <p style="white-space: pre-line;">@payment.Notes</p>
+                                                            @if (payment.VerifiedAt.HasValue)
+                                                            {
+                                                                <hr>
+                                                                <p class="text-muted mb-0">Verified on: @payment.VerifiedAt.Value.ToString("MMM dd, yyyy HH:mm")</p>
+                                                                <p class="text-muted mb-0">Verified by: @payment.VerifiedBy</p>
+                                                            }
                                                         </div>
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

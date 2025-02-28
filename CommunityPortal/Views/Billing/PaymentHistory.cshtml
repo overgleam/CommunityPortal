@@ -1,0 +1,193 @@
+@model CommunityPortal.Models.Billing.PaymentListViewModel
+
+@{
+    ViewData["Title"] = "Payment History";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="row">
+                        <div class="col-6 d-flex align-items-center">
+                            <h6 class="mb-0">Payment History</h6>
+                        </div>
+                        <div class="col-6 text-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-0">Back to Billing</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-3 pb-2">
+                    
+                    <!-- Search and Filters -->
+                    <div class="px-4 mb-3">
+                        <form asp-action="PaymentHistory" method="get" class="row g-3 align-items-center">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Search by name or reference...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="statusFilter" class="form-select">
+                                    <option value="">All Statuses</option>
+                                    <option value="Pending" selected="@(Model.StatusFilter == "Pending")">Pending</option>
+                                    <option value="Verified" selected="@(Model.StatusFilter == "Verified")">Verified</option>
+                                    <option value="Rejected" selected="@(Model.StatusFilter == "Rejected")">Rejected</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="sortBy" class="form-select">
+                                    <option value="PaymentDate" selected="@(Model.SortBy == "PaymentDate")">Payment Date</option>
+                                    <option value="Amount" selected="@(Model.SortBy == "Amount")">Amount</option>
+                                    <option value="Status" selected="@(Model.SortBy == "Status")">Status</option>
+                                    <option value="Homeowner" selected="@(Model.SortBy == "Homeowner")">Homeowner</option>
+                                    <option value="VerifiedAt" selected="@(Model.SortBy == "VerifiedAt")">Verification Date</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="d-flex">
+                                    <input type="hidden" name="sortDirection" value="@Model.SortDirection" id="sortDirectionInput">
+                                    <button type="button" id="toggleSortBtn" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-sort-@(Model.SortDirection == "asc" ? "up" : "down")"></i>
+                                    </button>
+                                    <button type="submit" class="btn btn-sm btn-primary ms-2">Filter</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Payments Table -->
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Payment ID</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Homeowner</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Date</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Amount</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Verification</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var payment in Model.Payments)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">#@payment.Id</h6>
+                                                    <p class="text-xs text-secondary mb-0">@payment.TransactionReference</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">@payment.Homeowner.FirstName @payment.Homeowner.LastName</p>
+                                            <p class="text-xs text-secondary mb-0">Bill #@payment.BillId</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">@payment.PaymentDate.ToString("MMM dd, yyyy")</p>
+                                            <p class="text-xs text-secondary mb-0">@payment.PaymentDate.ToString("h:mm tt")</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">@payment.Amount.ToString("C")</p>
+                                        </td>
+                                        <td>
+                                            @{
+                                                var statusColor = payment.Status == "Verified" ? "success" :
+                                                                 payment.Status == "Rejected" ? "danger" : "warning";
+                                            }
+                                            <span class="badge badge-sm bg-gradient-@statusColor">
+                                                @payment.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (payment.VerifiedAt.HasValue)
+                                            {
+                                                <p class="text-xs font-weight-bold mb-0">@payment.VerifiedAt.Value.ToString("MMM dd, yyyy")</p>
+                                                <p class="text-xs text-secondary mb-0">By: @payment.VerifiedBy</p>
+                                            }
+                                            else
+                                            {
+                                                <p class="text-xs text-secondary mb-0">Not yet verified</p>
+                                            }
+                                        </td>
+                                        <td class="align-middle">
+                                            <a asp-action="BillDetails" asp-route-id="@payment.BillId" class="text-secondary font-weight-bold text-xs">
+                                                View Bill
+                                            </a>
+                                            @if (payment.Status == "Pending")
+                                            {
+                                                <span> | </span>
+                                                <a asp-action="VerifyPayment" asp-route-id="@payment.Id" class="text-success font-weight-bold text-xs">
+                                                    Verify
+                                                </a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!Model.Payments.Any())
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">No payments found matching your criteria.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    @if (Model.PaginationInfo.TotalPages > 1)
+                    {
+                        <div class="d-flex justify-content-center mt-4">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    @if (Model.PaginationInfo.CurrentPage > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("PaymentHistory", new { page = Model.PaginationInfo.CurrentPage - 1, searchTerm = Model.SearchTerm, sortBy = Model.SortBy, sortDirection = Model.SortDirection, statusFilter = Model.StatusFilter })" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @for (int i = Math.Max(1, Model.PaginationInfo.CurrentPage - 2); i <= Math.Min(Model.PaginationInfo.TotalPages, Model.PaginationInfo.CurrentPage + 2); i++)
+                                    {
+                                        <li class="page-item @(i == Model.PaginationInfo.CurrentPage ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("PaymentHistory", new { page = i, searchTerm = Model.SearchTerm, sortBy = Model.SortBy, sortDirection = Model.SortDirection, statusFilter = Model.StatusFilter })">@i</a>
+                                        </li>
+                                    }
+
+                                    @if (Model.PaginationInfo.CurrentPage < Model.PaginationInfo.TotalPages)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("PaymentHistory", new { page = Model.PaginationInfo.CurrentPage + 1, searchTerm = Model.SearchTerm, sortBy = Model.SortBy, sortDirection = Model.SortDirection, statusFilter = Model.StatusFilter })" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#toggleSortBtn').click(function() {
+                var currentDirection = $('#sortDirectionInput').val();
+                var newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+                $('#sortDirectionInput').val(newDirection);
+                $(this).html('<i class="fas fa-sort-' + (newDirection === 'asc' ? 'up' : 'down') + '"></i>');
+            });
+        });
+    </script>
+} 

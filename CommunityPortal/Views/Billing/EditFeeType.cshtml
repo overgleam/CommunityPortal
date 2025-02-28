@@ -1,0 +1,88 @@
+@model CommunityPortal.Models.Billing.FeeType
+
+@{
+    ViewData["Title"] = "Edit Fee Type";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="row">
+                        <div class="col-6 d-flex align-items-center">
+                            <h6 class="mb-0">Edit Fee Type</h6>
+                        </div>
+                        <div class="col-6 text-end">
+                            <a asp-action="FeeTypes" class="btn btn-outline-secondary btn-sm mb-0">Back to List</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditFeeType" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="Name" class="form-control-label">Name</label>
+                            <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="Description" class="form-control-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="DefaultAmount" class="form-control-label">Default Amount</label>
+                            <input asp-for="DefaultAmount" class="form-control" type="number" step="0.01" />
+                            <span asp-validation-for="DefaultAmount" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label asp-for="Category" class="form-control-label">Category</label>
+                            <select asp-for="Category" class="form-control">
+                                <option value="Association Dues">Association Dues</option>
+                                <option value="Service Request">Service Request</option>
+                                <option value="Facility Upkeep">Facility Upkeep</option>
+                                <option value="Security and Maintenance">Security and Maintenance</option>
+                                <option value="Emergency Fund">Emergency Fund</option>
+                                <option value="Administrative">Administrative</option>
+                            </select>
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" asp-for="IsRecurring">
+                            <label class="form-check-label" asp-for="IsRecurring">Is Recurring</label>
+                            <span asp-validation-for="IsRecurring" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" asp-for="IsRequired">
+                            <label class="form-check-label" asp-for="IsRequired">Is Required</label>
+                            <span asp-validation-for="IsRequired" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" asp-for="IsActive">
+                            <label class="form-check-label" asp-for="IsActive">Is Active</label>
+                            <span asp-validation-for="IsActive" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a asp-action="FeeTypes" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

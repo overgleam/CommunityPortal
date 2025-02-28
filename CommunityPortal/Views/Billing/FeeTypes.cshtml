@@ -1,0 +1,128 @@
+@model IEnumerable<CommunityPortal.Models.Billing.FeeType>
+
+@{
+    ViewData["Title"] = "Fee Types";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="row">
+                        <div class="col-6 d-flex align-items-center">
+                            <h6 class="mb-0">Fee Types Management</h6>
+                        </div>
+                        <div class="col-6 text-end">
+                            <a asp-action="CreateFeeType" class="btn btn-outline-primary btn-sm mb-0">Add New Fee Type</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show mx-4 mt-4" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Category</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Default Amount</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Recurring</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Required</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">@item.Name</h6>
+                                                    <p class="text-xs text-secondary mb-0">@item.Description</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">@item.Category</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">@item.DefaultAmount.ToString("C")</p>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-sm bg-gradient-@(item.IsRecurring ? "success" : "secondary")">
+                                                @(item.IsRecurring ? "Yes" : "No")
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-sm bg-gradient-@(item.IsRequired ? "info" : "secondary")">
+                                                @(item.IsRequired ? "Yes" : "No")
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-sm bg-gradient-@(item.IsActive ? "success" : "danger")">
+                                                @(item.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                        </td>
+                                        <td class="align-middle">
+                                            <a asp-action="EditFeeType" asp-route-id="@item.Id" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit fee type">
+                                                Edit
+                                            </a> |
+                                            <a href="#" class="text-danger font-weight-bold text-xs delete-fee-type" data-id="@item.Id" data-toggle="tooltip" data-original-title="Delete fee type">
+                                                Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this fee type? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" asp-action="DeleteFeeType" method="post">
+                    <input type="hidden" id="feeTypeId" name="id" />
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.delete-fee-type').click(function(e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                $('#feeTypeId').val(id);
+                $('#deleteModal').modal('show');
+            });
+        });
+    </script>
+} 

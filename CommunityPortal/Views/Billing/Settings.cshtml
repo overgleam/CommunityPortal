@@ -1,0 +1,142 @@
+@model CommunityPortal.Models.Billing.BillingSettings
+
+@{
+    ViewData["Title"] = "Billing Settings";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="row">
+                        <div class="col-6 d-flex align-items-center">
+                            <h6 class="mb-0">Billing Settings</h6>
+                        </div>
+                        <div class="col-6 text-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-0">Back to Billing</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    
+                    <form asp-action="Settings" method="post">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Name" class="form-control-label">Settings Name</label>
+                                    <input asp-for="Name" class="form-control" required />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Description" class="form-control-label">Description</label>
+                                    <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="LateFeePercentage" class="form-control-label">Late Fee Percentage (%)</label>
+                                    <input asp-for="LateFeePercentage" class="form-control" type="number" step="0.01" min="0" max="100" />
+                                    <small class="form-text text-muted">Percentage applied to overdue bills</small>
+                                    <span asp-validation-for="LateFeePercentage" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="LateFeeDays" class="form-control-label">Days Until Late Fee</label>
+                                    <input asp-for="LateFeeDays" class="form-control" type="number" min="0" />
+                                    <small class="form-text text-muted">Number of days after due date before applying late fee</small>
+                                    <span asp-validation-for="LateFeeDays" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="BillingCycleDay" class="form-control-label">Billing Cycle Day</label>
+                                    <input asp-for="BillingCycleDay" class="form-control" type="number" min="1" max="31" />
+                                    <small class="form-text text-muted">Day of the month when bills are generated</small>
+                                    <span asp-validation-for="BillingCycleDay" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="PaymentDueDays" class="form-control-label">Payment Due Days</label>
+                                    <input asp-for="PaymentDueDays" class="form-control" type="number" min="1" />
+                                    <small class="form-text text-muted">Number of days after billing date until payment is due</small>
+                                    <span asp-validation-for="PaymentDueDays" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <hr class="horizontal dark my-4">
+                                <h6 class="mb-3">System Information</h6>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-control-label">Created By</label>
+                                    <input value="@Model.CreatedBy" class="form-control" readonly />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-control-label">Created At</label>
+                                    <input value="@Model.CreatedAt.ToString("g")" class="form-control" readonly />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        @if (Model.UpdatedBy != null)
+                        {
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label class="form-control-label">Last Updated By</label>
+                                        <input value="@Model.UpdatedBy" class="form-control" readonly />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label class="form-control-label">Last Updated At</label>
+                                        <input value="@(Model.UpdatedAt?.ToString("g") ?? "Never")" class="form-control" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">Save Settings</button>
+                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

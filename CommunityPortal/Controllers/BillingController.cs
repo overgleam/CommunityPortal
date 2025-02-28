@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Data;
 using CommunityPortal.Models.Billing;
+using CommunityPortal.Services;
 
 namespace CommunityPortal.Controllers
 {
@@ -12,11 +13,15 @@ namespace CommunityPortal.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly PdfService _pdfService;
 
-        public BillingController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public BillingController(ApplicationDbContext context, 
+            IWebHostEnvironment webHostEnvironment,
+            PdfService pdfService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _pdfService = pdfService;
         }
 
         // GET: Billing
@@ -744,30 +749,31 @@ namespace CommunityPortal.Controllers
 
             // Update payment status
             payment.Status = "Verified";
+            payment.Notes = string.IsNullOrEmpty(notes) ? payment.Notes : notes;
             payment.UpdatedAt = DateTime.UtcNow;
-            if (!string.IsNullOrEmpty(notes))
-            {
-                payment.Notes = string.IsNullOrEmpty(payment.Notes) ? notes : payment.Notes + "\n\nVerification Note: " + notes;
-            }
+            payment.VerifiedBy = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            payment.VerifiedAt = DateTime.UtcNow;
 
-            // Update bill balance
+            // Update bill status and amounts
             var bill = payment.Bill;
             bill.PaidAmount += payment.Amount;
-            bill.BalanceAmount -= payment.Amount;
-
-            // Update bill status
-            if (bill.BalanceAmount <= 0)
+            bill.BalanceAmount = bill.TotalAmount - bill.PaidAmount;
+            
+            if (bill.PaidAmount >= bill.TotalAmount)
             {
                 bill.Status = "Paid";
+                bill.PaidDate = DateTime.UtcNow;
             }
             else
             {
                 bill.Status = "Partially Paid";
             }
+            
+            bill.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Payment verified successfully.";
+            
+            TempData["SuccessMessage"] = "Payment verified successfully!";
             return RedirectToAction(nameof(BillDetails), new { id = payment.BillId });
         }
 
@@ -777,25 +783,27 @@ namespace CommunityPortal.Controllers
         [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> RejectPayment(int id, string rejectionReason)
         {
-            var payment = await _context.Payments.FindAsync(id);
+            var payment = await _context.Payments
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (payment == null)
                 return NotFound();
 
-            // Update payment status
             payment.Status = "Rejected";
             payment.UpdatedAt = DateTime.UtcNow;
+            payment.VerifiedBy = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            payment.VerifiedAt = DateTime.UtcNow;
             
             if (!string.IsNullOrEmpty(rejectionReason))
             {
-                payment.Notes = string.IsNullOrEmpty(payment.Notes) ? 
-                    "Rejection Reason: " + rejectionReason : 
-                    payment.Notes + "\n\nRejection Reason: " + rejectionReason;
+                payment.Notes = string.IsNullOrEmpty(payment.Notes) 
+                    ? "Rejection Reason: " + rejectionReason 
+                    : payment.Notes + "\n\nRejection Reason: " + rejectionReason;
             }
 
             await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Payment rejected.";
+            
+            TempData["SuccessMessage"] = "Payment has been rejected.";
             return RedirectToAction(nameof(BillDetails), new { id = payment.BillId });
         }
 
@@ -808,6 +816,7 @@ namespace CommunityPortal.Controllers
                 .Include(b => b.BillItems)
                 .ThenInclude(bi => bi.FeeType)
                 .Include(b => b.Payments)
+                .ThenInclude(p => p.PaymentMethod)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
             if (bill == null)
@@ -824,126 +833,21 @@ namespace CommunityPortal.Controllers
             if (!isAdmin && bill.HomeownerId != userId)
                 return RedirectToAction("AccessDenied", "Account");
 
-            // Generate PDF file name
-            string fileName = $"Bill_{bill.Id}_{bill.BillingPeriod.Replace(" ", "_")}.pdf";
-
-            // Set up the directory
-            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "temp", "bills");
-            Directory.CreateDirectory(uploadsFolder); // Ensure directory exists
-
-            string filePath = Path.Combine(uploadsFolder, fileName);
-
-            // Generate PDF using a third-party library (Implement this method separately)
-            await GenerateBillPdf(bill, filePath);
-
-            // Return the PDF file for download
-            byte[] fileBytes = System.IO.File.ReadAllBytes(filePath);
-            
-            // Delete the temporary file
-            System.IO.File.Delete(filePath);
-
-            return File(fileBytes, "application/pdf", fileName);
-        }
-
-        // Helper method to generate PDF
-        private async Task GenerateBillPdf(Bill bill, string filePath)
-        {
-            // This is a placeholder for PDF generation code
-            // In a real implementation, you would use a PDF library like iTextSharp, PDFsharp, or DinkToPdf
-
-            // For demonstration purposes, let's create a simple HTML file and convert it to PDF
-            string htmlContent = $@"
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Bill #{bill.Id}</title>
-                <style>
-                    body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                    h1 {{ color: #333366; }}
-                    table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-                    th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-                    th {{ background-color: #f2f2f2; }}
-                    .total {{ font-weight: bold; }}
-                    .header {{ display: flex; justify-content: space-between; }}
-                    .bill-info {{ margin-bottom: 20px; }}
-                    .payment-info {{ margin-top: 30px; }}
-                </style>
-            </head>
-            <body>
-                <div class='header'>
-                    <h1>Community Portal</h1>
-                    <div>
-                        <h2>BILL</h2>
-                        <p>Bill #: {bill.Id}</p>
-                    </div>
-                </div>
-
-                <div class='bill-info'>
-                    <p><strong>Homeowner:</strong> {bill.Homeowner.FirstName} {bill.Homeowner.LastName}</p>
-                    <p><strong>Address:</strong> Block {bill.Homeowner.BlockNumber}, House {bill.Homeowner.HouseNumber}</p>
-                    <p><strong>Billing Period:</strong> {bill.BillingPeriod}</p>
-                    <p><strong>Bill Date:</strong> {bill.BillingDate.ToString("MMMM dd, yyyy")}</p>
-                    <p><strong>Due Date:</strong> {bill.DueDate.ToString("MMMM dd, yyyy")}</p>
-                </div>
-
-                <table>
-                    <tr>
-                        <th>Description</th>
-                        <th>Fee Type</th>
-                        <th>Amount</th>
-                    </tr>";
-
-            foreach (var item in bill.BillItems)
+            // Create view model for the PDF
+            var viewModel = new BillDetailsViewModel
             {
-                htmlContent += $@"
-                    <tr>
-                        <td>{item.Description}</td>
-                        <td>{item.FeeType.Name}</td>
-                        <td>₱{item.Amount.ToString("N2")}</td>
-                    </tr>";
-            }
+                Bill = bill,
+                Homeowner = bill.Homeowner,
+                BillItems = bill.BillItems.ToList(),
+                Payments = bill.Payments.ToList()
+            };
 
-            htmlContent += $@"
-                    <tr class='total'>
-                        <td colspan='2' style='text-align: right;'>Total:</td>
-                        <td>₱{bill.TotalAmount.ToString("N2")}</td>
-                    </tr>
-                    <tr class='total'>
-                        <td colspan='2' style='text-align: right;'>Amount Paid:</td>
-                        <td>₱{bill.PaidAmount.ToString("N2")}</td>
-                    </tr>
-                    <tr class='total'>
-                        <td colspan='2' style='text-align: right;'>Balance:</td>
-                        <td>₱{bill.BalanceAmount.ToString("N2")}</td>
-                    </tr>
-                </table>
+            // Generate PDF using our service
+            byte[] pdfBytes = _pdfService.GenerateBillPdf(viewModel);
 
-                <div class='payment-info'>
-                    <h3>Payment Information</h3>
-                    <p>Please make payment on or before the due date to avoid late fees.</p>
-                    <p>A 5% penalty will be applied for payments made after 30 days from the due date.</p>
-                    <p>For questions or concerns, please contact the administration office.</p>
-                </div>
-                
-                <div style='margin-top: 50px; text-align: center;'>
-                    <p>This is a computer-generated document. No signature required.</p>
-                </div>
-            </body>
-            </html>";
-
-            // For simplicity, we'll just write the HTML content to a file
-            // In a real implementation, you would convert this HTML to PDF
-            await System.IO.File.WriteAllTextAsync(filePath.Replace(".pdf", ".html"), htmlContent);
-
-            // In a real implementation, you would call your PDF generation library here
-            // For example: ConvertHtmlToPdf(htmlContent, filePath);
-            
-            // This is just a placeholder - in a real app you'd need to use a proper PDF generation library
-            // For now, we'll just rename the HTML file to PDF for demonstration
-            if (System.IO.File.Exists(filePath))
-                System.IO.File.Delete(filePath);
-            
-            System.IO.File.Move(filePath.Replace(".pdf", ".html"), filePath);
+            // Return the PDF as a file
+            string fileName = $"Bill-{bill.Id}-{DateTime.Now:yyyyMMdd}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
         }
 
         // GET: Billing/AdminDashboard
@@ -1119,6 +1023,302 @@ namespace CommunityPortal.Controllers
             
             TempData["SuccessMessage"] = "Payment cancelled successfully.";
             return RedirectToAction(nameof(BillDetails), new { id = payment.BillId });
+        }
+
+        // FEE TYPES MANAGEMENT
+        // GET: Billing/FeeTypes
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> FeeTypes()
+        {
+            var feeTypes = await _context.FeeTypes
+                .Where(f => f.DeletedAt == null)
+                .OrderBy(f => f.Category)
+                .ThenBy(f => f.Name)
+                .ToListAsync();
+
+            return View(feeTypes);
+        }
+
+        // GET: Billing/CreateFeeType
+        [Authorize(Roles = "admin,staff")]
+        public IActionResult CreateFeeType()
+        {
+            return View();
+        }
+
+        // POST: Billing/CreateFeeType
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> CreateFeeType(FeeType feeType)
+        {
+            if (ModelState.IsValid)
+            {
+                feeType.CreatedAt = DateTime.UtcNow;
+                _context.Add(feeType);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Fee type created successfully!";
+                return RedirectToAction(nameof(FeeTypes));
+            }
+            return View(feeType);
+        }
+
+        // GET: Billing/EditFeeType/5
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> EditFeeType(int id)
+        {
+            var feeType = await _context.FeeTypes.FindAsync(id);
+            if (feeType == null || feeType.DeletedAt != null)
+            {
+                return NotFound();
+            }
+            return View(feeType);
+        }
+
+        // POST: Billing/EditFeeType/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> EditFeeType(int id, FeeType feeType)
+        {
+            if (id != feeType.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var existingFeeType = await _context.FeeTypes.FindAsync(id);
+                    if (existingFeeType == null || existingFeeType.DeletedAt != null)
+                    {
+                        return NotFound();
+                    }
+
+                    existingFeeType.Name = feeType.Name;
+                    existingFeeType.Description = feeType.Description;
+                    existingFeeType.DefaultAmount = feeType.DefaultAmount;
+                    existingFeeType.Category = feeType.Category;
+                    existingFeeType.IsRecurring = feeType.IsRecurring;
+                    existingFeeType.IsRequired = feeType.IsRequired;
+                    existingFeeType.IsActive = feeType.IsActive;
+                    existingFeeType.UpdatedAt = DateTime.UtcNow;
+
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Fee type updated successfully!";
+                    return RedirectToAction(nameof(FeeTypes));
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!FeeTypeExists(feeType.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            return View(feeType);
+        }
+
+        // POST: Billing/DeleteFeeType/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> DeleteFeeType(int id)
+        {
+            var feeType = await _context.FeeTypes.FindAsync(id);
+            if (feeType == null)
+            {
+                return NotFound();
+            }
+
+            // Check if fee type is being used in bill items
+            var hasAssociatedBillItems = await _context.BillItems.AnyAsync(b => b.FeeTypeId == id);
+            if (hasAssociatedBillItems)
+            {
+                // Soft delete - mark as deleted but keep in database
+                feeType.DeletedAt = DateTime.UtcNow;
+                feeType.IsActive = false;
+            }
+            else
+            {
+                // Hard delete - remove from database
+                _context.FeeTypes.Remove(feeType);
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Fee type deleted successfully!";
+            return RedirectToAction(nameof(FeeTypes));
+        }
+
+        private bool FeeTypeExists(int id)
+        {
+            return _context.FeeTypes.Any(e => e.Id == id);
+        }
+
+        // BILLING SETTINGS MANAGEMENT
+        // GET: Billing/Settings
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Settings()
+        {
+            var settings = await _context.BillingSettings
+                .Where(s => s.IsActive)
+                .OrderByDescending(s => s.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (settings == null)
+            {
+                // Create default settings if none exist
+                settings = new BillingSettings
+                {
+                    Name = "Default Billing Settings",
+                    Description = "System-generated default billing settings",
+                    LateFeePercentage = 5,
+                    LateFeeDays = 30,
+                    BillingCycleDay = 1,
+                    PaymentDueDays = 15,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                };
+
+                _context.Add(settings);
+                await _context.SaveChangesAsync();
+            }
+
+            return View(settings);
+        }
+
+        // POST: Billing/Settings
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Settings(BillingSettings model)
+        {
+            // Remove ModelState validation for CreatedBy as it will be set in the controller
+            ModelState.Remove("CreatedBy");
+            
+            if (ModelState.IsValid)
+            {
+                var existing = await _context.BillingSettings.FindAsync(model.Id);
+                if (existing != null)
+                {
+                    // Update existing settings
+                    existing.Name = model.Name;
+                    existing.Description = model.Description;
+                    existing.LateFeePercentage = model.LateFeePercentage;
+                    existing.LateFeeDays = model.LateFeeDays;
+                    existing.BillingCycleDay = model.BillingCycleDay;
+                    existing.PaymentDueDays = model.PaymentDueDays;
+                    existing.UpdatedAt = DateTime.UtcNow;
+                    existing.UpdatedBy = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                }
+                else
+                {
+                    // Create new settings and make it active
+                    model.CreatedAt = DateTime.UtcNow;
+                    model.CreatedBy = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    model.IsActive = true;
+                    _context.Add(model);
+                }
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Billing settings updated successfully!";
+                return RedirectToAction(nameof(Settings));
+            }
+            return View(model);
+        }
+
+        // PAYMENT VERIFICATION
+        // GET: Billing/PaymentHistory
+        [Authorize(Roles = "admin,staff")]
+        public async Task<IActionResult> PaymentHistory(int page = 1, string searchTerm = null, string sortBy = "PaymentDate", 
+            string sortDirection = "desc", string statusFilter = null)
+        {
+            const int pageSize = 10;
+            
+            var query = _context.Payments
+                .Include(p => p.Homeowner)
+                .ThenInclude(h => h.User)
+                .Include(p => p.Bill)
+                .Include(p => p.PaymentMethod)
+                .Where(p => p.DeletedAt == null);
+
+            // Apply search
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(p => 
+                    p.Homeowner.FirstName.Contains(searchTerm) || 
+                    p.Homeowner.LastName.Contains(searchTerm) ||
+                    p.TransactionReference.Contains(searchTerm) ||
+                    p.Id.ToString().Contains(searchTerm));
+            }
+
+            // Apply status filter
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                query = query.Where(p => p.Status == statusFilter);
+            }
+
+            // Apply sorting
+            switch (sortBy)
+            {
+                case "PaymentDate":
+                    query = sortDirection == "asc" 
+                        ? query.OrderBy(p => p.PaymentDate)
+                        : query.OrderByDescending(p => p.PaymentDate);
+                    break;
+                case "Amount":
+                    query = sortDirection == "asc" 
+                        ? query.OrderBy(p => p.Amount)
+                        : query.OrderByDescending(p => p.Amount);
+                    break;
+                case "Status":
+                    query = sortDirection == "asc" 
+                        ? query.OrderBy(p => p.Status)
+                        : query.OrderByDescending(p => p.Status);
+                    break;
+                case "Homeowner":
+                    query = sortDirection == "asc" 
+                        ? query.OrderBy(p => p.Homeowner.LastName)
+                        : query.OrderByDescending(p => p.Homeowner.LastName);
+                    break;
+                case "VerifiedAt":
+                    query = sortDirection == "asc" 
+                        ? query.OrderBy(p => p.VerifiedAt)
+                        : query.OrderByDescending(p => p.VerifiedAt);
+                    break;
+                default:
+                    query = query.OrderByDescending(p => p.PaymentDate);
+                    break;
+            }
+
+            var totalItems = await query.CountAsync();
+            var payments = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var viewModel = new PaymentListViewModel
+            {
+                Payments = payments,
+                PaginationInfo = new PaginationInfo
+                {
+                    CurrentPage = page,
+                    ItemsPerPage = pageSize,
+                    TotalItems = totalItems
+                },
+                SearchTerm = searchTerm,
+                SortBy = sortBy,
+                SortDirection = sortDirection,
+                StatusFilter = statusFilter
+            };
+
+            return View(viewModel);
         }
     }
 }

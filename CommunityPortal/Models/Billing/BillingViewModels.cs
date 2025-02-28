@@ -202,4 +202,14 @@ namespace CommunityPortal.Models.Billing
         public int CurrentPage { get; set; }
         public int TotalPages => (int)Math.Ceiling((decimal)TotalItems / ItemsPerPage);
     }
+
+    public class PaymentListViewModel
+    {
+        public List<Payment> Payments { get; set; } = new List<Payment>();
+        public PaginationInfo PaginationInfo { get; set; } = new PaginationInfo();
+        public string SearchTerm { get; set; }
+        public string SortBy { get; set; } = "PaymentDate";
+        public string SortDirection { get; set; } = "desc";
+        public string StatusFilter { get; set; }
+    }
 } 

@@ -31,6 +31,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
     <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/enhanced-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
@@ -243,12 +245,15 @@
                                 <a asp-controller="Billing" asp-action="CreateBill" class="list-group-item list-group-item-action">
                                     <i class="material-icons">add_circle</i> Create New Bill
                                 </a>
+                                <a asp-controller="Billing" asp-action="PaymentHistory" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">history</i> Payment History
+                                </a>
+                                <a asp-controller="Billing" asp-action="FeeTypes" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">category</i> Fee Types
+                                </a>
                                 @if (User.IsInRole("admin"))
                                 {
-                                    <a asp-controller="FeeType" asp-action="Index" class="list-group-item list-group-item-action">
-                                        <i class="material-icons">category</i> Manage Fee Types
-                                    </a>
-                                    <a asp-controller="Billing" asp-action="BillingSettings" class="list-group-item list-group-item-action">
+                                    <a asp-controller="Billing" asp-action="Settings" class="list-group-item list-group-item-action">
                                         <i class="material-icons">settings</i> Billing Settings
                                     </a>
                                 }
