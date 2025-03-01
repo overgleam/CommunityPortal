@@ -81,6 +81,52 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Landing}/{id?}");
 
+// Add explicit routes for controllers that need them
+app.MapControllerRoute(
+    name: "chat",
+    pattern: "Chat/{action=Index}/{id?}",
+    defaults: new { controller = "Chat" });
+
+app.MapControllerRoute(
+    name: "forum",
+    pattern: "Forum/{action=Index}/{id?}",
+    defaults: new { controller = "Forum" });
+
+app.MapControllerRoute(
+    name: "billing",
+    pattern: "Billing/{action=Index}/{id?}",
+    defaults: new { controller = "Billing" });
+
+app.MapControllerRoute(
+    name: "event",
+    pattern: "Event/{action=Index}/{id?}",
+    defaults: new { controller = "Event" });
+
+app.MapControllerRoute(
+    name: "serviceRequest",
+    pattern: "ServiceRequest/{action=Index}/{id?}",
+    defaults: new { controller = "ServiceRequest" });
+
+app.MapControllerRoute(
+    name: "poll",
+    pattern: "Poll/{action=Index}/{id?}",
+    defaults: new { controller = "Poll" });
+
+app.MapControllerRoute(
+    name: "documents",
+    pattern: "Documents/{action=Index}/{id?}",
+    defaults: new { controller = "Documents" });
+
+app.MapControllerRoute(
+    name: "notifications",
+    pattern: "Notifications/{action=Index}/{id?}",
+    defaults: new { controller = "Notifications" });
+
+app.MapControllerRoute(
+    name: "facility",
+    pattern: "Facility/{action=Index}/{id?}",
+    defaults: new { controller = "Facility" });
+
 // Initialize Roles and Admin User
 using (var scope = app.Services.CreateScope())
 {

@@ -12,9 +12,11 @@
     {
         @foreach (var notification in Model)
         {
-            <a href="@(string.IsNullOrEmpty(notification.Link) ? $"/Notifications/Details/{notification.Id}" : notification.Link)" 
-               class="notification-item @(!notification.IsRead ? "unread" : "")" 
-               data-id="@notification.Id">
+            <div class="notification-item @(!notification.IsRead ? "unread" : "")" 
+                 data-id="@notification.Id"
+                 data-type="@notification.Type"
+                 data-link="@(string.IsNullOrEmpty(notification.Link) ? string.Empty : notification.Link)"
+                 onclick="markNotificationAsReadAndNavigate(this)">
                 <div class="notification-icon">
                     @switch (notification.Type)
                     {
@@ -75,7 +77,104 @@
                         </small>
                     </div>
                 </div>
-            </a>
+            </div>
         }
     }
-</div> 
+</div>
+
+<script>
+    function markNotificationAsReadAndNavigate(element) {
+        var id = $(element).data('id');
+        var type = $(element).data('type');
+        var link = $(element).data('link');
+        
+        // Ensure id is a valid number
+        if (!id || isNaN(parseInt(id))) {
+            console.error('Invalid notification ID:', id);
+            return;
+        }
+        
+        // Submit the form via AJAX
+        $.ajax({
+            url: '/Notifications/MarkAsRead/' + id,
+            type: 'POST',
+            data: {
+                '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function(response) {
+                console.log('Notification marked as read:', response);
+                
+                // Mark the notification as read visually
+                $(element).removeClass('unread');
+                
+                // Update the notification count in the badge
+                var count = parseInt($('.notification-badge').text());
+                if (count > 0) {
+                    count--;
+                    if (count > 0) {
+                        $('.notification-badge').text(count);
+                    } else {
+                        $('.notification-badge').hide();
+                    }
+                }
+                
+                // Navigate to the appropriate page based on notification type
+                if (link && link !== '') {
+                    // Check if the link contains a specific ID (like /Controller/Action/5)
+                    if (link.split('/').length > 3 && !isNaN(link.split('/')[3])) {
+                        // If it has an ID, redirect to the index page instead
+                        var parts = link.split('/');
+                        window.location.href = '/' + parts[1] + '/' + (parts[2] === 'Details' ? 'Index' : parts[2]);
+                    } else {
+                        // Use the link as is if it doesn't have an ID or is already pointing to an index page
+                        window.location.href = link;
+                    }
+                } else {
+                    // Default navigation based on type
+                    switch(type) {
+                        case 'Message':
+                            window.location.href = '@Url.Action("Index", "Chat")';
+                            break;
+                        case 'Event':
+                            // Check if the link contains "Reservation" which indicates it's a facility reservation
+                            if (link && link.includes('Reservation')) {
+                                window.location.href = '@Url.Action("MyReservations", "Facility")';
+                            } else {
+                                window.location.href = '@Url.Action("Index", "Event")';
+                            }
+                            break;
+                        case 'Billing':
+                            window.location.href = '@Url.Action("Index", "Billing")';
+                            break;
+                        case 'ServiceRequest':
+                            window.location.href = '@Url.Action("Index", "ServiceRequest")';
+                            break;
+                        case 'Forum':
+                            window.location.href = '@Url.Action("Index", "Forum")';
+                            break;
+                        case 'Poll':
+                            window.location.href = '@Url.Action("Index", "Poll")';
+                            break;
+                        case 'Document':
+                            window.location.href = '@Url.Action("Index", "Documents")';
+                            break;
+                        case 'Alert':
+                            window.location.href = '@Url.Action("Index", "Notifications")';
+                            break;
+                        case 'System':
+                            window.location.href = '@Url.Action("Index", "Notifications")';
+                            break;
+                        default:
+                            window.location.href = '@Url.Action("Index", "Notifications")';
+                            break;
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to mark notification as read:', error);
+                console.error('Status:', status);
+                console.error('Response:', xhr.responseText);
+            }
+        });
+    }
+</script> 

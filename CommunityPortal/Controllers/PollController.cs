@@ -8,6 +8,7 @@ using CommunityPortal.Models;
 using CommunityPortal.Models.Poll;
 using CommunityPortal.Models.Enums;
 using System.Collections.Generic;
+using CommunityPortal.Services;
 
 namespace CommunityPortal.Controllers
 {
@@ -15,11 +16,13 @@ namespace CommunityPortal.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly NotificationService _notificationService;
 
-        public PollController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public PollController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, NotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
+            _notificationService = notificationService;
         }
 
         // GET: Poll
@@ -279,6 +282,9 @@ namespace CommunityPortal.Controllers
                         return NotFound();
                     }
 
+                    // Check if the poll is being published
+                    bool isBeingPublished = existingPoll.Status != PollStatus.Published && poll.Status == PollStatus.Published;
+
                     // Update only the fields that were included in the form
                     existingPoll.Title = poll.Title;
                     existingPoll.Description = poll.Description;
@@ -291,6 +297,55 @@ namespace CommunityPortal.Controllers
 
                     _context.Update(existingPoll);
                     await _context.SaveChangesAsync();
+                    
+                    // Send notification if the poll is being published
+                    if (isBeingPublished)
+                    {
+                        string currentUserId = _userManager.GetUserId(User);
+                        string title = "New Poll Available";
+                        string message = $"A new poll '{existingPoll.Title}' is now available for your participation.";
+                        string link = $"/Poll/Respond/{existingPoll.Id}";
+
+                        // If the poll is targeted to all homeowners, broadcast to all homeowners
+                        if (existingPoll.TargetAudience == PollTargetAudience.AllHomeowners)
+                        {
+                            // Get all homeowners
+                            var homeowners = await _userManager.GetUsersInRoleAsync("homeowners");
+                            
+                            // Send notification to each homeowner
+                            foreach (var homeowner in homeowners)
+                            {
+                                await _notificationService.CreateNotificationAsync(
+                                    recipientId: homeowner.Id,
+                                    title: title,
+                                    message: message,
+                                    link: link,
+                                    type: NotificationType.Poll,
+                                    senderId: currentUserId
+                                );
+                            }
+                        }
+                        else if (existingPoll.TargetAudience == PollTargetAudience.SpecificHomeowners)
+                        {
+                            // For specific homeowners, we would need to have a way to select them
+                            // This would require additional implementation
+                            // For now, we'll notify all homeowners as a fallback
+                            var homeowners = await _userManager.GetUsersInRoleAsync("homeowners");
+                            
+                            // Send notification to each homeowner
+                            foreach (var homeowner in homeowners)
+                            {
+                                await _notificationService.CreateNotificationAsync(
+                                    recipientId: homeowner.Id,
+                                    title: title,
+                                    message: message,
+                                    link: link,
+                                    type: NotificationType.Poll,
+                                    senderId: currentUserId
+                                );
+                            }
+                        }
+                    }
                     
                     TempData["SuccessMessage"] = "Poll updated successfully!";
                     return RedirectToAction(nameof(Index));

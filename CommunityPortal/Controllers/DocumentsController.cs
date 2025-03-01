@@ -6,6 +6,8 @@ using CommunityPortal.Data;
 using CommunityPortal.Models;
 using CommunityPortal.Models.Documents;
 using CommunityPortal.Models.Enums;
+using CommunityPortal.Services;
+using System.Security.Claims;
 
 namespace CommunityPortal.Controllers
 {
@@ -15,17 +17,20 @@ namespace CommunityPortal.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly NotificationService _notificationService;
         private readonly long _fileSizeLimit = 10 * 1024 * 1024; // 10MB
         private readonly string[] _allowedExtensions = { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".jpg", ".jpeg", ".png" };
 
         public DocumentsController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,
+            NotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
             _webHostEnvironment = webHostEnvironment;
+            _notificationService = notificationService;
         }
 
         // GET: Documents
@@ -155,6 +160,24 @@ namespace CommunityPortal.Controllers
 
                 _context.Documents.Add(document);
                 await _context.SaveChangesAsync();
+
+                // Broadcast a notification to all users about the new document
+                await _notificationService.CreateDocumentNotificationAsync(
+                    recipientId: document.UploadedById, // This is a placeholder as we'll broadcast to all
+                    documentId: document.Id,
+                    documentName: document.Title,
+                    action: "Uploaded",
+                    senderId: user.Id
+                );
+                
+                // Broadcast to all users
+                await _notificationService.BroadcastNotificationAsync(
+                    title: "New Document Available",
+                    message: $"A new document has been uploaded: {document.Title}",
+                    link: $"/Documents/Download/{document.Id}",
+                    type: NotificationType.Document,
+                    senderId: user.Id
+                );
 
                 return RedirectToAction(nameof(Index));
             }

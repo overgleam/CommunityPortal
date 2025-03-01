@@ -150,20 +150,27 @@ namespace CommunityPortal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkAsRead(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var notification = await _context.Notifications
-                .FirstOrDefaultAsync(n => n.Id == id && n.RecipientId == userId && !n.IsDeleted);
-
-            if (notification == null)
+            try
             {
-                return NotFound();
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var notification = await _context.Notifications
+                    .FirstOrDefaultAsync(n => n.Id == id && n.RecipientId == userId && !n.IsDeleted);
+
+                if (notification == null)
+                {
+                    return Json(new { success = false, message = "Notification not found" });
+                }
+
+                notification.IsRead = true;
+                notification.ReadAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Notification marked as read" });
             }
-
-            notification.IsRead = true;
-            notification.ReadAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
         }
 
         // POST: Notifications/MarkAllAsRead
@@ -171,20 +178,27 @@ namespace CommunityPortal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkAllAsRead()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var unreadNotifications = await _context.Notifications
-                .Where(n => n.RecipientId == userId && !n.IsRead && !n.IsDeleted)
-                .ToListAsync();
-
-            foreach (var notification in unreadNotifications)
+            try
             {
-                notification.IsRead = true;
-                notification.ReadAt = DateTime.UtcNow;
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var unreadNotifications = await _context.Notifications
+                    .Where(n => n.RecipientId == userId && !n.IsRead && !n.IsDeleted)
+                    .ToListAsync();
+
+                foreach (var notification in unreadNotifications)
+                {
+                    notification.IsRead = true;
+                    notification.ReadAt = DateTime.UtcNow;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "All notifications marked as read", count = unreadNotifications.Count });
             }
-
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
         }
 
         // POST: Notifications/Delete/5

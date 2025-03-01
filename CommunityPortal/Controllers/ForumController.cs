@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Data;
 using CommunityPortal.Models;
 using CommunityPortal.Models.Forum;
+using CommunityPortal.Services;
+using System.Security.Claims;
 
 namespace CommunityPortal.Controllers
 {
@@ -14,15 +16,18 @@ namespace CommunityPortal.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly NotificationService _notificationService;
 
         public ForumController(
             UserManager<ApplicationUser> userManager,
             ApplicationDbContext context,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            NotificationService notificationService)
         {
             _userManager = userManager;
             _context = context;
             _environment = environment;
+            _notificationService = notificationService;
         }
 
         // GET: /Forum
@@ -291,7 +296,10 @@ namespace CommunityPortal.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Comment(int postId, string content, int? parentCommentId)
         {
-            var post = await _context.ForumPosts.FirstOrDefaultAsync(p => p.Id == postId && !p.IsDeleted);
+            var post = await _context.ForumPosts
+                .Include(p => p.Author)
+                .FirstOrDefaultAsync(p => p.Id == postId && !p.IsDeleted);
+                
             if (post == null)
             {
                 return NotFound();
@@ -309,6 +317,36 @@ namespace CommunityPortal.Controllers
 
             _context.ForumComments.Add(comment);
             await _context.SaveChangesAsync();
+
+            // If it's a reply to a comment, notify the parent comment author
+            if (parentCommentId.HasValue)
+            {
+                var parentComment = await _context.ForumComments
+                    .Include(c => c.Author)
+                    .FirstOrDefaultAsync(c => c.Id == parentCommentId);
+                    
+                if (parentComment != null && parentComment.AuthorId != user.Id)
+                {
+                    await _notificationService.CreateForumNotificationAsync(
+                        recipientId: parentComment.AuthorId,
+                        postId: postId,
+                        action: "Reply",
+                        title: post.Title,
+                        senderId: user.Id
+                    );
+                }
+            }
+            // Otherwise, notify the post author
+            else if (post.AuthorId != user.Id)
+            {
+                await _notificationService.CreateForumNotificationAsync(
+                    recipientId: post.AuthorId,
+                    postId: postId,
+                    action: "Comment",
+                    title: post.Title,
+                    senderId: user.Id
+                );
+            }
 
             return RedirectToAction(nameof(Index));
         }
@@ -375,35 +413,53 @@ namespace CommunityPortal.Controllers
             }
 
             var user = await _userManager.GetUserAsync(User);
+            string recipientId = null;
+            string title = "";
 
             // Check if the post/comment exists and is not deleted
             if (postId.HasValue)
             {
-                var post = await _context.ForumPosts.FirstOrDefaultAsync(p => p.Id == postId && !p.IsDeleted);
+                var post = await _context.ForumPosts
+                    .Include(p => p.Author)
+                    .FirstOrDefaultAsync(p => p.Id == postId && !p.IsDeleted);
+                    
                 if (post == null)
                 {
                     return NotFound();
                 }
+                
+                recipientId = post.AuthorId;
+                title = post.Title;
             }
             else if (commentId.HasValue)
             {
-                var comment = await _context.ForumComments.FirstOrDefaultAsync(c => c.Id == commentId && !c.IsDeleted);
+                var comment = await _context.ForumComments
+                    .Include(c => c.Author)
+                    .Include(c => c.Post)
+                    .FirstOrDefaultAsync(c => c.Id == commentId && !c.IsDeleted);
+                    
                 if (comment == null)
                 {
                     return NotFound();
                 }
+                
+                recipientId = comment.AuthorId;
+                title = comment.Post.Title;
             }
 
             var existingLike = await _context.ForumLikes
                 .FirstOrDefaultAsync(l => l.UserId == user.Id &&
                     (postId.HasValue ? l.PostId == postId : l.CommentId == commentId));
 
+            bool isLiking = false;
+            
             if (existingLike != null)
             {
                 _context.ForumLikes.Remove(existingLike);
             }
             else
             {
+                isLiking = true;
                 var like = new ForumLike
                 {
                     UserId = user.Id,
@@ -415,8 +471,21 @@ namespace CommunityPortal.Controllers
             }
 
             await _context.SaveChangesAsync();
+            
+            // Send notification if the user is liking and not the author
+            if (isLiking && recipientId != null && recipientId != user.Id)
+            {
+                string contentType = postId.HasValue ? "post" : "comment";
+                await _notificationService.CreateForumNotificationAsync(
+                    recipientId: recipientId,
+                    postId: postId ?? 0,
+                    action: "Like",
+                    title: title,
+                    senderId: user.Id
+                );
+            }
 
-            return Json(new { success = true });
+            return Ok();
         }
     }
 }

@@ -58,7 +58,7 @@ namespace CommunityPortal.Services
         {
             string title = $"Service Request {action}";
             string message = $"Your service request #{serviceRequestId} has been {action.ToLower()}.";
-            string link = $"/ServiceRequest/Details/{serviceRequestId}";
+            string link = $"/ServiceRequest/Index";
             
             await CreateNotificationAsync(recipientId, title, message, link, NotificationType.ServiceRequest, senderId);
         }
@@ -70,7 +70,7 @@ namespace CommunityPortal.Services
         {
             string title = $"Facility Reservation {status}";
             string message = $"Your reservation for {facilityName} has been {status.ToLower()}.";
-            string link = $"/Facility/ReservationDetails/{reservationId}";
+            string link = $"/Facility/MyReservations";
             
             await CreateNotificationAsync(recipientId, title, message, link, NotificationType.Event, senderId);
         }
@@ -82,7 +82,7 @@ namespace CommunityPortal.Services
         {
             string title = $"Billing {action}";
             string message = $"A bill for ${amount:N2} has been {action.ToLower()}.";
-            string link = $"/Billing/Details/{billId}";
+            string link = $"/Billing/Index";
             
             await CreateNotificationAsync(recipientId, title, message, link, NotificationType.Billing, senderId);
         }
@@ -94,7 +94,7 @@ namespace CommunityPortal.Services
         {
             string notificationTitle = $"Forum {action}";
             string message = $"New {action.ToLower()} on forum post: {title}";
-            string link = $"/Forum/Post/{postId}";
+            string link = $"/Forum/Index";
             
             await CreateNotificationAsync(recipientId, notificationTitle, message, link, NotificationType.Forum, senderId);
         }
@@ -106,7 +106,7 @@ namespace CommunityPortal.Services
         {
             string title = "New Message";
             string message = $"You have received a new message from {senderName}.";
-            string link = "/Chat";
+            string link = "/Chat/Index";
             
             await CreateNotificationAsync(recipientId, title, message, link, NotificationType.Message, senderId);
         }
@@ -118,7 +118,7 @@ namespace CommunityPortal.Services
         {
             string title = $"Document {action}";
             string message = $"Document '{documentName}' has been {action.ToLower()}.";
-            string link = $"/Documents/Details/{documentId}";
+            string link = $"/Documents/Index";
             
             await CreateNotificationAsync(recipientId, title, message, link, NotificationType.Document, senderId);
         }

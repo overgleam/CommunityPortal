@@ -74,6 +74,31 @@
             const recipientId = "@Model.RecipientId";
 
             if (message.trim() !== "") {
+                // Show the message immediately in the UI
+                const messageContainer = document.getElementById("chatMessages");
+                
+                // Remove "Be the first one to message" if it exists
+                const noMessagesDiv = messageContainer.querySelector('.no-messages');
+                if (noMessagesDiv) {
+                    noMessagesDiv.remove();
+                }
+
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("message");
+                messageDiv.classList.add("sent");
+
+                const now = new Date();
+                const timestamp = now.toLocaleString();
+
+                messageDiv.innerHTML = `
+                    <span class="message-sender">${currentUserFullName}</span>
+                    <p>${message}</p>
+                    <span class="message-timestamp">${timestamp}</span>
+                `;
+                messageContainer.appendChild(messageDiv);
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+
+                // Send the message to the server
                 connection.invoke("SendMessage", recipientId, message).catch(function (err) {
                     return console.error(err.toString());
                 });

@@ -4,6 +4,7 @@
 .notification-bell {
     position: relative;
     cursor: pointer;
+    z-index: 9990;
 }
 
 .notification-badge {
@@ -25,6 +26,7 @@
     overflow-y: auto;
     min-width: 350px;
     padding: 0;
+    z-index: 9999 !important;
 }
 
 .notification-item {
@@ -34,6 +36,7 @@
     text-decoration: none;
     color: inherit;
     transition: background-color 0.2s;
+    cursor: pointer;
 }
 
 .notification-item:hover {
@@ -87,7 +90,7 @@
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 1060;
+    z-index: 9999 !important;
     max-width: 350px;
 }
 

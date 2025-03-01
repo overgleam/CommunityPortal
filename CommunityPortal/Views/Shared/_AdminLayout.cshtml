@@ -335,9 +335,7 @@
                             <div class="dropdown-menu dropdown-menu-end notification-dropdown p-0" aria-labelledby="notificationBell" id="notificationDropdown">
                                 <div class="p-2 border-bottom d-flex justify-content-between align-items-center">
                                     <h6 class="mb-0">Notifications</h6>
-                                    <form asp-controller="Notifications" asp-action="MarkAllAsRead" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-link p-0 text-decoration-none small">Mark all as read</button>
-                                    </form>
+                                    <button type="button" id="markAllAsReadBtn" class="btn btn-link p-0 text-decoration-none small">Mark all as read</button>
                                 </div>
                                 <div id="notifications-container">
                                     <!-- Notification items will be loaded here via AJAX -->
@@ -422,7 +420,7 @@
     </footer>
 
     <!-- Notification toast for real-time alerts -->
-    <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999">
         <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
                 <i id="toastIcon" class="material-icons me-2 text-primary">notifications</i>
@@ -514,9 +512,7 @@
                             
                             // If clicking a notification with a link, mark it as read
                             if (id) {
-                                $.post('/Notifications/MarkAsRead/' + id, function() {
-                                    updateNotificationCount();
-                                });
+                                markNotificationAsReadAndNavigate(this);
                             }
                         });
                     }
@@ -578,10 +574,56 @@
             }
             
             function playNotificationSound() {
-                // Implement sound if needed
-                // var audio = new Audio('/sounds/notification.mp3');
-                // audio.play();
+                // Only try to play sound if user has interacted with the page
+                if (document.documentElement.hasAttribute('data-user-interacted')) {
+                    try {
+                        var audio = new Audio('/images/default/AudioNotif.mp3');
+                        audio.play().catch(function(error) {
+                            console.log('Audio playback prevented:', error);
+                        });
+                    } catch (error) {
+                        console.log('Error playing notification sound:', error);
+                    }
+                }
             }
+            
+            // Set flag when user interacts with the page
+            function setUserInteractedFlag() {
+                document.documentElement.setAttribute('data-user-interacted', 'true');
+                // Remove the event listeners once interaction is detected
+                document.removeEventListener('click', setUserInteractedFlag);
+                document.removeEventListener('keydown', setUserInteractedFlag);
+                document.removeEventListener('touchstart', setUserInteractedFlag);
+            }
+            
+            // Add event listeners for user interaction
+            document.addEventListener('click', setUserInteractedFlag);
+            document.addEventListener('keydown', setUserInteractedFlag);
+            document.addEventListener('touchstart', setUserInteractedFlag);
+        });
+    </script>
+    
+    <!-- Add this script at the bottom of the file, before the closing body tag -->
+    <script>
+        // Handle "Mark all as read" button click
+        $(document).on('click', '#markAllAsReadBtn', function() {
+            $.ajax({
+                url: '/Notifications/MarkAllAsRead',
+                type: 'POST',
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function() {
+                    // Remove unread class from all notifications
+                    $('.notification-item').removeClass('unread');
+                    
+                    // Reset notification badge
+                    $('.notification-badge').text('0').hide();
+                },
+                error: function() {
+                    console.error('Failed to mark all notifications as read');
+                }
+            });
         });
     </script>
     

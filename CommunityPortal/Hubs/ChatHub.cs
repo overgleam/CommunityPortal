@@ -4,6 +4,7 @@ using CommunityPortal.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using CommunityPortal.Services;
 
 namespace CommunityPortal.Hubs
 {
@@ -11,10 +12,12 @@ namespace CommunityPortal.Hubs
     public class ChatHub : Hub
     {
         private readonly ApplicationDbContext _context;
+        private readonly NotificationService _notificationService;
 
-        public ChatHub(ApplicationDbContext context)
+        public ChatHub(ApplicationDbContext context, NotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         // Register the connection with the user's ID
@@ -49,11 +52,15 @@ namespace CommunityPortal.Hubs
             _context.ChatMessages.Add(chatMessage);
             await _context.SaveChangesAsync();
 
-            // Send message to recipient
+            // Send message to recipient via SignalR
             await Clients.Group(recipientId).SendAsync("ReceiveMessage", senderFullName, message, chatMessage.Timestamp.ToLocalTime().ToString("g"));
-
-            // Optionally, send message back to sender to update their chat window
-            await Clients.Caller.SendAsync("ReceiveMessage", senderFullName, message, chatMessage.Timestamp.ToLocalTime().ToString("g"));
+            
+            // Send notification to recipient
+            await _notificationService.CreateMessageNotificationAsync(
+                recipientId: recipientId,
+                senderName: senderFullName,
+                senderId: senderId
+            );
         }
 
         private string GetFullName(ApplicationUser user)

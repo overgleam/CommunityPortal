@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Data;
 using CommunityPortal.Models.Billing;
 using CommunityPortal.Services;
+using System.Security.Claims;
 
 namespace CommunityPortal.Controllers
 {
@@ -14,14 +15,17 @@ namespace CommunityPortal.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly PdfService _pdfService;
+        private readonly NotificationService _notificationService;
 
         public BillingController(ApplicationDbContext context, 
             IWebHostEnvironment webHostEnvironment,
-            PdfService pdfService)
+            PdfService pdfService,
+            NotificationService notificationService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
             _pdfService = pdfService;
+            _notificationService = notificationService;
         }
 
         // GET: Billing
@@ -374,6 +378,15 @@ namespace CommunityPortal.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            // Send notification to the homeowner about the new bill
+            await _notificationService.CreateBillingNotificationAsync(
+                recipientId: bill.HomeownerId,
+                billId: bill.Id,
+                amount: bill.TotalAmount,
+                action: "Created",
+                senderId: User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)
+            );
 
             TempData["SuccessMessage"] = "Bill created successfully.";
             return RedirectToAction(nameof(BillDetails), new { id = bill.Id });
@@ -773,6 +786,15 @@ namespace CommunityPortal.Controllers
 
             await _context.SaveChangesAsync();
             
+            // Send notification to the homeowner about the verified payment
+            await _notificationService.CreateBillingNotificationAsync(
+                recipientId: payment.HomeownerId,
+                billId: payment.BillId,
+                amount: payment.Amount,
+                action: "Verified",
+                senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+            );
+            
             TempData["SuccessMessage"] = "Payment verified successfully!";
             return RedirectToAction(nameof(BillDetails), new { id = payment.BillId });
         }
@@ -802,6 +824,15 @@ namespace CommunityPortal.Controllers
             }
 
             await _context.SaveChangesAsync();
+            
+            // Send notification to the homeowner about the rejected payment
+            await _notificationService.CreateBillingNotificationAsync(
+                recipientId: payment.HomeownerId,
+                billId: payment.BillId,
+                amount: payment.Amount,
+                action: "Rejected",
+                senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+            );
             
             TempData["SuccessMessage"] = "Payment has been rejected.";
             return RedirectToAction(nameof(BillDetails), new { id = payment.BillId });

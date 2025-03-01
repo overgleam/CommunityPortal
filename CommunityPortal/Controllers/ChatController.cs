@@ -5,6 +5,8 @@ using CommunityPortal.Data;
 using CommunityPortal.Models.Chat;
 using CommunityPortal.Models;
 using Microsoft.EntityFrameworkCore;
+using CommunityPortal.Services;
+using System.Security.Claims;
 
 namespace CommunityPortal.Controllers
 {
@@ -13,11 +15,16 @@ namespace CommunityPortal.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
+        private readonly NotificationService _notificationService;
 
-        public ChatController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        public ChatController(
+            UserManager<ApplicationUser> userManager, 
+            ApplicationDbContext context,
+            NotificationService notificationService)
         {
             _userManager = userManager;
             _context = context;
+            _notificationService = notificationService;
         }
 
         // Display list of users to chat with

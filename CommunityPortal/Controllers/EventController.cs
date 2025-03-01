@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Data;
 using CommunityPortal.Models.Event;
+using CommunityPortal.Models;
 using System.Security.Claims;
+using CommunityPortal.Services;
 
 namespace CommunityPortal.Controllers
 {
@@ -15,12 +17,14 @@ namespace CommunityPortal.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly NotificationService _notificationService;
         private const string EventImagesFolder = "uploads/event-images";
 
-        public EventController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public EventController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, NotificationService notificationService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _notificationService = notificationService;
         }
 
         // GET: Event
@@ -70,6 +74,21 @@ namespace CommunityPortal.Controllers
 
                 _context.Events.Add(@event);
                 await _context.SaveChangesAsync();
+
+                // Send notification to all users about the new event
+                string currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                string title = "New Community Event";
+                string message = $"A new event '{@event.Title}' has been scheduled for {@event.StartDateTime.ToLocalTime():g}.";
+                string link = $"/Event/Details/{@event.Id}";
+
+                await _notificationService.BroadcastNotificationAsync(
+                    title: title,
+                    message: message,
+                    link: link,
+                    type: NotificationType.Event,
+                    senderId: currentUserId
+                );
+
                 TempData["SuccessMessage"] = "Event created successfully!";
                 return RedirectToAction(nameof(Index));
             }
