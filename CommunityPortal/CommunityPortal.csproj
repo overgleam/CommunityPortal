@@ -12,21 +12,25 @@
     <Compile Remove="Views\LandingPage\**" />
     <Compile Remove="Views\Staff\**" />
     <Compile Remove="wwwroot\css\staff\**" />
+    <Compile Remove="wwwroot\images\defaults\**" />
     <Content Remove="Models\Homeowners\**" />
     <Content Remove="Models\Staffs\**" />
     <Content Remove="Views\LandingPage\**" />
     <Content Remove="Views\Staff\**" />
     <Content Remove="wwwroot\css\staff\**" />
+    <Content Remove="wwwroot\images\defaults\**" />
     <EmbeddedResource Remove="Models\Homeowners\**" />
     <EmbeddedResource Remove="Models\Staffs\**" />
     <EmbeddedResource Remove="Views\LandingPage\**" />
     <EmbeddedResource Remove="Views\Staff\**" />
     <EmbeddedResource Remove="wwwroot\css\staff\**" />
+    <EmbeddedResource Remove="wwwroot\images\defaults\**" />
     <None Remove="Models\Homeowners\**" />
     <None Remove="Models\Staffs\**" />
     <None Remove="Views\LandingPage\**" />
     <None Remove="Views\Staff\**" />
     <None Remove="wwwroot\css\staff\**" />
+    <None Remove="wwwroot\images\defaults\**" />
   </ItemGroup>
 
   <ItemGroup>

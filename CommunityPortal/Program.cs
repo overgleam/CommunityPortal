@@ -5,6 +5,7 @@ using CommunityPortal.Models;
 using CommunityPortal.Models.Enums;
 using CommunityPortal.Hubs;
 using CommunityPortal.Services;
+using CommunityPortal.Models.Documents;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -130,11 +131,117 @@ using (var scope = app.Services.CreateScope())
             context.Admins.Add(adminProfile);
             await context.SaveChangesAsync();
 
+            // Update document records with the actual admin ID
+            var adminId = adminUser?.Id;
+            if (!string.IsNullOrEmpty(adminId))
+            {
+                // First check if we need to seed documents
+                var existingDocs = await context.Documents.AnyAsync();
+                if (!existingDocs)
+                {
+                    // No documents exist yet, so seed them directly
+                    var documents = new List<Document>
+                    {
+                        new Document
+                        {
+                            Title = "Billing and Payment Guidelines",
+                            Description = "Guidelines for billing and payment procedures in the community",
+                            FilePath = "images/default/Guidelines-Billing-Payment.pdf",
+                            FileName = "Guidelines-Billing-Payment.pdf",
+                            FileType = "application/pdf",
+                            FileSizeInKB = 500,
+                            Category = DocumentCategory.CommunityGuidelines,
+                            UploadDate = DateTime.UtcNow,
+                            LastUpdated = DateTime.UtcNow,
+                            UploadedById = adminId,
+                            IsDeleted = false
+                        },
+                        new Document
+                        {
+                            Title = "Facility Usage Guidelines",
+                            Description = "Guidelines for using community facilities and amenities",
+                            FilePath = "images/default/Guidelines-Facility.pdf",
+                            FileName = "Guidelines-Facility.pdf",
+                            FileType = "application/pdf",
+                            FileSizeInKB = 450,
+                            Category = DocumentCategory.CommunityGuidelines,
+                            UploadDate = DateTime.UtcNow,
+                            LastUpdated = DateTime.UtcNow,
+                            UploadedById = adminId,
+                            IsDeleted = false
+                        },
+                        new Document
+                        {
+                            Title = "Service Request and Maintenance Guidelines",
+                            Description = "Guidelines for submitting and processing service and maintenance requests",
+                            FilePath = "images/default/Guidelines-Service-Request-Maintenance.pdf",
+                            FileName = "Guidelines-Service-Request-Maintenance.pdf",
+                            FileType = "application/pdf",
+                            FileSizeInKB = 525,
+                            Category = DocumentCategory.CommunityGuidelines,
+                            UploadDate = DateTime.UtcNow,
+                            LastUpdated = DateTime.UtcNow,
+                            UploadedById = adminId,
+                            IsDeleted = false
+                        },
+                        new Document
+                        {
+                            Title = "Subdivision Rules and Regulations",
+                            Description = "Official rules and regulations governing the subdivision",
+                            FilePath = "images/default/Guidelines-Subdivision-Rules-1.pdf",
+                            FileName = "Guidelines-Subdivision-Rules-1.pdf",
+                            FileType = "application/pdf",
+                            FileSizeInKB = 600,
+                            Category = DocumentCategory.CommunityGuidelines,
+                            UploadDate = DateTime.UtcNow,
+                            LastUpdated = DateTime.UtcNow,
+                            UploadedById = adminId,
+                            IsDeleted = false
+                        }
+                    };
+
+                    context.Documents.AddRange(documents);
+                    await context.SaveChangesAsync();
+                    Console.WriteLine($"Seeded {documents.Count} document records with admin ID");
+                }
+                else
+                {
+                    // Check for documents with placeholder ID and update them
+                    var docsToUpdate = await context.Documents
+                        .Where(d => d.UploadedById == "11111111-1111-1111-1111-111111111111")
+                        .ToListAsync();
+                        
+                    if (docsToUpdate.Any())
+                    {
+                        foreach (var doc in docsToUpdate)
+                        {
+                            doc.UploadedById = adminId;
+                        }
+                        await context.SaveChangesAsync();
+                        Console.WriteLine($"Updated {docsToUpdate.Count} document records with the correct admin ID");
+                    }
+                }
+            }
         }
         else
         {
             // Handle creation errors
             throw new Exception("Failed to create admin user.");
+        }
+    }
+
+    // Ensure all Staff users have the "staff" role assigned
+    var staffUsers = await userManager.Users
+        .Include(u => u.Staff)
+        .Where(u => u.Staff != null)
+        .ToListAsync();
+
+    foreach (var staffUser in staffUsers)
+    {
+        if (!await userManager.IsInRoleAsync(staffUser, "staff"))
+        {
+            await userManager.AddToRoleAsync(staffUser, "staff");
+            Console.WriteLine($"Assigned staff role to user {staffUser.Email}");
         }
     }
 }

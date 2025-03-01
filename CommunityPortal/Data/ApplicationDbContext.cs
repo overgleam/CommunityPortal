@@ -8,6 +8,7 @@ using CommunityPortal.Models.ServiceRequest;
 using CommunityPortal.Models.Documents;
 using CommunityPortal.Models.Poll;
 using CommunityPortal.Models.Billing;
+using CommunityPortal.Data.Seeds;
 
 namespace CommunityPortal.Data
 {
@@ -175,33 +176,6 @@ namespace CommunityPortal.Data
                 .HasForeignKey(sf => sf.HomeownerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Seed Service Categories
-            builder.Entity<ServiceCategory>().HasData(
-                new ServiceCategory 
-                { 
-                    Id = 1, 
-                    Name = "Electrical Issues",
-                    Description = "Power outages, malfunctioning streetlights, faulty wiring, outlets, circuit breakers, and installation of additional outdoor lighting"
-                },
-                new ServiceCategory 
-                { 
-                    Id = 2, 
-                    Name = "Plumbing & Water Supply Issues",
-                    Description = "Low or no water pressure, leaking pipes, faucets, toilets, clogged drainage, sewage backups, and water supply interruptions"
-                },
-                new ServiceCategory 
-                { 
-                    Id = 3, 
-                    Name = "Structural & Property Repairs",
-                    Description = "Cracks in walls, sidewalks, or roads, broken gates, fences, perimeter walls, roof leaks, damaged ceilings, and pest infestation"
-                },
-                new ServiceCategory 
-                { 
-                    Id = 4, 
-                    Name = "Waste Management & Cleaning",
-                    Description = "Missed garbage collection, request for additional trash bins, flooding or stagnant water after heavy rains, and cleaning of community spaces"
-                }
-            );
 
             // Facility configurations
             builder.Entity<Facility>()
@@ -371,74 +345,10 @@ namespace CommunityPortal.Data
                 .HasForeignKey(p => p.PaymentMethodId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Seed default FeeTypes
-            builder.Entity<FeeType>().HasData(
-                new FeeType 
-                { 
-                    Id = 1, 
-                    Name = "Association Dues",
-                    Description = "Monthly homeowner association dues",
-                    DefaultAmount = 2000.00M,
-                    Category = "Association Dues",
-                    IsRecurring = true,
-                    IsRequired = true
-                },
-                new FeeType 
-                { 
-                    Id = 2, 
-                    Name = "Security and Maintenance",
-                    Description = "Fees for security personnel and maintenance of common areas",
-                    DefaultAmount = 1000.00M,
-                    Category = "Security and Maintenance",
-                    IsRecurring = true,
-                    IsRequired = true
-                },
-                new FeeType 
-                { 
-                    Id = 3, 
-                    Name = "Emergency Fund",
-                    Description = "Contribution to emergency fund for unforeseen community needs",
-                    DefaultAmount = 200.00M,
-                    Category = "Emergency Fund",
-                    IsRecurring = true,
-                    IsRequired = true
-                },
-                new FeeType 
-                { 
-                    Id = 4, 
-                    Name = "Facility Upkeep",
-                    Description = "Maintenance and upkeep of community facilities",
-                    DefaultAmount = 500.00M,
-                    Category = "Facility Upkeep",
-                    IsRecurring = true,
-                    IsRequired = true
-                },
-                new FeeType 
-                { 
-                    Id = 5, 
-                    Name = "Administrative Expenses",
-                    Description = "Expenses related to administrative functions",
-                    DefaultAmount = 300.00M,
-                    Category = "Administrative",
-                    IsRecurring = true,
-                    IsRequired = true
-                }
-            );
-
-            // Seed default BillingSettings
-            builder.Entity<BillingSettings>().HasData(
-                new BillingSettings
-                {
-                    Id = 1,
-                    Name = "Default Billing Settings",
-                    Description = "Default configuration for billing operations",
-                    LateFeePercentage = 5.00M,
-                    LateFeeDays = 30,
-                    BillingCycleDay = 1,
-                    PaymentDueDays = 15,
-                    CreatedBy = "system"
-                }
-            );
+            ServiceCategorySeeder.SeedServiceCategories(builder);
+            BillingSeeder.SeedFeeTypes(builder);
+            BillingSeeder.SeedBillingSettings(builder);
+            StaffSeeder.SeedStaff(builder);
         }
 
         public override int SaveChanges()
