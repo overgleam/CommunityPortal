@@ -53,11 +53,11 @@ namespace CommunityPortal.Controllers
                 }
                 else if (isHomeowner)
                 {
-                    // Homeowners can only see published polls that are active and not deleted
+                    // Homeowners can see published polls that are not deleted
+                    // and have not ended yet (including upcoming polls)
                     polls = await _context.Polls
                         .Include(p => p.CreatedBy)
                         .Where(p => p.Status == PollStatus.Published &&
-                                    p.StartDate <= DateTime.UtcNow &&
                                     p.EndDate >= DateTime.UtcNow &&
                                     !p.IsDeleted &&
                                     p.TargetAudience == PollTargetAudience.AllHomeowners)

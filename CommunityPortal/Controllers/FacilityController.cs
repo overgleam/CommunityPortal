@@ -738,6 +738,7 @@ namespace CommunityPortal.Controllers
             
             // Get reservation
             var reservation = await _context.FacilityReservations
+                .Include(r => r.Facility)
                 .FirstOrDefaultAsync(r => r.Id == id && r.UserId == user.Id);
             
             if (reservation == null)
@@ -783,6 +784,23 @@ namespace CommunityPortal.Controllers
                 reservation.UpdatedAt = DateTime.UtcNow;
                 
                 await _context.SaveChangesAsync();
+
+                // Send notification to administrators about the payment receipt upload
+                var admins = await _userManager.GetUsersInRoleAsync("admin");
+                foreach (var admin in admins)
+                {
+                    if (!string.IsNullOrEmpty(admin.Id))
+                    {
+                        await _notificationService.CreateNotificationAsync(
+                            recipientId: admin.Id,
+                            title: "New Payment Receipt Uploaded",
+                            message: $"A payment receipt has been uploaded for reservation #{reservation.Id} ({reservation.Facility.Name}).",
+                            link: $"/Facility/MyReservations",
+                            type: NotificationType.System,
+                            senderId: user?.Id
+                        );
+                    }
+                }
             }
             else
             {
@@ -866,6 +884,19 @@ namespace CommunityPortal.Controllers
                 }
                 
                 TempData["SuccessMessage"] = $"Payment verified successfully for reservation #{reservation.Id} by {reservation.User.Email}.";
+                
+                // Send notification to the user about payment approval
+                if (!string.IsNullOrEmpty(reservation.UserId))
+                {
+                    await _notificationService.CreateNotificationAsync(
+                        recipientId: reservation.UserId,
+                        title: "Reservation Payment Approved",
+                        message: $"Your payment for {reservation.Facility.Name} reservation on {reservation.ReservationDate.ToShortDateString()} has been approved.",
+                        link: $"/Facility/PaymentDetails/{reservation.Id}",
+                        type: NotificationType.General,
+                        senderId: user?.Id
+                    );
+                }
             }
             else
             {
@@ -885,6 +916,19 @@ namespace CommunityPortal.Controllers
                     reservation.ReceiptUploadDate = null;
                 }
                 TempData["SuccessMessage"] = $"Payment rejected for reservation #{reservation.Id}. User notified to upload new payment receipt.";
+                
+                // Send notification to the user about payment rejection
+                if (!string.IsNullOrEmpty(reservation.UserId))
+                {
+                    await _notificationService.CreateNotificationAsync(
+                        recipientId: reservation.UserId,
+                        title: "Reservation Payment Rejected",
+                        message: $"Your payment for {reservation.Facility.Name} reservation has been rejected. Reason: {verificationNotes}",
+                        link: $"/Facility/PaymentDetails/{reservation.Id}",
+                        type: NotificationType.Alert,
+                        senderId: user?.Id
+                    );
+                }
             }
             
             reservation.UpdatedAt = DateTime.UtcNow;

@@ -8,6 +8,8 @@ using System.Data;
 using CommunityPortal.Models.Admin;
 using CommunityPortal.Models.Enums;
 using CommunityPortal.Models.ServiceRequest;
+using CommunityPortal.Services;
+using System.Security.Claims;
 
 namespace CommunityPortal.Controllers
 {
@@ -16,11 +18,16 @@ namespace CommunityPortal.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
+        private readonly NotificationService _notificationService;
 
-        public AdminController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        public AdminController(
+            UserManager<ApplicationUser> userManager, 
+            ApplicationDbContext context,
+            NotificationService notificationService)
         {
             _userManager = userManager;
             _context = context;
+            _notificationService = notificationService;
         }
 
         public IActionResult Index()
@@ -164,6 +171,15 @@ namespace CommunityPortal.Controllers
                 TempData["ErrorMessage"] = "Failed to remove user.";
                 return RedirectToAction("ManageUsers");
             }
+
+            // Send notification to the user about account deactivation
+            await _notificationService.CreateNotificationAsync(
+                recipientId: user.Id,
+                title: "Account Deactivated",
+                message: "Your account has been deactivated by an administrator.",
+                type: NotificationType.Alert,
+                senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+            );
 
             TempData["SuccessMessage"] = "User has been successfully removed.";
             return RedirectToAction("ManageUsers");
@@ -454,6 +470,15 @@ namespace CommunityPortal.Controllers
                 TempData["ErrorMessage"] = "Failed to restore user.";
                 return RedirectToAction("DeletedUsers");
             }
+
+            // Send notification to the user about account restoration
+            await _notificationService.CreateNotificationAsync(
+                recipientId: user.Id,
+                title: "Account Restored",
+                message: "Your account has been restored by an administrator.",
+                type: NotificationType.Alert,
+                senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+            );
 
             TempData["SuccessMessage"] = "User has been successfully restored.";
             return RedirectToAction("DeletedUsers");

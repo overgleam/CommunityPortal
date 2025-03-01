@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using CommunityPortal.Services;
+using System.Security.Claims;
 
 namespace CommunityPortal.Controllers
 {
@@ -15,12 +17,18 @@ namespace CommunityPortal.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly NotificationService _notificationService;
 
-        public ProfileController(UserManager<ApplicationUser> userManager, ApplicationDbContext context, IWebHostEnvironment environment)
+        public ProfileController(
+            UserManager<ApplicationUser> userManager, 
+            ApplicationDbContext context, 
+            IWebHostEnvironment environment,
+            NotificationService notificationService)
         {
             _userManager = userManager;
             _context = context;
             _environment = environment;
+            _notificationService = notificationService;
         }
 
         /// <summary>
@@ -351,9 +359,21 @@ namespace CommunityPortal.Controllers
                 return passwordResult;
             }
 
-            TempData["SuccessMessage"] = "Profile updated successfully.";
+            await _userManager.UpdateAsync(user);
             await _context.SaveChangesAsync();
-            return RedirectToAction("ViewProfile", new { userId = user.Id });
+
+            // Send notification about profile update
+            await _notificationService.CreateNotificationAsync(
+                recipientId: user.Id,
+                title: "Profile Updated",
+                message: "Your administrator profile has been updated.",
+                link: "/Profile/ViewProfile",
+                type: NotificationType.General,
+                senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+            );
+
+            TempData["SuccessMessage"] = "Profile updated successfully!";
+            return RedirectToAction(nameof(ViewProfile), new { userId = user.Id });
         }
 
         // POST: /Profile/EditStaffProfile
@@ -411,7 +431,17 @@ namespace CommunityPortal.Controllers
             // Save changes to the database
             await _context.SaveChangesAsync();
 
-            // Redirect to view profile
+            // Send notification about profile update
+            await _notificationService.CreateNotificationAsync(
+                recipientId: user.Id,
+                title: "Profile Updated",
+                message: "Your staff profile has been updated.",
+                link: "/Profile/ViewProfile",
+                type: NotificationType.General,
+                senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+            );
+
+            TempData["SuccessMessage"] = "Profile updated successfully!";
             return RedirectToAction(nameof(ViewProfile), new { userId = user.Id });
         }
 
@@ -463,9 +493,21 @@ namespace CommunityPortal.Controllers
             user.Homeowner.MoveInDate = model.MoveInDate;
             user.Homeowner.TypeOfResidency = model.TypeOfResidency;
 
-            TempData["SuccessMessage"] = "Profile updated successfully.";
+            await _userManager.UpdateAsync(user);
             await _context.SaveChangesAsync();
-            return RedirectToAction("ViewProfile", new { userId = user.Id });
+
+            // Send notification about profile update
+            await _notificationService.CreateNotificationAsync(
+                recipientId: user.Id,
+                title: "Profile Updated",
+                message: "Your homeowner profile has been updated.",
+                link: "/Profile/ViewProfile",
+                type: NotificationType.General,
+                senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+            );
+
+            TempData["SuccessMessage"] = "Profile updated successfully!";
+            return RedirectToAction(nameof(ViewProfile), new { userId = user.Id });
         }
 
         // GET: /Profile/ChangePassword/{userId?}
@@ -513,8 +555,18 @@ namespace CommunityPortal.Controllers
             var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = "Password changed successfully.";
-                return RedirectToAction("ViewProfile", new { userId = user.Id });
+                // Send notification about password change
+                await _notificationService.CreateNotificationAsync(
+                    recipientId: user.Id,
+                    title: "Password Changed",
+                    message: "Your password has been changed successfully.",
+                    link: "/Profile/ViewProfile",
+                    type: NotificationType.General,
+                    senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+                );
+
+                TempData["SuccessMessage"] = "Password changed successfully!";
+                return RedirectToAction(nameof(ViewProfile), new { userId = user.Id });
             }
 
             foreach (var error in result.Errors)

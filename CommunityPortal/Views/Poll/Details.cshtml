@@ -105,11 +105,8 @@
                             <i class="fas fa-chart-bar me-2"></i>View Results
                         </a>
                     }
-                    else if (ViewBag.HasResponded != true && 
-                             User.IsInRole("homeowners") && 
-                             Model.Status == CommunityPortal.Models.Enums.PollStatus.Published &&
-                             Model.StartDate <= DateTime.UtcNow &&
-                             Model.EndDate >= DateTime.UtcNow)
+                    else if (User.IsInRole("homeowners") && 
+                             Model.Status == CommunityPortal.Models.Enums.PollStatus.Published)
                     {
                         @if (ViewBag.HasResponded)
                         {
@@ -117,7 +114,13 @@
                                 You have already responded to this poll.
                             </div>
                         }
-                        else
+                        else if (Model.StartDate > DateTime.UtcNow)
+                        {
+                            <div class="alert alert-info mb-0">
+                                This poll will be available for responses starting on @Model.StartDate.ToShortDateString().
+                            </div>
+                        }
+                        else if (Model.EndDate >= DateTime.UtcNow)
                         {
                             <a asp-action="Respond" asp-route-id="@Model.Id" class="btn btn-success">
                                 <i class="fas fa-poll me-2"></i>Respond to Poll

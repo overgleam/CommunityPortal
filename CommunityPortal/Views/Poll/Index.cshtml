@@ -48,6 +48,22 @@
                                 <small>
                                     <i class="far fa-calendar-alt me-1"></i>
                                     @item.StartDate.ToShortDateString() - @item.EndDate.ToShortDateString()
+                                    
+                                    @if (item.Status == CommunityPortal.Models.Enums.PollStatus.Published)
+                                    {
+                                        @if (item.StartDate > DateTime.UtcNow)
+                                        {
+                                            <span class="badge bg-info ms-1">Starts in @((item.StartDate - DateTime.UtcNow).Days) day(s)</span>
+                                        }
+                                        else if (item.EndDate < DateTime.UtcNow)
+                                        {
+                                            <span class="badge bg-secondary ms-1">Ended</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success ms-1">Active</span>
+                                        }
+                                    }
                                 </small>
                             </p>
                             <p class="card-text mb-4">@(item.Description?.Length > 100 ? item.Description.Substring(0, 100) + "..." : item.Description)</p>

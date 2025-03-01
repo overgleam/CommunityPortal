@@ -6,6 +6,8 @@ using CommunityPortal.Models;
 using CommunityPortal.Models.Account;
 using CommunityPortal.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using CommunityPortal.Services;
+using System.Security.Claims;
 
 namespace CommunityPortal.Controllers
 {
@@ -14,12 +16,18 @@ namespace CommunityPortal.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
+        private readonly NotificationService _notificationService;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ApplicationDbContext context)
+        public AccountController(
+            UserManager<ApplicationUser> userManager, 
+            SignInManager<ApplicationUser> signInManager, 
+            ApplicationDbContext context,
+            NotificationService notificationService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
+            _notificationService = notificationService;
         }
 
         public IActionResult Index()
@@ -86,6 +94,20 @@ namespace CommunityPortal.Controllers
                     _context.Homeowners.Add(homeowner);
                     await _context.SaveChangesAsync();
 
+                    // Notify administrators about the new registration
+                    var admins = await _userManager.GetUsersInRoleAsync("admin");
+                    foreach (var admin in admins)
+                    {
+                        await _notificationService.CreateNotificationAsync(
+                            recipientId: admin.Id,
+                            title: "New User Registration",
+                            message: $"A new user has registered: {model.FirstName} {model.LastName}",
+                            link: "/Admin/ManageUsers",
+                            type: NotificationType.System,
+                            senderId: user.Id
+                        );
+                    }
+
                     return RedirectToAction("Login", "Account");
                 }
                 foreach (var error in result.Errors)
@@ -145,6 +167,15 @@ namespace CommunityPortal.Controllers
 
                 if (result.Succeeded)
                 {
+                    // Send a welcome back notification
+                    await _notificationService.CreateNotificationAsync(
+                        recipientId: user.Id,
+                        title: "Welcome Back",
+                        message: "You have successfully logged in to the Community Portal.",
+                        type: NotificationType.General,
+                        senderId: null
+                    );
+
                     if (await _userManager.IsInRoleAsync(user, "admin") || await _userManager.IsInRoleAsync(user, "staff"))
                     {
                         return RedirectToAction("Index", "Admin");

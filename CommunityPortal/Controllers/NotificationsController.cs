@@ -76,6 +76,16 @@ namespace CommunityPortal.Controllers
         [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> Create([Bind("Title,Message,Link,RecipientId,Type")] Notification notification)
         {
+            if (string.IsNullOrEmpty(notification.RecipientId))
+            {
+                ModelState.AddModelError("RecipientId", "The RecipientId field is required.");
+                return View(notification);
+            }
+            
+            // Remove validation errors for navigation properties
+            ModelState.Remove("Recipient");
+            ModelState.Remove("Sender");
+            
             if (ModelState.IsValid)
             {
                 var senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -102,6 +112,10 @@ namespace CommunityPortal.Controllers
         [Authorize(Roles = "admin,staff")]
         public async Task<IActionResult> CreateBroadcast([Bind("Title,Message,Link,Type")] Notification notification)
         {
+            ModelState.Remove("RecipientId");
+            ModelState.Remove("Recipient");
+            ModelState.Remove("Sender");
+            
             if (ModelState.IsValid)
             {
                 var senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -193,11 +207,13 @@ namespace CommunityPortal.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "All notifications marked as read", count = unreadNotifications.Count });
+                TempData["SuccessMessage"] = $"{unreadNotifications.Count} notification(s) marked as read.";
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = $"Error: {ex.Message}" });
+                TempData["ErrorMessage"] = $"Error marking notifications as read: {ex.Message}";
+                return RedirectToAction(nameof(Index));
             }
         }
 

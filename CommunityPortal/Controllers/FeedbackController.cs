@@ -5,6 +5,8 @@ using CommunityPortal.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using CommunityPortal.Models.Enums;
+using CommunityPortal.Services;
+using System.Security.Claims;
 
 namespace CommunityPortal.Controllers
 {
@@ -13,11 +15,16 @@ namespace CommunityPortal.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly NotificationService _notificationService;
 
-        public FeedbackController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public FeedbackController(
+            ApplicationDbContext context, 
+            UserManager<ApplicationUser> userManager,
+            NotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
+            _notificationService = notificationService;
         }
 
 
@@ -84,6 +91,20 @@ namespace CommunityPortal.Controllers
             // Store submission success in TempData
             TempData["FeedbackSubmitted"] = true;
 
+            // Notify administrators about the new feedback
+            var admins = await _userManager.GetUsersInRoleAsync("admin");
+            foreach (var admin in admins)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    recipientId: admin.Id,
+                    title: "New Feedback Submitted",
+                    message: $"A new feedback has been submitted by {user.FullName}",
+                    link: "/Feedback/Index",
+                    type: NotificationType.General,
+                    senderId: user.Id
+                );
+            }
+
             return RedirectToAction("Create");
         }
 
@@ -93,14 +114,29 @@ namespace CommunityPortal.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> UpdateStatus(int id, FeedbackStatus status)
         {
-            var feedback = await _context.Feedbacks.FindAsync(id);
+            var feedback = await _context.Feedbacks
+                .Include(f => f.User)
+                .FirstOrDefaultAsync(f => f.Id == id);
+
             if (feedback == null)
             {
                 return NotFound();
             }
+
             feedback.Status = status;
             _context.Update(feedback);
             await _context.SaveChangesAsync();
+
+            // Notify the user about the status update
+            await _notificationService.CreateNotificationAsync(
+                recipientId: feedback.UserId,
+                title: "Feedback Status Updated",
+                message: $"Your feedback status has been updated to: {status}",
+                link: "/Feedback/Create",
+                type: NotificationType.General,
+                senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+            );
+
             return RedirectToAction(nameof(Index));
         }
 

@@ -174,7 +174,7 @@ namespace CommunityPortal.Controllers
                 await _notificationService.BroadcastNotificationAsync(
                     title: "New Document Available",
                     message: $"A new document has been uploaded: {document.Title}",
-                    link: $"/Documents/Download/{document.Id}",
+                    link: $"/Documents/Index",
                     type: NotificationType.Document,
                     senderId: user.Id
                 );
@@ -241,12 +241,22 @@ namespace CommunityPortal.Controllers
                 return NotFound();
             }
 
-            var user = await _userManager.GetUserAsync(User);
             document.IsDeleted = true;
             document.DeletedDate = DateTime.Now;
-            document.DeletedById = user.Id;
-
+            document.DeletedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
             await _context.SaveChangesAsync();
+
+            // Add notification for document deletion
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _notificationService.CreateDocumentNotificationAsync(
+                recipientId: document.UploadedById,
+                documentId: document.Id,
+                documentName: document.Title,
+                action: "Deleted",
+                senderId: currentUserId
+            );
+
+            TempData["SuccessMessage"] = "Document deleted successfully.";
             return RedirectToAction(nameof(Manage));
         }
 
@@ -281,8 +291,19 @@ namespace CommunityPortal.Controllers
             document.IsDeleted = false;
             document.DeletedDate = null;
             document.DeletedById = null;
-
             await _context.SaveChangesAsync();
+
+            // Add notification for document restoration
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await _notificationService.CreateDocumentNotificationAsync(
+                recipientId: document.UploadedById,
+                documentId: document.Id,
+                documentName: document.Title,
+                action: "Restored",
+                senderId: currentUserId
+            );
+
+            TempData["SuccessMessage"] = "Document restored successfully.";
             return RedirectToAction(nameof(Manage));
         }
 
