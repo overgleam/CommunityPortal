@@ -39,7 +39,7 @@ bld/
 CommunityPortal/wwwroot/uploads
 
 # Entity Framework Migrations
-CommunityPortal/Migrations
+CommunityPortal/Migrations/
 
 # Visual Studio 2017 auto generated files
 Generated\ Files/
