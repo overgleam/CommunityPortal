@@ -5,6 +5,8 @@ using CommunityPortal.Data;
 using CommunityPortal.Models;
 using CommunityPortal.Models.Facility;
 using Microsoft.AspNetCore.Identity;
+using CommunityPortal.Services;
+using System.Security.Claims;
 
 namespace CommunityPortal.Controllers
 {
@@ -14,15 +16,18 @@ namespace CommunityPortal.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly NotificationService _notificationService;
 
         public FacilityController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,
+            NotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
             _webHostEnvironment = webHostEnvironment;
+            _notificationService = notificationService;
         }
 
         // GET: /Facility
@@ -192,6 +197,19 @@ namespace CommunityPortal.Controllers
                 _context.Add(reservation);
                 await _context.SaveChangesAsync();
                 
+                // Send notification to all admins
+                var adminUsers = await _userManager.GetUsersInRoleAsync("admin");
+                foreach (var admin in adminUsers)
+                {
+                    await _notificationService.CreateFacilityReservationNotificationAsync(
+                        recipientId: admin.Id,
+                        reservationId: reservation.Id,
+                        facilityName: facility.Name,
+                        status: "Requested",
+                        senderId: user.Id
+                    );
+                }
+                
                 // Clear the form values from TempData after successful submission
                 TempData.Remove("ReservationDate");
                 TempData.Remove("StartTime");
@@ -199,11 +217,11 @@ namespace CommunityPortal.Controllers
                 TempData.Remove("GuestCount");
                 TempData.Remove("SpecialRequests");
                 
-                TempData["SuccessMessage"] = "Your reservation has been submitted successfully and is pending approval.";
+                TempData["SuccessMessage"] = "Reservation created successfully. An administrator will review your request.";
                 return RedirectToAction(nameof(MyReservations));
             }
 
-            TempData["ErrorMessage"] = "Please check your reservation details and try again.";
+            TempData["ErrorMessage"] = "Please fix the errors and try again.";
             return RedirectToAction(nameof(Details), new { id = reservation.FacilityId });
         }
 
@@ -442,6 +460,7 @@ namespace CommunityPortal.Controllers
         {
             var reservation = await _context.FacilityReservations
                 .Include(r => r.Facility)
+                .Include(r => r.User)
                 .FirstOrDefaultAsync(r => r.Id == id);
             
             if (reservation == null)
@@ -454,6 +473,9 @@ namespace CommunityPortal.Controllers
                 ModelState.AddModelError("", "Rejection reason is required.");
                 return RedirectToAction(nameof(ManageReservations));
             }
+
+            // Save old status to check if it changed
+            var oldStatus = reservation.Status;
 
             // If approving a reservation, set it to PaymentPending
             if (status == ReservationStatus.Approved && reservation.Status == ReservationStatus.Pending)
@@ -472,20 +494,52 @@ namespace CommunityPortal.Controllers
                              (reservation.StartTime <= r.StartTime && r.StartTime < reservation.EndTime) ||
                              (reservation.StartTime < r.EndTime && r.EndTime <= reservation.EndTime)))
                     .ToListAsync();
-                    
+
                 foreach (var conflictingReservation in conflictingReservations)
                 {
                     conflictingReservation.Status = ReservationStatus.Rejected;
-                    conflictingReservation.RejectionReason = "This time slot has been booked by another reservation.";
-                    conflictingReservation.UpdatedAt = DateTime.UtcNow;
+                    conflictingReservation.RejectionReason = "Another reservation for this facility and time was approved.";
+                    
+                    // Send notifications for rejected reservations
+                    if (conflictingReservation.User != null)
+                    {
+                        await _notificationService.CreateFacilityReservationNotificationAsync(
+                            recipientId: conflictingReservation.UserId,
+                            reservationId: conflictingReservation.Id,
+                            facilityName: reservation.Facility.Name,
+                            status: "Rejected",
+                            senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+                        );
+                    }
                 }
             }
 
             reservation.Status = status;
-            reservation.RejectionReason = rejectionReason;
-            reservation.UpdatedAt = DateTime.UtcNow;
+            
+            if (status == ReservationStatus.Rejected)
+            {
+                reservation.RejectionReason = rejectionReason;
+            }
+            
             await _context.SaveChangesAsync();
+            
+            // Send notification to the user if status changed
+            if (oldStatus != status && reservation.User != null)
+            {
+                string statusText = status.ToString();
+                if (status == ReservationStatus.PaymentPending)
+                    statusText = "Approved (Payment Required)";
+                
+                await _notificationService.CreateFacilityReservationNotificationAsync(
+                    recipientId: reservation.UserId,
+                    reservationId: reservation.Id,
+                    facilityName: reservation.Facility.Name,
+                    status: statusText,
+                    senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+                );
+            }
 
+            TempData["SuccessMessage"] = $"Reservation status updated to {status}.";
             return RedirectToAction(nameof(ManageReservations));
         }
 

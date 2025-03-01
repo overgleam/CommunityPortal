@@ -6,6 +6,7 @@ using CommunityPortal.Models.Enums;
 using CommunityPortal.Hubs;
 using CommunityPortal.Services;
 using CommunityPortal.Models.Documents;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Register PDF Service
 builder.Services.AddScoped<PdfService>();
+
+// Register Notification Service
+builder.Services.AddScoped<NotificationService>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -71,7 +75,7 @@ app.UseAuthentication(); // Add Authentication
 app.UseAuthorization();
 
 app.MapHub<ChatHub>("/chatHub");
-
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.MapControllerRoute(
     name: "default",
@@ -84,6 +88,7 @@ using (var scope = app.Services.CreateScope())
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var context = services.GetRequiredService<ApplicationDbContext>();
+    var logger = services.GetRequiredService<ILogger<Program>>();
 
     var roles = new[] { "admin", "staff", "homeowners" };
 
@@ -202,7 +207,7 @@ using (var scope = app.Services.CreateScope())
 
                     context.Documents.AddRange(documents);
                     await context.SaveChangesAsync();
-                    Console.WriteLine($"Seeded {documents.Count} document records with admin ID");
+                    logger.LogInformation($"Seeded {documents.Count} document records with admin ID");
                 }
                 else
                 {
@@ -218,7 +223,7 @@ using (var scope = app.Services.CreateScope())
                             doc.UploadedById = adminId;
                         }
                         await context.SaveChangesAsync();
-                        Console.WriteLine($"Updated {docsToUpdate.Count} document records with the correct admin ID");
+                        logger.LogInformation($"Updated {docsToUpdate.Count} document records with the correct admin ID");
                     }
                 }
             }
@@ -230,19 +235,117 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Ensure all Staff users have the "staff" role assigned
-    var staffUsers = await userManager.Users
-        .Include(u => u.Staff)
-        .Where(u => u.Staff != null)
-        .ToListAsync();
-
-    foreach (var staffUser in staffUsers)
+    // Create staff users at runtime
+    var staffData = new[]
     {
-        if (!await userManager.IsInRoleAsync(staffUser, "staff"))
+        new { Email = "aiah@gmail.com", UserName = "aiah@gmail.com", Phone = "09772719114", Image = "images/default/Aiah.png", 
+              FirstName = "Aiah", LastName = "Arceta", Department = "Maintenance Department", Position = "General Maintenance Worker", Address = "123 Main St, Cityville" },
+        new { Email = "david@gmail.com", UserName = "david@gmail.com", Phone = "09772719114", Image = "images/default/David.png",
+              FirstName = "David", LastName = "Guison", Department = "Maintenance Department", Position = "Plumber", Address = "456 Elm St, Townsville" },
+        new { Email = "marinella@gmail.com", UserName = "marinella@gmail.com", Phone = "09772719114", Image = "images/default/Caber.png",
+              FirstName = "Marinella", LastName = "Caber", Department = "Maintenance Department", Position = "Electrician", Address = "789 Oak St, Villageton" },
+        new { Email = "kevin@gmail.com", UserName = "kevin@gmail.com", Phone = "09772719114", Image = "images/default/Tamayo.png",
+              FirstName = "Kevin", LastName = "Tamayo", Department = "Maintenance Department", Position = "HVAC Technician", Address = "101 Pine St, Metrocity" },
+        new { Email = "slater@gmail.com", UserName = "slater@gmail.com", Phone = "09772719114", Image = "images/default/Slater.png",
+              FirstName = "Slater", LastName = "Young", Department = "Maintenance Department", Position = "Carpenter", Address = "202 Birch St, Suburbia" },
+        new { Email = "crist@gmail.com", UserName = "crist@gmail.com", Phone = "09772719114", Image = "images/default/Brader.png",
+              FirstName = "Crist", LastName = "Briand", Department = "Security Department", Position = "Security Guard", Address = "303 Cedar St, Uptown" },
+        new { Email = "al@gmail.com", UserName = "al@gmail.com", Phone = "09772719114", Image = "images/default/Roblox.png",
+              FirstName = "Al", LastName = "Moralde", Department = "Security Department", Position = "Access Control Officer", Address = "404 Redwood St, Downtown" },
+        new { Email = "rowell@gmail.com", UserName = "rowell@gmail.com", Phone = "09772719114", Image = "images/default/Rowell.png",
+              FirstName = "Rowell", LastName = "Divina", Department = "Housekeeping & Sanitation Department", Position = "Janitor/Cleaner", Address = "505 Maple St, Citytown" },
+        new { Email = "hev@gmail.com", UserName = "hev@gmail.com", Phone = "09772719114", Image = "images/default/Hev.png",
+              FirstName = "Hev", LastName = "Abi", Department = "Housekeeping & Sanitation Department", Position = "Waste Management Staff", Address = "606 Spruce St, Countryville" },
+        new { Email = "denise@gmail.com", UserName = "denise@gmail.com", Phone = "09772719114", Image = "images/default/Denise.png",
+              FirstName = "Denise", LastName = "Julia", Department = "Landscaping & Gardening Department", Position = "Gardener", Address = "707 Willow St, Riverside" }
+    };
+
+    logger.LogInformation("Checking staff users...");
+    int createdStaffCount = 0;
+    int existingStaffCount = 0;
+
+    foreach (var staffInfo in staffData)
+    {
+        var staffUser = await userManager.FindByEmailAsync(staffInfo.Email);
+        
+        if (staffUser == null)
         {
-            await userManager.AddToRoleAsync(staffUser, "staff");
-            Console.WriteLine($"Assigned staff role to user {staffUser.Email}");
+            // Create the user
+            staffUser = new ApplicationUser
+            {
+                UserName = staffInfo.UserName,
+                Email = staffInfo.Email,
+                Status = UserStatus.Approved,
+                ProfileImagePath = staffInfo.Image,
+                PhoneNumber = staffInfo.Phone,
+                EmailConfirmed = true,
+                PhoneNumberConfirmed = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            var result = await userManager.CreateAsync(staffUser, "123123");
+            
+            if (result.Succeeded)
+            {
+                // Assign staff role
+                await userManager.AddToRoleAsync(staffUser, "staff");
+                
+                // Create staff profile
+                var staffProfile = new Staff
+                { 
+                    UserId = staffUser.Id,
+                    FirstName = staffInfo.FirstName,
+                    LastName = staffInfo.LastName,
+                    Department = staffInfo.Department,
+                    Position = staffInfo.Position,
+                    Address = staffInfo.Address
+                };
+                
+                context.Staffs.Add(staffProfile);
+                createdStaffCount++;
+            }
+            else 
+            {
+                logger.LogError($"Failed to create staff: {staffInfo.Email}, Errors: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            }
         }
+        else 
+        {
+            existingStaffCount++;
+            
+            // Ensure role is assigned if user exists but doesn't have the role
+            if (!await userManager.IsInRoleAsync(staffUser, "staff"))
+            {
+                await userManager.AddToRoleAsync(staffUser, "staff");
+                logger.LogInformation($"Assigned staff role to existing user: {staffInfo.Email}");
+            }
+            
+            // Check if staff profile exists
+            var existingProfile = await context.Staffs.FirstOrDefaultAsync(s => s.UserId == staffUser.Id);
+            if (existingProfile == null)
+            {
+                // Create staff profile if missing
+                var staffProfile = new Staff
+                { 
+                    UserId = staffUser.Id,
+                    FirstName = staffInfo.FirstName,
+                    LastName = staffInfo.LastName,
+                    Department = staffInfo.Department,
+                    Position = staffInfo.Position,
+                    Address = staffInfo.Address
+                };
+                
+                context.Staffs.Add(staffProfile);
+                logger.LogInformation($"Created missing profile for staff user: {staffInfo.Email}");
+            }
+        }
+    }
+    
+    if (createdStaffCount > 0 || existingStaffCount > 0)
+    {
+        await context.SaveChangesAsync();
+        logger.LogInformation($"Staff seeding complete. Created {createdStaffCount} new staff, found {existingStaffCount} existing staff.");
     }
 }
 

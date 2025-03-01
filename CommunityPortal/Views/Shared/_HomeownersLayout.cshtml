@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/enhanced-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/homeowner.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/notifications.css" asp-append-version="true" />
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -226,67 +227,28 @@
                         
                         <!-- Notifications -->
                         <div class="dropdown me-3">
-                            <a class="nav-link position-relative" href="#" id="notificationsDropdown" role="button" 
+                            <a class="nav-link position-relative notification-bell" href="#" id="notificationsDropdown" role="button" 
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="material-icons">notifications</i>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    3
-                                    <span class="visually-hidden">unread notifications</span>
-                                </span>
+                                <span class="notification-badge" id="notification-count">0</span>
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="notificationsDropdown" 
-                                 style="width: 300px; max-height: 400px; overflow-y: auto;">
+                            <div class="dropdown-menu dropdown-menu-end notification-dropdown p-0" aria-labelledby="notificationsDropdown">
                                 <div class="p-2 border-bottom d-flex justify-content-between align-items-center">
                                     <h6 class="mb-0">Notifications</h6>
-                                    <a href="#" class="text-decoration-none small">Mark all as read</a>
+                                    <form asp-controller="Notifications" asp-action="MarkAllAsRead" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-link p-0 text-decoration-none small">Mark all as read</button>
+                                    </form>
                                 </div>
-                                <div class="notification-item p-3 border-bottom">
-                                    <div class="d-flex">
-                                        <div class="flex-shrink-0">
-                                            <i class="material-icons text-primary">announcement</i>
+                                <div id="notifications-container">
+                                    <div class="text-center py-3">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
                                         </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h6 class="mb-1">New Announcement</h6>
-                                            <p class="mb-1 small">Community meeting scheduled for next week</p>
-                                            <small class="text-muted">2 hours ago</small>
-                                        </div>
-                                        <button class="btn btn-sm text-muted mark-as-read" data-notification-id="1">
-                                            <i class="material-icons small">check</i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="notification-item p-3 border-bottom">
-                                    <div class="d-flex">
-                                        <div class="flex-shrink-0">
-                                            <i class="material-icons text-success">build</i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h6 class="mb-1">Service Request Update</h6>
-                                            <p class="mb-1 small">Your request #1234 has been completed</p>
-                                            <small class="text-muted">1 day ago</small>
-                                        </div>
-                                        <button class="btn btn-sm text-muted mark-as-read" data-notification-id="2">
-                                            <i class="material-icons small">check</i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="notification-item p-3 border-bottom">
-                                    <div class="d-flex">
-                                        <div class="flex-shrink-0">
-                                            <i class="material-icons text-warning">payment</i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h6 class="mb-1">Payment Reminder</h6>
-                                            <p class="mb-1 small">Your monthly dues are due in 5 days</p>
-                                            <small class="text-muted">2 days ago</small>
-                                        </div>
-                                        <button class="btn btn-sm text-muted mark-as-read" data-notification-id="3">
-                                            <i class="material-icons small">check</i>
-                                        </button>
+                                        <p class="mb-0 mt-2">Loading notifications...</p>
                                     </div>
                                 </div>
                                 <div class="p-2 text-center border-top">
-                                    <a href="#" class="text-decoration-none small">View all notifications</a>
+                                    <a asp-controller="Notifications" asp-action="Index" class="text-decoration-none small">View all notifications</a>
                                 </div>
                             </div>
                         </div>
@@ -347,16 +309,28 @@
                 </div>
                 <div class="col-md-4 text-center text-md-end">
                     <div class="footer-contact">
-                        <p class="mb-1">Contact us:</p>
-                        <a href="mailto:support@communityportal.com" class="text-decoration-none">
-                            <i class="material-icons align-middle me-1">email</i>
-                            support@communityportal.com
-                        </a>
+                        <p class="mb-0"><i class="material-icons">email</i> <a href="mailto:contact@communityportal.com">contact@communityportal.com</a></p>
+                        <p class="mb-0"><i class="material-icons">phone</i> <a href="tel:+11234567890">+1 (123) 456-7890</a></p>
                     </div>
                 </div>
             </div>
         </div>
     </footer>
+
+    <!-- Toast for notifications -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+            <div class="toast-header">
+                <i id="toastIcon" class="material-icons me-2 text-primary">notifications</i>
+                <strong class="me-auto" id="toastTitle">Notification Title</strong>
+                <small id="toastTime">just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                Notification message goes here.
+            </div>
+        </div>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -366,6 +340,155 @@
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/enhanced-ui.js" asp-append-version="true"></script>
+    
+    <!-- SignalR scripts -->
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    
+    <!-- Notification scripts -->
+    <script>
+        $(document).ready(function() {
+            // Load initial notification count
+            updateNotificationCount();
+            
+            // Load notifications for dropdown
+            loadNotifications();
+            
+            // Setup SignalR connection
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/notificationHub")
+                .withAutomaticReconnect()
+                .build();
+            
+            // Start the connection
+            connection.start()
+                .then(function() {
+                    console.log("SignalR Connected");
+                })
+                .catch(function(err) {
+                    console.error(err.toString());
+                });
+            
+            // Handle incoming notifications
+            connection.on("ReceiveNotification", function(id, title, message, senderName, link, type, createdAt) {
+                console.log("Received notification: " + title);
+                
+                // Update notification count
+                updateNotificationCount();
+                
+                // Reload notifications in dropdown
+                loadNotifications();
+                
+                // Show toast notification
+                showNotificationToast(title, message, type);
+                
+                // Play sound for notification
+                playNotificationSound();
+                
+                // Animate bell icon
+                $('.notification-bell').addClass('notification-bell-shake');
+                setTimeout(function() {
+                    $('.notification-bell').removeClass('notification-bell-shake');
+                }, 1000);
+            });
+            
+            // Function to update notification count
+            function updateNotificationCount() {
+                $.get('/Notifications/GetUnreadCount', function(data) {
+                    $('#notification-count').text(data.count);
+                    if (data.count > 0) {
+                        $('#notification-count').show();
+                    } else {
+                        $('#notification-count').hide();
+                    }
+                });
+            }
+            
+            // Function to load notifications into dropdown
+            function loadNotifications() {
+                $.get('/Notifications/GetNotificationsDropdown', function(data) {
+                    $('#notifications-container').html(data);
+                    
+                    // Add click handler for notification items
+                    $('.notification-item').on('click', function() {
+                        var id = $(this).data('id');
+                        
+                        // If clicking a notification with a link, mark it as read
+                        if (id) {
+                            $.post('/Notifications/MarkAsRead/' + id, function() {
+                                updateNotificationCount();
+                            });
+                        }
+                    });
+                });
+            }
+            
+            function showNotificationToast(title, message, type) {
+                // Set icon based on notification type
+                var iconName = 'notifications';
+                var iconClass = 'material-icons me-2 text-primary';
+                
+                switch(type) {
+                    case 'Alert': 
+                        iconName = 'warning';
+                        iconClass = 'material-icons me-2 text-warning';
+                        break;
+                    case 'Message': 
+                        iconName = 'email';
+                        iconClass = 'material-icons me-2 text-primary';
+                        break;
+                    case 'Event': 
+                        iconName = 'event';
+                        iconClass = 'material-icons me-2 text-info';
+                        break;
+                    case 'Billing': 
+                        iconName = 'receipt';
+                        iconClass = 'material-icons me-2 text-success';
+                        break;
+                    case 'ServiceRequest': 
+                        iconName = 'build';
+                        iconClass = 'material-icons me-2 text-secondary';
+                        break;
+                    case 'Forum':
+                        iconName = 'forum';
+                        iconClass = 'material-icons me-2 text-primary';
+                        break;
+                    case 'Poll':
+                        iconName = 'poll';
+                        iconClass = 'material-icons me-2 text-info';
+                        break;
+                    case 'Document':
+                        iconName = 'description';
+                        iconClass = 'material-icons me-2 text-secondary';
+                        break;
+                    case 'System':
+                        iconName = 'settings';
+                        iconClass = 'material-icons me-2 text-secondary';
+                        break;
+                }
+                
+                $('#toastIcon').attr('class', iconClass);
+                $('#toastIcon').text(iconName);
+                $('#toastTitle').text(title);
+                $('#toastMessage').text(message);
+                $('#toastTime').text('just now');
+                
+                var toast = new bootstrap.Toast(document.getElementById('notificationToast'));
+                toast.show();
+            }
+            
+            function playNotificationSound() {
+                // Implement sound if needed
+                // var audio = new Audio('/sounds/notification.mp3');
+                // audio.play();
+            }
+        });
+    </script>
+    
+    @if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
+    {
+        <!-- TempData is handled by displayNotifications() in enhanced-ui.js -->
+    }
+    
     @RenderSection("Scripts", required: false)
 </body>
 </html>

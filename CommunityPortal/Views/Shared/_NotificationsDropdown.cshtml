@@ -1,0 +1,81 @@
+@model IEnumerable<CommunityPortal.Models.Notification>
+
+<div class="notification-dropdown">
+    @if (!Model.Any())
+    {
+        <div class="notification-item py-3 text-center">
+            <i class="fas fa-bell-slash text-muted me-2"></i>
+            <span class="text-muted">No notifications</span>
+        </div>
+    }
+    else
+    {
+        @foreach (var notification in Model)
+        {
+            <a href="@(string.IsNullOrEmpty(notification.Link) ? $"/Notifications/Details/{notification.Id}" : notification.Link)" 
+               class="notification-item @(!notification.IsRead ? "unread" : "")" 
+               data-id="@notification.Id">
+                <div class="notification-icon">
+                    @switch (notification.Type)
+                    {
+                        case NotificationType.Alert:
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                            break;
+                        case NotificationType.Message:
+                            <i class="fas fa-envelope text-primary"></i>
+                            break;
+                        case NotificationType.Event:
+                            <i class="fas fa-calendar text-info"></i>
+                            break;
+                        case NotificationType.Billing:
+                            <i class="fas fa-file-invoice-dollar text-success"></i>
+                            break;
+                        case NotificationType.ServiceRequest:
+                            <i class="fas fa-tools text-secondary"></i>
+                            break;
+                        case NotificationType.Forum:
+                            <i class="fas fa-comments text-primary"></i>
+                            break;
+                        case NotificationType.Poll:
+                            <i class="fas fa-poll text-info"></i>
+                            break;
+                        case NotificationType.Document:
+                            <i class="fas fa-file-alt text-secondary"></i>
+                            break;
+                        case NotificationType.System:
+                            <i class="fas fa-cog text-secondary"></i>
+                            break;
+                        default:
+                            <i class="fas fa-bell text-primary"></i>
+                            break;
+                    }
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">@notification.Title</div>
+                    <div class="notification-message">@notification.Message.Substring(0, Math.Min(notification.Message.Length, 60))@(notification.Message.Length > 60 ? "..." : "")</div>
+                    <div class="notification-meta">
+                        <small>
+                            <i class="far fa-clock me-1"></i>
+                            @{
+                                var timeDiff = DateTime.UtcNow - notification.CreatedAt;
+                                string timeAgo;
+                                
+                                if (timeDiff.TotalMinutes < 1)
+                                    timeAgo = "just now";
+                                else if (timeDiff.TotalMinutes < 60)
+                                    timeAgo = $"{(int)timeDiff.TotalMinutes} min ago";
+                                else if (timeDiff.TotalHours < 24)
+                                    timeAgo = $"{(int)timeDiff.TotalHours} hours ago";
+                                else if (timeDiff.TotalDays < 7)
+                                    timeAgo = $"{(int)timeDiff.TotalDays} days ago";
+                                else
+                                    timeAgo = notification.CreatedAt.ToLocalTime().ToString("MMM dd");
+                            }
+                            @timeAgo
+                        </small>
+                    </div>
+                </div>
+            </a>
+        }
+    }
+</div> 

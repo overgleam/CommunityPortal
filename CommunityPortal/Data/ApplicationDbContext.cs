@@ -42,6 +42,7 @@ namespace CommunityPortal.Data
         public DbSet<FeeType> FeeTypes { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<BillingSettings> BillingSettings { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -345,10 +346,24 @@ namespace CommunityPortal.Data
                 .HasForeignKey(p => p.PaymentMethodId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            
+            // 2. Seed basic data
             ServiceCategorySeeder.SeedServiceCategories(builder);
             BillingSeeder.SeedFeeTypes(builder);
             BillingSeeder.SeedBillingSettings(builder);
-            StaffSeeder.SeedStaff(builder);
+            
+            // Configure Notification entity
+            builder.Entity<Notification>()
+                .HasOne(n => n.Recipient)
+                .WithMany()
+                .HasForeignKey(n => n.RecipientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Notification>()
+                .HasOne(n => n.Sender)
+                .WithMany()
+                .HasForeignKey(n => n.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public override int SaveChanges()
@@ -367,17 +382,27 @@ namespace CommunityPortal.Data
         {
             var entries = ChangeTracker
                 .Entries()
-                .Where(e => e.Entity is ApplicationUser && 
+                .Where(e => (e.Entity is ApplicationUser || e.Entity is Notification) && 
                             (e.State == EntityState.Added || e.State == EntityState.Modified));
 
             foreach (var entry in entries)
             {
-                var user = (ApplicationUser)entry.Entity;
-                if (entry.State == EntityState.Added)
+                if (entry.Entity is ApplicationUser user)
                 {
-                    user.CreatedAt = DateTime.UtcNow;
+                    if (entry.State == EntityState.Added)
+                    {
+                        user.CreatedAt = DateTime.UtcNow;
+                    }
+                    user.UpdatedAt = DateTime.UtcNow;
                 }
-                user.UpdatedAt = DateTime.UtcNow;
+                else if (entry.Entity is Notification notification && entry.State == EntityState.Modified)
+                {
+                    // For soft delete
+                    if (notification.IsDeleted && notification.DeletedAt == null)
+                    {
+                        notification.DeletedAt = DateTime.UtcNow;
+                    }
+                }
             }
         }
     }

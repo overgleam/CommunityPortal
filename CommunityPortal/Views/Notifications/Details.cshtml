@@ -1,0 +1,104 @@
+@model CommunityPortal.Models.Notification
+
+@{
+    ViewData["Title"] = "Notification Details";
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <h1>Notification Details</h1>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        @switch (Model.Type)
+                        {
+                            case NotificationType.Alert:
+                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                <span>Alert</span>
+                                break;
+                            case NotificationType.Message:
+                                <i class="fas fa-envelope text-primary me-2"></i>
+                                <span>Message</span>
+                                break;
+                            case NotificationType.Event:
+                                <i class="fas fa-calendar text-info me-2"></i>
+                                <span>Event</span>
+                                break;
+                            case NotificationType.Billing:
+                                <i class="fas fa-file-invoice-dollar text-success me-2"></i>
+                                <span>Billing</span>
+                                break;
+                            case NotificationType.ServiceRequest:
+                                <i class="fas fa-tools text-secondary me-2"></i>
+                                <span>Service Request</span>
+                                break;
+                            case NotificationType.Forum:
+                                <i class="fas fa-comments text-primary me-2"></i>
+                                <span>Forum</span>
+                                break;
+                            case NotificationType.Poll:
+                                <i class="fas fa-poll text-info me-2"></i>
+                                <span>Poll</span>
+                                break;
+                            case NotificationType.Document:
+                                <i class="fas fa-file-alt text-secondary me-2"></i>
+                                <span>Document</span>
+                                break;
+                            case NotificationType.System:
+                                <i class="fas fa-cog text-secondary me-2"></i>
+                                <span>System</span>
+                                break;
+                            default:
+                                <i class="fas fa-bell text-primary me-2"></i>
+                                <span>General</span>
+                                break;
+                        }
+                        <span class="badge @(Model.IsRead ? "bg-secondary" : "bg-primary") ms-2">
+                            @(Model.IsRead ? "Read" : "Unread")
+                        </span>
+                    </div>
+                    <div>
+                        @Model.CreatedAt.ToLocalTime().ToString("g")
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Title</h5>
+                    <h6 class="card-subtitle mb-3 text-muted">From: @(Model.Sender?.FullName ?? "System")</h6>
+                    <p class="card-text">@Model.Message</p>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Link))
+                    {
+                        <a href="@Model.Link" class="btn btn-primary mt-3">
+                            <i class="fas fa-external-link-alt me-1"></i> Go to Link
+                        </a>
+                    }
+                </div>
+                <div class="card-footer d-flex justify-content-between">
+                    <div>
+                        @if (Model.ReadAt.HasValue)
+                        {
+                            <small class="text-muted">Read on: @Model.ReadAt.Value.ToLocalTime().ToString("g")</small>
+                        }
+                    </div>
+                    <div>
+                        <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger" 
+                                    onclick="return confirm('Are you sure you want to delete this notification?');">
+                                <i class="fas fa-trash me-1"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

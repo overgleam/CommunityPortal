@@ -5,6 +5,8 @@ using CommunityPortal.Models;
 using CommunityPortal.Models.ServiceRequest;
 using CommunityPortal.Data;
 using Microsoft.AspNetCore.Identity;
+using CommunityPortal.Services;
+using System.Security.Claims;
 
 namespace CommunityPortal.Controllers
 {
@@ -13,11 +15,16 @@ namespace CommunityPortal.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly NotificationService _notificationService;
 
-        public ServiceRequestController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public ServiceRequestController(
+            ApplicationDbContext context, 
+            UserManager<ApplicationUser> userManager,
+            NotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
+            _notificationService = notificationService;
         }
 
         // GET: ServiceRequest
@@ -105,61 +112,71 @@ namespace CommunityPortal.Controllers
         [Authorize(Roles = "homeowners")]
         public async Task<IActionResult> Create(ServiceRequest serviceRequest)
         {
-            try
+            // Remove validation errors for navigation properties
+            ModelState.Remove("HomeownerId");
+            ModelState.Remove("Homeowner");
+            ModelState.Remove("ServiceCategory");
+            ModelState.Remove("StaffAssignments");
+            ModelState.Remove("Feedback");
+            
+            // Validate that PreferredSchedule is in the future
+            if (serviceRequest.PreferredSchedule <= DateTime.UtcNow)
             {
-                // Remove validation errors for navigation properties
-                ModelState.Remove("Homeowner");
-                ModelState.Remove("ServiceCategory");
-                ModelState.Remove("HomeownerId");
-
-                // Validate that PreferredSchedule is in the future
-                if (serviceRequest.PreferredSchedule <= DateTime.UtcNow)
-                {
-                    ModelState.AddModelError("PreferredSchedule", "Please select a future date and time.");
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                    TempData["ErrorMessage"] = string.Join(", ", errors);
-                    ViewBag.Categories = await _context.ServiceCategories.ToListAsync();
-                    return View(serviceRequest);
-                }
-
+                ModelState.AddModelError("PreferredSchedule", "Please select a future date and time.");
+            }
+            
+            if (ModelState.IsValid)
+            {
+                // Set homeowner ID from current user
                 var currentUser = await _userManager.GetUserAsync(User);
-                if (currentUser == null)
+                var homeowner = await _context.Homeowners
+                    .FirstOrDefaultAsync(h => h.UserId == currentUser.Id);
+
+                if (homeowner == null)
                 {
-                    ModelState.AddModelError("", "User not found.");
-                    ViewBag.Categories = await _context.ServiceCategories.ToListAsync();
-                    return View(serviceRequest);
+                    return NotFound("Homeowner profile not found.");
                 }
 
-                // Set the required properties
-                serviceRequest.HomeownerId = currentUser.Id;
+                serviceRequest.HomeownerId = homeowner.UserId;
                 serviceRequest.Status = ServiceRequestStatus.Pending;
                 serviceRequest.CreatedAt = DateTime.UtcNow;
-
-                // Verify the service category exists
-                var categoryExists = await _context.ServiceCategories.AnyAsync(c => c.Id == serviceRequest.ServiceCategoryId);
-                if (!categoryExists)
-                {
-                    ModelState.AddModelError("ServiceCategoryId", "Invalid service category selected.");
-                    ViewBag.Categories = await _context.ServiceCategories.ToListAsync();
-                    return View(serviceRequest);
-                }
-
+                
                 _context.Add(serviceRequest);
                 await _context.SaveChangesAsync();
+                
+                // Send notification to all admins
+                var adminUsers = await _userManager.GetUsersInRoleAsync("admin");
+                foreach (var admin in adminUsers)
+                {
+                    await _notificationService.CreateNotificationAsync(
+                        recipientId: admin.Id,
+                        title: "New Service Request",
+                        message: $"A new service request has been submitted by {currentUser.FullName}.",
+                        link: $"/ServiceRequest/Details/{serviceRequest.Id}",
+                        type: NotificationType.ServiceRequest,
+                        senderId: currentUser.Id
+                    );
+                }
 
-                TempData["SuccessMessage"] = "Service request created successfully!";
+                // Set success message
+                TempData["SuccessMessage"] = "Service request submitted successfully.";
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+
+            // Get service categories for dropdown
+            ViewBag.Categories = await _context.ServiceCategories.ToListAsync();
+            
+            // Show a summary of validation errors
+            if (!ModelState.IsValid)
             {
-                ModelState.AddModelError("", $"Error creating service request: {ex.Message}");
-                ViewBag.Categories = await _context.ServiceCategories.ToListAsync();
-                return View(serviceRequest);
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
+                
+                TempData["ErrorMessage"] = string.Join("<br>", errors);
             }
+            
+            return View(serviceRequest);
         }
 
         // POST: ServiceRequest/AssignStaff
@@ -198,6 +215,16 @@ namespace CommunityPortal.Controllers
                         StaffId = staffId,
                         AssignedAt = DateTime.UtcNow
                     });
+
+                    // Send notification to the assigned staff member
+                    await _notificationService.CreateNotificationAsync(
+                        recipientId: staffId,
+                        title: "New Service Request Assignment",
+                        message: $"You have been assigned to service request #{requestId}. Please review and respond.",
+                        link: $"/ServiceRequest/Details/{requestId}",
+                        type: NotificationType.ServiceRequest,
+                        senderId: User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    );
                 }
             }
 
@@ -321,6 +348,7 @@ namespace CommunityPortal.Controllers
         {
             var request = await _context.ServiceRequests
                 .Include(s => s.StaffAssignments)
+                .Include(s => s.Homeowner)
                 .FirstOrDefaultAsync(s => s.Id == requestId);
 
             if (request == null)
@@ -334,7 +362,11 @@ namespace CommunityPortal.Controllers
                 return Forbid();
             }
 
+            // Save the old status to check if it changed
+            var oldStatus = request.Status;
+            
             request.Status = status;
+            
             if (status == ServiceRequestStatus.Rejected)
             {
                 request.RejectionReason = rejectionReason;
@@ -363,8 +395,28 @@ namespace CommunityPortal.Controllers
                     }
                 }
             }
+            else if (status == ServiceRequestStatus.InProgress)
+            {
+                // Remove the StartedAt property assignment as it doesn't exist
+                // request.StartedAt = DateTime.UtcNow;
+            }
 
             await _context.SaveChangesAsync();
+            
+            // Send notification to the homeowner if status changed
+            if (oldStatus != status && request.Homeowner != null)
+            {
+                string action = status.ToString();
+                if (status == ServiceRequestStatus.InProgress)
+                    action = "In Progress";
+                
+                await _notificationService.CreateServiceRequestNotificationAsync(
+                    recipientId: request.HomeownerId,
+                    serviceRequestId: request.Id,
+                    action: action,
+                    senderId: currentUser.Id
+                );
+            }
             
             if (status == ServiceRequestStatus.Completed)
             {
@@ -373,6 +425,10 @@ namespace CommunityPortal.Controllers
             else if (status == ServiceRequestStatus.Rejected)
             {
                 TempData["SuccessMessage"] = "Service request has been rejected. Pending staff assignments have been marked as unavailable.";
+            }
+            else if (status == ServiceRequestStatus.InProgress)
+            {
+                TempData["SuccessMessage"] = "Service request has been started and is now in progress.";
             }
             
             return RedirectToAction(nameof(Details), new { id = requestId });

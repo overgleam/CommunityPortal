@@ -129,228 +129,6 @@ namespace CommunityPortal.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "74006c8e-6504-4045-882a-7f03fd12da2b",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "7882f583-79dc-4ba4-b5bc-c92a1bbeaa2c",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4564),
-                            Email = "aiah@gmail.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "AIAH@GMAIL.COM",
-                            NormalizedUserName = "AIAHSTAFF",
-                            PasswordHash = "AQAAAAIAAYagAAAAEA8tvQW3vFHBCJQsm0MxKhXCL4U7DSVUmxOzXbl/aqUQvy2irF+QCiDmzEgfisGptQ==",
-                            PhoneNumber = "09772719114",
-                            PhoneNumberConfirmed = true,
-                            ProfileImagePath = "images/default/Aiah.png",
-                            SecurityStamp = "93218cf7-a15c-45d1-9629-be4848fbcb3e",
-                            Status = 1,
-                            TwoFactorEnabled = false,
-                            UpdatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4565),
-                            UserName = "aiahstaff"
-                        },
-                        new
-                        {
-                            Id = "873c791b-5f95-476b-a8e8-59f235b1ed7b",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "427b8f68-6e27-490b-959b-c437f9d0eb07",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4570),
-                            Email = "david@gmail.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DAVID@GMAIL.COM",
-                            NormalizedUserName = "DAVIDSTAFF",
-                            PasswordHash = "AQAAAAIAAYagAAAAEMkXRK2kLjqTas6Nt7ygKSNmr9ilLDyNPim6urVqpfuPnfgBH+3QU8KVgw/m2nL6uQ==",
-                            PhoneNumber = "09772719114",
-                            PhoneNumberConfirmed = true,
-                            ProfileImagePath = "images/default/David.png",
-                            SecurityStamp = "1b94574b-55ff-4e31-9480-f43961a9cae2",
-                            Status = 1,
-                            TwoFactorEnabled = false,
-                            UpdatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4570),
-                            UserName = "davidstaff"
-                        },
-                        new
-                        {
-                            Id = "8ab8f4c9-e464-428c-9b00-602f40383309",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "b83179d6-9952-4506-91bc-5042999bf057",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4630),
-                            Email = "marinella@gmail.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "MARINELLA@GMAIL.COM",
-                            NormalizedUserName = "MARINELLASTAFF",
-                            PasswordHash = "AQAAAAIAAYagAAAAEOJ/LkoBweL/oHYGBpupnDHd+AQHstOenJE9GTOwUSIFcuyZCkbcbyIRGGWEFHvVfg==",
-                            PhoneNumber = "09772719114",
-                            PhoneNumberConfirmed = true,
-                            ProfileImagePath = "images/default/Caber.png",
-                            SecurityStamp = "986e3937-9558-4b29-9652-bc91692ae94e",
-                            Status = 1,
-                            TwoFactorEnabled = false,
-                            UpdatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4630),
-                            UserName = "marinellastaff"
-                        },
-                        new
-                        {
-                            Id = "fb72ce13-022a-428e-b18a-2ff30216d03f",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "3d20b486-2708-4958-93b0-26e084c48c0c",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4635),
-                            Email = "kevin@gmail.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "KEVIN@GMAIL.COM",
-                            NormalizedUserName = "KEVINSTAFF",
-                            PasswordHash = "AQAAAAIAAYagAAAAEMxDWn8Cvb1PbFtOslIp2PaD1Caw+ewn2u9dnQX0TQ+4tvT0ZdFe7u2u3OXnXCj+aA==",
-                            PhoneNumber = "09772719114",
-                            PhoneNumberConfirmed = true,
-                            ProfileImagePath = "images/default/Tamayo.png",
-                            SecurityStamp = "ddae3b0a-32e1-4e6f-8faa-2396e8c8b7d6",
-                            Status = 1,
-                            TwoFactorEnabled = false,
-                            UpdatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4635),
-                            UserName = "kevinstaff"
-                        },
-                        new
-                        {
-                            Id = "c90b54c0-0849-4b66-a27e-68390b98ed3d",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "ed38af67-f4bf-4dfd-802e-f38983dcd1cb",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4640),
-                            Email = "slater@gmail.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "SLATER@GMAIL.COM",
-                            NormalizedUserName = "SLATERSTAFF",
-                            PasswordHash = "AQAAAAIAAYagAAAAEB1VrfiP/5PyWhGMnZOSn7M944j3mN5HhO9TYi4pl0fcnPpKAAQKqZlMmrkGpXEKgg==",
-                            PhoneNumber = "09772719114",
-                            PhoneNumberConfirmed = true,
-                            ProfileImagePath = "images/default/Slater.png",
-                            SecurityStamp = "5d557cc2-3176-42d4-9bac-10825e696ee7",
-                            Status = 1,
-                            TwoFactorEnabled = false,
-                            UpdatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4641),
-                            UserName = "slaterstaff"
-                        },
-                        new
-                        {
-                            Id = "ec1f1410-3372-4479-9da4-6d9d7153a8e9",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "c16b5619-d9df-4b7e-a245-9fbfeffbb5a3",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4644),
-                            Email = "crist@gmail.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "CRIST@GMAIL.COM",
-                            NormalizedUserName = "CRISTSTAFF",
-                            PasswordHash = "AQAAAAIAAYagAAAAEMnHfsoMLIrbLqolCqF+h2nQWu+A6jyxqjPtoLMkClgJvVY0AuhYs9nbv69UEDuiRw==",
-                            PhoneNumber = "09772719114",
-                            PhoneNumberConfirmed = true,
-                            ProfileImagePath = "images/default/Brader.png",
-                            SecurityStamp = "fdb851d6-f266-489d-b8dc-a8983b90a697",
-                            Status = 1,
-                            TwoFactorEnabled = false,
-                            UpdatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4644),
-                            UserName = "criststaff"
-                        },
-                        new
-                        {
-                            Id = "48d80ee5-482b-4c8c-9303-fbdcbd2cb9c3",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "a142c78d-0216-43d8-adf2-5fd2ef58aa69",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4649),
-                            Email = "al@gmail.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "AL@GMAIL.COM",
-                            NormalizedUserName = "ALSTAFF",
-                            PasswordHash = "AQAAAAIAAYagAAAAEORzI36aNYP9IbYjbnR+WzSODnOUttZegcZ42UXOo/RxGRC4R1dpN5pjHCSHLNQsUg==",
-                            PhoneNumber = "09772719114",
-                            PhoneNumberConfirmed = true,
-                            ProfileImagePath = "images/default/Roblox.png",
-                            SecurityStamp = "776d1cfe-0fc5-4c98-8a71-07cae8c20046",
-                            Status = 1,
-                            TwoFactorEnabled = false,
-                            UpdatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4650),
-                            UserName = "alstaff"
-                        },
-                        new
-                        {
-                            Id = "e5182b06-d283-4e6e-932b-d840ca84d938",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "0e5a1949-c7b0-4147-9297-edf61db0b408",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4725),
-                            Email = "rowell@gmail.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "ROWELL@GMAIL.COM",
-                            NormalizedUserName = "ROWELLSTAFF",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHu3P2Bs2E6xTo78leUNqEg0ievHX4f/rdze5sTRnweLmmRa/1eANzlSlZRtyir99A==",
-                            PhoneNumber = "09772719114",
-                            PhoneNumberConfirmed = true,
-                            ProfileImagePath = "images/default/Rowell.png",
-                            SecurityStamp = "f0128874-45c6-480e-876a-e3ded1125936",
-                            Status = 1,
-                            TwoFactorEnabled = false,
-                            UpdatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4726),
-                            UserName = "rowellstaff"
-                        },
-                        new
-                        {
-                            Id = "2ff57d7e-eff3-4ad5-8612-d39d64631296",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "06594d14-9bd8-425c-8681-6b945fc7e750",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4731),
-                            Email = "hev@gmail.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "HEV@GMAIL.COM",
-                            NormalizedUserName = "HEVSTAFF",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBVcFDzh5IXSg6tvxY3EslquI7kl4J/HVCP3OF/ln1pg757ZaqfoObuAupOgUDFb0w==",
-                            PhoneNumber = "09772719114",
-                            PhoneNumberConfirmed = true,
-                            ProfileImagePath = "images/default/Hev.png",
-                            SecurityStamp = "144544c0-06e5-4084-80d7-5d940eb589b3",
-                            Status = 1,
-                            TwoFactorEnabled = false,
-                            UpdatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4732),
-                            UserName = "hevstaff"
-                        },
-                        new
-                        {
-                            Id = "cf02aaac-f73d-48fe-971c-fae141a1c438",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "305dea07-96ec-4bb9-a4b5-c9ad6a346cb0",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4735),
-                            Email = "denise@gmail.com",
-                            EmailConfirmed = true,
-                            IsDeleted = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "DENISE@GMAIL.COM",
-                            NormalizedUserName = "DENISESTAFF",
-                            PasswordHash = "AQAAAAIAAYagAAAAEIAs+k08m83Ya2I6K6cK2tJVNCxVOmM4yGyr5Xq0T3Oz4eVG70ZmJ69VCh7sSA/BwQ==",
-                            PhoneNumber = "09772719114",
-                            PhoneNumberConfirmed = true,
-                            ProfileImagePath = "images/default/Denise.png",
-                            SecurityStamp = "b5009708-0916-4795-8108-1ed513067f76",
-                            Status = 1,
-                            TwoFactorEnabled = false,
-                            UpdatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4735),
-                            UserName = "denisestaff"
-                        });
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.Billing.Bill", b =>
@@ -521,7 +299,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 1,
                             BillingCycleDay = 1,
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4440),
+                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8694),
                             CreatedBy = "system",
                             Description = "Default configuration for billing operations",
                             IsActive = true,
@@ -584,7 +362,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 1,
                             Category = "Association Dues",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4380),
+                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8626),
                             DefaultAmount = 2000.00m,
                             Description = "Monthly homeowner association dues",
                             IsActive = true,
@@ -596,7 +374,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 2,
                             Category = "Security and Maintenance",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4392),
+                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8645),
                             DefaultAmount = 1000.00m,
                             Description = "Fees for security personnel and maintenance of common areas",
                             IsActive = true,
@@ -608,7 +386,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 3,
                             Category = "Emergency Fund",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4394),
+                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8647),
                             DefaultAmount = 200.00m,
                             Description = "Contribution to emergency fund for unforeseen community needs",
                             IsActive = true,
@@ -620,7 +398,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 4,
                             Category = "Facility Upkeep",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4395),
+                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8649),
                             DefaultAmount = 500.00m,
                             Description = "Maintenance and upkeep of community facilities",
                             IsActive = true,
@@ -632,7 +410,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 5,
                             Category = "Administrative",
-                            CreatedAt = new DateTime(2025, 3, 1, 10, 13, 22, 610, DateTimeKind.Utc).AddTicks(4396),
+                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8650),
                             DefaultAmount = 300.00m,
                             Description = "Expenses related to administrative functions",
                             IsActive = true,
@@ -1295,6 +1073,59 @@ namespace CommunityPortal.Migrations
                     b.ToTable("Homeowners");
                 });
 
+            modelBuilder.Entity("CommunityPortal.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Link")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RecipientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SenderId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipientId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("CommunityPortal.Models.Poll.Poll", b =>
                 {
                     b.Property<int>("Id")
@@ -1713,98 +1544,6 @@ namespace CommunityPortal.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("Staffs");
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = "74006c8e-6504-4045-882a-7f03fd12da2b",
-                            Address = "123 Main St, Cityville",
-                            Department = "Maintenance Department",
-                            FirstName = "Aiah",
-                            LastName = "Arceta",
-                            Position = "General Maintenance Worker"
-                        },
-                        new
-                        {
-                            UserId = "873c791b-5f95-476b-a8e8-59f235b1ed7b",
-                            Address = "456 Elm St, Townsville",
-                            Department = "Maintenance Department",
-                            FirstName = "David",
-                            LastName = "Guison",
-                            Position = "Plumber"
-                        },
-                        new
-                        {
-                            UserId = "8ab8f4c9-e464-428c-9b00-602f40383309",
-                            Address = "789 Oak St, Villageton",
-                            Department = "Maintenance Department",
-                            FirstName = "Marinella",
-                            LastName = "Caber",
-                            Position = "Electrician"
-                        },
-                        new
-                        {
-                            UserId = "fb72ce13-022a-428e-b18a-2ff30216d03f",
-                            Address = "101 Pine St, Metrocity",
-                            Department = "Maintenance Department",
-                            FirstName = "Kevin",
-                            LastName = "Tamayo",
-                            Position = "HVAC Technician"
-                        },
-                        new
-                        {
-                            UserId = "c90b54c0-0849-4b66-a27e-68390b98ed3d",
-                            Address = "202 Birch St, Suburbia",
-                            Department = "Maintenance Department",
-                            FirstName = "Slater",
-                            LastName = "Young",
-                            Position = "Carpenter"
-                        },
-                        new
-                        {
-                            UserId = "ec1f1410-3372-4479-9da4-6d9d7153a8e9",
-                            Address = "303 Cedar St, Uptown",
-                            Department = "Security Department",
-                            FirstName = "Crist",
-                            LastName = "Briand",
-                            Position = "Security Guard"
-                        },
-                        new
-                        {
-                            UserId = "48d80ee5-482b-4c8c-9303-fbdcbd2cb9c3",
-                            Address = "404 Redwood St, Downtown",
-                            Department = "Security Department",
-                            FirstName = "Al",
-                            LastName = "Moralde",
-                            Position = "Access Control Officer"
-                        },
-                        new
-                        {
-                            UserId = "e5182b06-d283-4e6e-932b-d840ca84d938",
-                            Address = "505 Maple St, Citytown",
-                            Department = "Housekeeping & Sanitation Department",
-                            FirstName = "Rowell",
-                            LastName = "Divina",
-                            Position = "Janitor/Cleaner"
-                        },
-                        new
-                        {
-                            UserId = "2ff57d7e-eff3-4ad5-8612-d39d64631296",
-                            Address = "606 Spruce St, Countryville",
-                            Department = "Housekeeping & Sanitation Department",
-                            FirstName = "Hev",
-                            LastName = "Abi",
-                            Position = "Waste Management Staff"
-                        },
-                        new
-                        {
-                            UserId = "cf02aaac-f73d-48fe-971c-fae141a1c438",
-                            Address = "707 Willow St, Riverside",
-                            Department = "Landscaping & Gardening Department",
-                            FirstName = "Denise",
-                            LastName = "Julia",
-                            Position = "Gardener"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -2171,6 +1910,24 @@ namespace CommunityPortal.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.Notification", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "Recipient")
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CommunityPortal.Models.ApplicationUser", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Recipient");
+
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.Poll.Poll", b =>

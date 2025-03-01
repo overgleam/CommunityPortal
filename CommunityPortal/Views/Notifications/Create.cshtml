@@ -1,0 +1,155 @@
+@model CommunityPortal.Models.Notification
+@using Microsoft.AspNetCore.Identity
+@using CommunityPortal.Models
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Create Notification";
+
+    // Get users for recipient selection
+    var users = await UserManager.Users
+        .Where(u => !u.IsDeleted)
+        .OrderBy(u => u.UserName)
+        .ToListAsync();
+
+    var notificationTypes = Enum.GetValues(typeof(NotificationType))
+        .Cast<NotificationType>()
+        .Select(t => new SelectListItem
+        {
+            Value = t.ToString(),
+            Text = t.ToString()
+        });
+}
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+        <h1>Create Notification</h1>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="notificationTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="single-tab" data-bs-toggle="tab" data-bs-target="#single" type="button" role="tab" aria-selected="true">
+                                <i class="fas fa-user me-1"></i> Single User
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="broadcast-tab" data-bs-toggle="tab" data-bs-target="#broadcast" type="button" role="tab" aria-selected="false">
+                                <i class="fas fa-broadcast-tower me-1"></i> Broadcast
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="notificationTabContent">
+                        <!-- Single User Notification Form -->
+                        <div class="tab-pane fade show active" id="single" role="tabpanel" aria-labelledby="single-tab">
+                            <form asp-action="Create" id="singleForm">
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="RecipientId" class="form-label">Recipient</label>
+                                    <select asp-for="RecipientId" class="form-select" required>
+                                        <option value="">-- Select a recipient --</option>
+                                        @foreach (var user in users)
+                                        {
+                                            <option value="@user.Id">@user.FullName (@user.Email)</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="RecipientId" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Type" class="form-label">Type</label>
+                                    <select asp-for="Type" asp-items="notificationTypes" class="form-select"></select>
+                                    <span asp-validation-for="Type" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Title" class="form-label">Title</label>
+                                    <input asp-for="Title" class="form-control" required />
+                                    <span asp-validation-for="Title" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Message" class="form-label">Message</label>
+                                    <textarea asp-for="Message" class="form-control" rows="4" required></textarea>
+                                    <span asp-validation-for="Message" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Link" class="form-label">Link (Optional)</label>
+                                    <input asp-for="Link" class="form-control" placeholder="e.g., /Events/Details/5" />
+                                    <span asp-validation-for="Link" class="text-danger"></span>
+                                    <div class="form-text">A URL to redirect users when they click the notification</div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane me-1"></i> Send Notification
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Broadcast Notification Form -->
+                        <div class="tab-pane fade" id="broadcast" role="tabpanel" aria-labelledby="broadcast-tab">
+                            <form asp-action="CreateBroadcast" id="broadcastForm">
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Type" class="form-label">Type</label>
+                                    <select asp-for="Type" asp-items="notificationTypes" class="form-select"></select>
+                                    <span asp-validation-for="Type" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Title" class="form-label">Title</label>
+                                    <input asp-for="Title" class="form-control" required />
+                                    <span asp-validation-for="Title" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Message" class="form-label">Message</label>
+                                    <textarea asp-for="Message" class="form-control" rows="4" required></textarea>
+                                    <span asp-validation-for="Message" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label asp-for="Link" class="form-label">Link (Optional)</label>
+                                    <input asp-for="Link" class="form-control" placeholder="e.g., /Events/Details/5" />
+                                    <span asp-validation-for="Link" class="text-danger"></span>
+                                    <div class="form-text">A URL to redirect users when they click the notification</div>
+                                </div>
+                                
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Warning:</strong> This will send a notification to all users in the system.
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-warning" onclick="return confirm('Are you sure you want to send this notification to ALL users?');">
+                                        <i class="fas fa-broadcast-tower me-1"></i> Broadcast to All Users
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 
