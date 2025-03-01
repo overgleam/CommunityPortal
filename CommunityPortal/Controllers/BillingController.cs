@@ -47,7 +47,7 @@ namespace CommunityPortal.Controllers
                 return await AdminBillingList(page, searchTerm, sortBy, sortDirection, statusFilter, dateFilter);
             }
 
-            return View("AccessDenied");
+            return RedirectToAction("AccessDenied", "Account");
         }
 
         // GET: Billing/HomeownerDashboard
@@ -98,7 +98,7 @@ namespace CommunityPortal.Controllers
         }
 
         // GET: Billing/AdminList
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         private async Task<IActionResult> AdminBillingList(int page = 1, string searchTerm = null, string sortBy = "BillingDate", 
             string sortDirection = "desc", string statusFilter = null, string dateFilter = null)
         {
@@ -246,7 +246,7 @@ namespace CommunityPortal.Controllers
         }
 
         // GET: Billing/CreateBill
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> CreateBill()
         {
             var homeowners = await _context.Homeowners
@@ -296,7 +296,7 @@ namespace CommunityPortal.Controllers
         // POST: Billing/CreateBill
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> CreateBill(CreateBillViewModel model)
         {
             // Remove validation errors for select lists
@@ -498,7 +498,7 @@ namespace CommunityPortal.Controllers
         }
 
         // GET: Billing/EditBill/5
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> EditBill(int id)
         {
             var bill = await _context.Bills
@@ -558,7 +558,7 @@ namespace CommunityPortal.Controllers
         // POST: Billing/EditBill/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> EditBill(EditBillViewModel model)
         {
             // Remove validation errors for select lists
@@ -688,7 +688,7 @@ namespace CommunityPortal.Controllers
         // POST: Billing/DeleteBill/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeleteBill(int id)
         {
             var bill = await _context.Bills.FindAsync(id);
@@ -706,7 +706,7 @@ namespace CommunityPortal.Controllers
         }
 
         // GET: Billing/VerifyPayment/5
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> VerifyPayment(int id)
         {
             var payment = await _context.Payments
@@ -737,7 +737,7 @@ namespace CommunityPortal.Controllers
         // POST: Billing/VerifyPayment/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> VerifyPayment(int id, string notes)
         {
             var payment = await _context.Payments
@@ -780,7 +780,7 @@ namespace CommunityPortal.Controllers
         // POST: Billing/RejectPayment/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> RejectPayment(int id, string rejectionReason)
         {
             var payment = await _context.Payments
@@ -851,7 +851,7 @@ namespace CommunityPortal.Controllers
         }
 
         // GET: Billing/AdminDashboard
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> AdminDashboard(string period = "ThisMonth")
         {
             DateTime startDate;
@@ -1027,7 +1027,7 @@ namespace CommunityPortal.Controllers
 
         // FEE TYPES MANAGEMENT
         // GET: Billing/FeeTypes
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> FeeTypes()
         {
             var feeTypes = await _context.FeeTypes
@@ -1040,7 +1040,7 @@ namespace CommunityPortal.Controllers
         }
 
         // GET: Billing/CreateFeeType
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public IActionResult CreateFeeType()
         {
             return View();
@@ -1049,7 +1049,7 @@ namespace CommunityPortal.Controllers
         // POST: Billing/CreateFeeType
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> CreateFeeType(FeeType feeType)
         {
             if (ModelState.IsValid)
@@ -1064,7 +1064,7 @@ namespace CommunityPortal.Controllers
         }
 
         // GET: Billing/EditFeeType/5
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> EditFeeType(int id)
         {
             var feeType = await _context.FeeTypes.FindAsync(id);
@@ -1078,7 +1078,7 @@ namespace CommunityPortal.Controllers
         // POST: Billing/EditFeeType/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> EditFeeType(int id, FeeType feeType)
         {
             if (id != feeType.Id)
@@ -1127,7 +1127,7 @@ namespace CommunityPortal.Controllers
         // POST: Billing/DeleteFeeType/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeleteFeeType(int id)
         {
             var feeType = await _context.FeeTypes.FindAsync(id);
@@ -1235,7 +1235,7 @@ namespace CommunityPortal.Controllers
 
         // PAYMENT VERIFICATION
         // GET: Billing/PaymentHistory
-        [Authorize(Roles = "admin,staff")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> PaymentHistory(int page = 1, string searchTerm = null, string sortBy = "PaymentDate", 
             string sortDirection = "desc", string statusFilter = null)
         {

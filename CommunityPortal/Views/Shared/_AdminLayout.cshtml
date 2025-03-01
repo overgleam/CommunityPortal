@@ -7,7 +7,7 @@
     // Default profile image path (ensure this exists in wwwroot/images/)
     var profileImageUrl = Url.Content("~/images/default-profile.jpg");
     var userRole = User.IsInRole("admin") ? "Administrator" : "Staff";
-    
+
     if (User.Identity.IsAuthenticated)
     {
         // Synchronously get the current user's data.
@@ -24,7 +24,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Admin Dashboard</title>
+    <title>@ViewData["Title"] - @userRole Dashboard</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" />
@@ -36,7 +36,7 @@
     <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/enhanced-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
- 
+
     @RenderSection("Styles" , required: false )
 </head>
 
@@ -55,7 +55,7 @@
 
     <!-- Sidebar Overlay for Mobile -->
     <div id="sidebar-overlay"></div>
-    
+
     <!-- Sidebar Toggle Button (Desktop) -->
     <div class="sidebar-toggle d-none d-lg-flex" id="sidebar-toggle">
         <i class="material-icons">menu</i>
@@ -66,7 +66,7 @@
             <div class="sidebar-heading text-center py-4 primary-text mb-3 fs-4 fw-bold text-uppercase border-bottom">
                 <img src="~/images/logo.png" alt="Logo" width="169" height="92" class="me-2">
             </div>
-            
+
             <!-- Accordion Sidebar -->
             <div class="accordion sidebar-accordion" id="sidebarAccordion">
                 <!-- Dashboard -->
@@ -75,14 +75,14 @@
                         <i class="material-icons">dashboard</i> Dashboard
                     </a>
                 </div>
-                
+
                 @if (User.IsInRole("admin"))
                 {
                     <!-- User Management Group -->
                     <div class="accordion-item">
                         <h3 class="accordion-header" id="userManagementHeading">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                                    data-bs-target="#userManagementCollapse" aria-expanded="false" aria-controls="userManagementCollapse">
+                            data-bs-target="#userManagementCollapse" aria-expanded="false" aria-controls="userManagementCollapse">
                                 <i class="material-icons">manage_accounts</i> User Management
                             </button>
                         </h3>
@@ -102,12 +102,12 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Facilities Management Group -->
                     <div class="accordion-item">
                         <h3 class="accordion-header" id="facilitiesManagementHeading">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                                    data-bs-target="#facilitiesManagementCollapse" aria-expanded="false" aria-controls="facilitiesManagementCollapse">
+                            data-bs-target="#facilitiesManagementCollapse" aria-expanded="false" aria-controls="facilitiesManagementCollapse">
                                 <i class="material-icons">apartment</i> Facilities Management
                             </button>
                         </h3>
@@ -127,12 +127,12 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Services Management Group -->
                     <div class="accordion-item">
                         <h3 class="accordion-header" id="servicesManagementHeading">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                                    data-bs-target="#servicesManagementCollapse" aria-expanded="false" aria-controls="servicesManagementCollapse">
+                            data-bs-target="#servicesManagementCollapse" aria-expanded="false" aria-controls="servicesManagementCollapse">
                                 <i class="material-icons">miscellaneous_services</i> Services Management
                             </button>
                         </h3>
@@ -159,12 +159,12 @@
                         </a>
                     </div>
                 }
-                
+
                 <!-- Communication Group -->
                 <div class="accordion-item">
                     <h3 class="accordion-header" id="communicationHeading">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                                data-bs-target="#communicationCollapse" aria-expanded="false" aria-controls="communicationCollapse">
+                        data-bs-target="#communicationCollapse" aria-expanded="false" aria-controls="communicationCollapse">
                             <i class="material-icons">message</i> Communication
                         </button>
                     </h3>
@@ -193,12 +193,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Community Group -->
                 <div class="accordion-item">
                     <h3 class="accordion-header" id="communityHeading">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                                data-bs-target="#communityCollapse" aria-expanded="false" aria-controls="communityCollapse">
+                        data-bs-target="#communityCollapse" aria-expanded="false" aria-controls="communityCollapse">
                             <i class="material-icons">people</i> Community
                         </button>
                     </h3>
@@ -224,43 +224,45 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Billing Management Group -->
-                <div class="accordion-item">
-                    <h3 class="accordion-header" id="billingManagementHeading">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                                data-bs-target="#billingManagementCollapse" aria-expanded="false" aria-controls="billingManagementCollapse">
-                            <i class="material-icons">payments</i> Billing Management
-                        </button>
-                    </h3>
-                    <div id="billingManagementCollapse" class="accordion-collapse collapse" aria-labelledby="billingManagementHeading">
-                        <div class="accordion-body">
-                            <div class="list-group list-group-flush">
-                                <a asp-controller="Billing" asp-action="AdminDashboard" class="list-group-item list-group-item-action">
-                                    <i class="material-icons">dashboard</i> Billing Dashboard
-                                </a>
-                                <a asp-controller="Billing" asp-action="Index" class="list-group-item list-group-item-action">
-                                    <i class="material-icons">list</i> Manage Bills
-                                </a>
-                                <a asp-controller="Billing" asp-action="CreateBill" class="list-group-item list-group-item-action">
-                                    <i class="material-icons">add_circle</i> Create New Bill
-                                </a>
-                                <a asp-controller="Billing" asp-action="PaymentHistory" class="list-group-item list-group-item-action">
-                                    <i class="material-icons">history</i> Payment History
-                                </a>
-                                <a asp-controller="Billing" asp-action="FeeTypes" class="list-group-item list-group-item-action">
-                                    <i class="material-icons">category</i> Fee Types
-                                </a>
-                                @if (User.IsInRole("admin"))
-                                {
-                                    <a asp-controller="Billing" asp-action="Settings" class="list-group-item list-group-item-action">
-                                        <i class="material-icons">settings</i> Billing Settings
+                @if (User.IsInRole("admin"))
+                {
+                    <!-- Billing Management Group -->
+                    <div class="accordion-item">
+                        <h3 class="accordion-header" id="billingManagementHeading">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                            data-bs-target="#billingManagementCollapse" aria-expanded="false" aria-controls="billingManagementCollapse">
+                                <i class="material-icons">payments</i> Billing Management
+                            </button>
+                        </h3>
+                        <div id="billingManagementCollapse" class="accordion-collapse collapse" aria-labelledby="billingManagementHeading">
+                            <div class="accordion-body">
+                                <div class="list-group list-group-flush">
+                                    <a asp-controller="Billing" asp-action="AdminDashboard" class="list-group-item list-group-item-action">
+                                        <i class="material-icons">dashboard</i> Billing Dashboard
                                     </a>
-                                }
+                                    <a asp-controller="Billing" asp-action="Index" class="list-group-item list-group-item-action">
+                                        <i class="material-icons">list</i> Manage Bills
+                                    </a>
+                                    <a asp-controller="Billing" asp-action="CreateBill" class="list-group-item list-group-item-action">
+                                        <i class="material-icons">add_circle</i> Create New Bill
+                                    </a>
+                                    <a asp-controller="Billing" asp-action="PaymentHistory" class="list-group-item list-group-item-action">
+                                        <i class="material-icons">history</i> Payment History
+                                    </a>
+                                    <a asp-controller="Billing" asp-action="FeeTypes" class="list-group-item list-group-item-action">
+                                        <i class="material-icons">category</i> Fee Types
+                                    </a>
+                                    @if (User.IsInRole("admin"))
+                                    {
+                                        <a asp-controller="Billing" asp-action="Settings" class="list-group-item list-group-item-action">
+                                            <i class="material-icons">settings</i> Billing Settings
+                                        </a>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                }
             </div>
         </div>
 
@@ -286,26 +288,39 @@
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quickActionsDropdown">
                                 @if (User.IsInRole("admin"))
                                 {
-                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="CreateStaff">
-                                        <i class="material-icons align-middle me-2">person_add</i> Add Staff
-                                    </a></li>
-                                    <li><a class="dropdown-item" asp-controller="Announcement" asp-action="Create">
-                                        <i class="material-icons align-middle me-2">campaign</i> New Announcement
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="CreateStaff">
+                                          <i class="material-icons align-middle me-2">person_add</i> Add Staff
+                                    </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Announcement" asp-action="Create">
+                                          <i class="material-icons align-middle me-2">campaign</i> New Announcement
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Billing" asp-action="CreateBill">
+                                            <i class="material-icons align-middle me-2">add_circle</i> Create New Bill
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Billing" asp-action="AdminDashboard">
+                                            <i class="material-icons align-middle me-2">dashboard</i> Billing Dashboard
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Event" asp-action="Create">
+                                            <i class="material-icons align-middle me-2">event</i> Create Event
+                                        </a>
+                                    </li>
                                 }
-                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="CreateServiceCategory">
-                                    <i class="material-icons align-middle me-2">build</i> New Service Category
-                                </a></li>
-                                <li><a class="dropdown-item" asp-controller="Event" asp-action="Create">
-                                    <i class="material-icons align-middle me-2">event</i> Create Event
-                                </a></li>
-                                <li><a class="dropdown-item" asp-controller="Billing" asp-action="CreateBill">
-                                    <i class="material-icons align-middle me-2">add_circle</i> Create New Bill
-                                </a></li>
-                                <li><a class="dropdown-item" asp-controller="Billing" asp-action="AdminDashboard">
-                                    <i class="material-icons align-middle me-2">dashboard</i> Billing Dashboard
-                                </a></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="CreateServiceCategory">
+                                      <i class="material-icons align-middle me-2">build</i> New Service Category
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                         

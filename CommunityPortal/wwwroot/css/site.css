@@ -1,5 +1,9 @@
 /* Layout CSS */
 
+h2 {
+    color: wheat;
+}
+
 .text-danger {
     font-size: 0.69rem; 
 }

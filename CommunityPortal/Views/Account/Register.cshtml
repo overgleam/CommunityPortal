@@ -5,6 +5,22 @@
     ViewData["Title"] = "Sign Up";
 }
 
+@section Styles {
+    <style>
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 2px;
+            opacity: 0.6;
+            filter: invert(0.8);
+        }
+
+            input[type="date"]::-webkit-calendar-picker-indicator:hover {
+                opacity: 1
+            }
+    </style>
+}
+
 <div class="d-flex justify-content-center align-items-center min-vh-100 bg-image-register font-swifted">
     <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4 register-card">
         <div class="card-body position-relative">
