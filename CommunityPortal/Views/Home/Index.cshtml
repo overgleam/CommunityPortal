@@ -45,17 +45,16 @@
     }
 
     .navbar {
-        width: 95%;
         display: flex;
         align-items: center;
         justify-content: space-between;
         position: relative;
         z-index: 10;
-        padding-top: 25px;
-        padding-left: 5rem;
+        padding: 2rem;
     }
 
         .navbar .logo {
+			margin-left: 4rem;
             height: 100px; /* Adjust the size as needed */
             width: auto;
         }
@@ -63,20 +62,24 @@
     .user {
         display: flex;
         align-items: center;
+		gap: 2rem;
+        padding-right: 4rem;
     }
 
-        .user img {
-            width: 60px;
-            margin-left: 50px;
+    .user-img {
+			height: 55px; /* Adjust the size as needed */
+            width: 55px;
+        border: 2px solid #fff;
+        border-color: #efe7d4;
             cursor: pointer;
         }
 
-    button {
-        padding: 8px 25px;
+    .dashboard {
+        padding: 0.75rem 2rem;
         background: #2b2e34;
         outline: none;
         border: 2px solid #fff;
-        border-radius: 20px;
+        border-radius: 290px;
         color: #efe7d4;
         border-color: #efe7d4;
         font-size: 12px;
@@ -84,23 +87,21 @@
         cursor: pointer;
     }
 
-    .container {
+    .portal {
+		display: flex;
+		justify-content: center;
+		align-items: center;
         width: 50%;
         height: 100vh;
+        padding: 2rem 0rem;
         background: rgba(86, 86, 86, 0.3);
         backdrop-filter: blur(10px);
-        position: absolute;
-        left: 0;
-        top: 0;
     }
 
     .info {
+		transform: translateY(50px);
         width: 550px;
         color: #fff;
-        position: absolute;
-        right: 0%;
-        top: 50%;
-        transform: translateY(-50%);
     }
 
         .info h1 {
@@ -116,6 +117,7 @@
         }
 
         .info input {
+			margin-top: 20px;
             width: 50%;
             padding: 8px 20px;
             outline: none;
@@ -281,18 +283,18 @@
         transition: background 0.3s ease-in-out;
     }
 </style>
-<div id="hero">
+<div id="hero" style="position: relative">
     <div class="fade-bg"></div>
-    <div class="navbar">
+    <div class="navbar" style="position:absolute; left: 0; top:0; right:0">
         <img src="~/images/logo.png" class="logo">
         <div class="user">
             <form asp-controller="Home" asp-action="Dashboard" method="get">
-                <button type="submit" class="dash">Dashboard</button>
+                <button class="dashboard" type="submit" class="dash">Dashboard</button>
             </form>
             <div class="nav-item dropdown">
                 <a class="nav-link d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown"
                    aria-haspopup="true" aria-expanded="false">
-                    <img src="@profileImageUrl" alt="Profile" class="rounded-circle"/>
+                    <img src="@profileImageUrl" alt="Profile" class="rounded-circle user-img"/>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
                     <a asp-controller="Profile" asp-action="ViewProfile" class="dropdown-item">Profile</a>
@@ -307,9 +309,9 @@
         </div>
     </div>
 
-    <div class="container">
+    <div class="portal">
         <div class="info m-5">
-            <h1>Community Portal</h1>
+            <h1 style="color:antiquewhite">Community Portal</h1>
             <p>
                 Your gateway to a seamless community experience—stay connected, informed, <br>
                 and engaged with everything happening in The Rise at Monterrazas.

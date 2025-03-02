@@ -1,58 +1,80 @@
 /* Layout CSS */
 
-h2 {
-    color: wheat;
+/* Responsive Text Only */
+@media (max-width: 768px) {
+    .info h1 {
+        font-size: 40px;
+        letter-spacing: 3px;
+    }
+
+    .info p {
+        font-size: 16px;
+        line-height: 22px;
+    }
 }
 
-.text-danger {
-    font-size: 0.69rem; 
-}
-.bg-image {
-    background-image: url('/images/background.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
+@media (max-width: 576px) {
+    .info h1 {
+        font-size: 35px;
+        letter-spacing: 2px;
+    }
 
-/* Register CSS */
-.bg-image-register {
-    background-image: url('/images/backgroundregister.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
+    .info p {
+        font-size: 14px;
+        line-height: 20px;
+    }
 
-.register-card {
-    width: 100%;
-    max-width: 900px;
-}
+    h2 {
+        color: wheat;
+    }
 
-.register-button {
-    background-color: #5F778C;
-    color: white;
-    border: none;
-}
+    .text-danger {
+        font-size: 0.69rem;
+    }
 
-/* Login CSS */
-.bg-image-login {
-    background-image: url('/images/backgroundlogin.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
+    .bg-image {
+        background-image: url('/images/background.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    /* Register CSS */
+    .bg-image-register {
+        background-image: url('/images/backgroundregister.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
 
-/* Login view specific styles */
+    .register-card {
+        width: 100%;
+        max-width: 900px;
+    }
 
-.login-card {
-    width: 100%;
-    max-width: 400px;
-}
+    .register-button {
+        background-color: #5F778C;
+        color: white;
+        border: none;
+    }
+    /* Login CSS */
+    .bg-image-login {
+        background-image: url('/images/backgroundlogin.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    /* Login view specific styles */
 
-.login-button {
-    background-color: #5F778C;
-    color: white;
-    border: none;
-}
+    .login-card {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .login-button {
+        background-color: #5F778C;
+        color: white;
+        border: none;
+    }
 
 /* Note: Footer styles have been moved to enhanced-ui.css */
 
