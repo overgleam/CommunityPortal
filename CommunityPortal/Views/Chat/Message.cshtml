@@ -30,11 +30,11 @@
 
 @section Scripts {
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/signalr-manager.js" asp-append-version="true"></script>
     <script>
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/chatHub")
-            .build();
-
+        // Create a managed chat connection using our utility function
+        const connection = createChatConnection("/chatHub");
+        
         const currentUserFullName = "@Model.CurrentUserFullName";
         const recipientId = "@Model.RecipientId";
 
@@ -65,14 +65,14 @@
             messageContainer.scrollTop = messageContainer.scrollHeight;
         });
 
+        // Start the connection
         connection.start().catch(function (err) {
             return console.error(err.toString());
         });
 
         document.getElementById("sendButton").addEventListener("click", function (event) {
             const message = document.getElementById("messageInput").value;
-            const recipientId = "@Model.RecipientId";
-
+            
             if (message.trim() !== "") {
                 // Show the message immediately in the UI
                 const messageContainer = document.getElementById("chatMessages");
@@ -164,5 +164,11 @@
                     loading = false;
                 });
         }
+        
+        // Handle page unload to properly clean up the connection
+        window.addEventListener('beforeunload', function() {
+            // If we're navigating away, make sure to clear any client-side chat state
+            sessionStorage.removeItem('chatState');
+        });
     </script>
 }

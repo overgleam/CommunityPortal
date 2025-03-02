@@ -376,7 +376,7 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline w-100">
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline w-100" id="logoutForm">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="dropdown-item">
                                             <i class="material-icons align-middle me-2">logout</i> Logout
@@ -442,6 +442,7 @@
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <!-- SignalR -->
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/signalr-manager.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/enhanced-ui.js" asp-append-version="true"></script>
     
@@ -456,10 +457,8 @@
             });
             
             // Connect to SignalR hub
-            var connection = new signalR.HubConnectionBuilder()
-                .withUrl("/notificationHub")
-                .withAutomaticReconnect()
-                .build();
+            var connection = createNotificationConnection("/notificationHub");
+            window.notificationConnection = connection;
             
             connection.on("ReceiveNotification", function(id, title, message, sender, link, type, timestamp) {
                 // Update the notification count

@@ -275,7 +275,7 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline w-100">
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline w-100" id="logoutForm">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="dropdown-item">
                                             <i class="material-icons align-middle me-2">logout</i> Logout
@@ -341,6 +341,7 @@
     
     <!-- SignalR scripts -->
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/signalr-manager.js" asp-append-version="true"></script>
     
     <!-- Notification scripts -->
     <script>
@@ -352,10 +353,8 @@
             loadNotifications();
             
             // Setup SignalR connection
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/notificationHub")
-                .withAutomaticReconnect()
-                .build();
+            const connection = createNotificationConnection("/notificationHub");
+            window.notificationConnection = connection;
             
             // Start the connection
             connection.start()

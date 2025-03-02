@@ -28,6 +28,17 @@ namespace CommunityPortal.Hubs
             await base.OnConnectedAsync();
         }
 
+        // Explicitly handle disconnection
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            var userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
+            }
+            await base.OnDisconnectedAsync(exception);
+        }
+
         // Send a message to a specific user
         public async Task SendMessage(string recipientId, string message)
         {
