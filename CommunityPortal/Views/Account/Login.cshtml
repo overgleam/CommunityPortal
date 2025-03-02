@@ -10,7 +10,7 @@
     <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4 login-card">
         <div class="card-body position-relative">
             <a asp-action="Landing" asp-controller="Home" class="text-white text-decoration-none fs-4 position-absolute top-0 start-0 p-3">&larr;</a>
-            <h2 class="text-center mb-4">Login</h2>
+            <h2 class="text-center mb-4 text-white" style="color: white;">Login</h2>
 
             <form asp-action="Login" method="post">
                 <div asp-validation-summary="All" class="text-danger"></div>
@@ -35,12 +35,23 @@
                 <button type="submit" class="btn w-100 rounded-pill login-button">Login</button>
             </form>
 
-            <div class="text-center mt-3">
+            <div class="cAcc">
                 <a asp-action="Register" asp-controller="Account" class="text-white text-decoration-none">Create an Account</a>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .cAcc {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .cAcc:hover {
+        text-decoration: underline;
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

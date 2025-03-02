@@ -46,3 +46,20 @@ button.accept-policy {
   white-space: nowrap;
   line-height: 60px;
 }
+
+.logsign {
+    position: absolute;
+    margin-bottom: 3rem;
+    margin-left: 3rem;
+    z-index: 1000;
+}
+
+    .logsign a {
+        display: inline-block;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .logsign a:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
