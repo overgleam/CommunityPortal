@@ -9,7 +9,7 @@
     <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4 register-card">
         <div class="card-body position-relative">
             <a asp-action="Landing" asp-controller="Home" class="text-white text-decoration-none fs-4 position-absolute top-0 start-0 p-3">&larr;</a>
-            <h2 class="text-center mb-4">Sign Up</h2>
+            <h2 class="text-center mb-4 text-white">Sign Up</h2>
 
             <form asp-action="Register" method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -115,12 +115,23 @@
                 <!-- Already have an account? -->
                 <div class="text-center mt-3">
                     <span>Already have an account? </span>
-                    <a asp-action="Login" asp-controller="Account" class="text-white text-decoration-none fw-bold">Click here to Login!</a>
+                    <a asp-action="Login" asp-controller="Account" class="cLog text-white fw-bold text-decoration-none">Click here to Login!</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<style>
+    .cLog {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .cLog:hover {
+        text-decoration: underline !important;
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

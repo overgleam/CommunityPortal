@@ -9,13 +9,31 @@
     <link rel="stylesheet" href="~/css/enhanced-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
+
+<style>
+    .logsign {
+        margin-bottom: 3rem;
+        margin-left: 3rem;
+        z-index: 1000;
+    }
+
+        .logsign a {
+            display: inline-block;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+            .logsign a:hover {
+                transform: scale(1.05);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+</style>
+
 <body class="d-flex flex-column min-vh-100 bg-image font-swifted">
     <main class="d-flex align-items-center justify-content-center flex-grow-1 text-center">
         @RenderBody()
     </main>
-
     <footer class="position-absolute bottom-0 start-0 w-100 bg-transparent p-5 d-flex">
-        <div class="mb-5 ms-5">
+        <div class="logsign">
             <a asp-controller="Account" asp-action="Login" class="bg-dark bg-opacity-75 rounded-3 text-white px-5 py-3 me-3 text-decoration-none">Login</a>
             <a asp-controller="Account" asp-action="Register" class="bg-dark bg-opacity-75 text-white rounded-3 px-5 py-3 text-decoration-none">Sign Up</a>
         </div>
