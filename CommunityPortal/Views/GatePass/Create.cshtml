@@ -1,0 +1,104 @@
+@model CommunityPortal.Models.GatePass.GatePassViewModel
+
+@{
+    ViewData["Title"] = "Request Gate Pass";
+}
+
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="card-title mb-0">Request a Gate Pass</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="VisitorName" class="form-label required"></label>
+                            <input asp-for="VisitorName" class="form-control" />
+                            <span asp-validation-for="VisitorName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Purpose" class="form-label required"></label>
+                            <textarea asp-for="Purpose" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Purpose" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="VisitDate" class="form-label required"></label>
+                            <input asp-for="VisitDate" class="form-control" type="date" />
+                            <span asp-validation-for="VisitDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="ExpectedArrivalTime" class="form-label required"></label>
+                            <input asp-for="ExpectedArrivalTime" class="form-control" type="time" />
+                            <span asp-validation-for="ExpectedArrivalTime" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="NumberOfVisitors" class="form-label required"></label>
+                            <input asp-for="NumberOfVisitors" class="form-control" type="number" min="1" max="20" />
+                            <span asp-validation-for="NumberOfVisitors" class="text-danger"></span>
+                            <small class="text-muted">Maximum of 20 visitors allowed</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="VisitorVehicleDetails" class="form-label"></label>
+                            <input asp-for="VisitorVehicleDetails" class="form-control" />
+                            <span asp-validation-for="VisitorVehicleDetails" class="text-danger"></span>
+                            <small class="text-muted">Enter vehicle type, model, and plate number</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="ContactNumber" class="form-label"></label>
+                            <input asp-for="ContactNumber" class="form-control" />
+                            <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-top pt-3">
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to List
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i> Submit Request
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .required:after {
+            content: " *";
+            color: red;
+        }
+    </style>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function () {
+            // Set minimum date for visit date to today
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var yyyy = today.getFullYear();
+            today = yyyy + '-' + mm + '-' + dd;
+            $('#VisitDate').attr('min', today);
+        });
+    </script>
+} 

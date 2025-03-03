@@ -18,150 +18,163 @@ namespace CommunityPortal.Services
 
         public byte[] GenerateBillPdf(BillDetailsViewModel viewModel)
         {
-            // Generate PDF document
             return Document.Create(container =>
             {
                 container.Page(page =>
                 {
                     page.Size(PageSizes.A4);
-                    page.Margin(50);
+                    page.Margin(35);
+                    page.Background(Colors.White);
+                    page.DefaultTextStyle(x => x.FontFamily("Arial").FontSize(10));
 
-                    page.Header().Element(container => CreateHeaderElement(viewModel, container));
-                    page.Content().Element(container => CreateContentElement(viewModel, container));
-                    page.Footer().Element(CreateFooterElement);
+                    // Create the PDF structure
+                    page.Header().Element(x => CreateHeader(x, viewModel));
+                    page.Content().Element(x => CreateContent(x, viewModel));
+                    page.Footer().Element(x => CreateFooter(x));
                 });
             }).GeneratePdf();
         }
 
-        private void CreateHeaderElement(BillDetailsViewModel viewModel, IContainer container)
+        // Simple header with clear styling
+        private void CreateHeader(IContainer container, BillDetailsViewModel viewModel)
         {
-            container.Row(row =>
+            container.Padding(10).Border(1).BorderColor(Colors.Grey.Lighten1).Row(row =>
             {
-                // Logo or community name
-                row.RelativeItem().Column(column =>
+                // Logo and company details
+                row.RelativeItem(2).Column(column =>
                 {
-                    column.Item().Text("Community Portal").Bold().FontSize(24);
-                    column.Item().Text($"Invoice #{viewModel.Bill.Id}").FontSize(14);
+                    column.Item().Text("Community Portal").Bold().FontSize(20);
+                    column.Item().Text($"Invoice #{viewModel.Bill.Id}").FontSize(12);
+                    column.Item().Text("123 Community Street");
+                    column.Item().Text("Community City, State 12345");
+                    column.Item().Text("admin@communityportal.com");
                 });
 
-                // Bill information
+                // Invoice details
                 row.RelativeItem().Column(column =>
                 {
-                    column.Item().Text("BILL").Bold().FontSize(20);
-                    column.Item().Text($"Date: {viewModel.Bill.BillingDate:MMMM dd, yyyy}");
-                    column.Item().Text($"Due Date: {viewModel.Bill.DueDate:MMMM dd, yyyy}");
-                    column.Item().Text($"Status: {viewModel.Bill.Status}").Bold();
+                    column.Item().AlignRight().Text("INVOICE").Bold().FontSize(20);
+                    column.Item().AlignRight().Text(viewModel.Bill.Status).Bold();
+                    
+                    column.Item().Height(10); // Spacer
+                    
+                    column.Item().AlignRight().Text("Issue Date:").Bold();
+                    column.Item().AlignRight().Text($"{viewModel.Bill.BillingDate:MM/dd/yyyy}");
+                    
+                    column.Item().AlignRight().Text("Due Date:").Bold();
+                    column.Item().AlignRight().Text($"{viewModel.Bill.DueDate:MM/dd/yyyy}");
+                    
+                    if (viewModel.Bill.PaidDate.HasValue)
+                    {
+                        column.Item().AlignRight().Text("Paid Date:").Bold();
+                        column.Item().AlignRight().Text($"{viewModel.Bill.PaidDate:MM/dd/yyyy}");
+                    }
                 });
             });
         }
 
-        private void CreateContentElement(BillDetailsViewModel viewModel, IContainer container)
+        // Organized content with improved readability
+        private void CreateContent(IContainer container, BillDetailsViewModel viewModel)
         {
-            container.Column(column =>
+            container.PaddingVertical(10).Column(column =>
             {
-                // Client and billing information section
-                column.Item().Element(c => CreateBillingInfoSection(viewModel, c));
-                column.Item().PaddingTop(10);
-
-                // Bill items section
-                column.Item().Element(c => CreateBillItemsSection(viewModel, c));
-                column.Item().PaddingTop(10);
-
-                // Payment summary
-                column.Item().Element(c => CreateSummarySection(viewModel, c));
-
-                // Payment history if any
+                // Billing details section
+                column.Item().PaddingBottom(10).Row(row =>
+                {
+                    // Bill to information
+                    row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(10).Column(col =>
+                    {
+                        col.Item().Text("BILL TO").Bold();
+                        col.Item().Text(viewModel.Homeowner.User.FullName);
+                        col.Item().Text($"Block {viewModel.Homeowner.BlockNumber}, House {viewModel.Homeowner.HouseNumber}");
+                        col.Item().Text(viewModel.Homeowner.Address);
+                        col.Item().Text(viewModel.Homeowner.User.Email);
+                    });
+                    
+                    // Spacing
+                    row.ConstantItem(10);
+                    
+                    // Payment information
+                    row.RelativeItem().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(10).Column(col =>
+                    {
+                        col.Item().Text("PAYMENT INFO").Bold();
+                        col.Item().Text($"Bill Number: {viewModel.Bill.Id}");
+                        col.Item().Text($"Billing Period: {viewModel.Bill.BillingPeriod}");
+                        col.Item().Text($"Total Amount: {viewModel.Bill.TotalAmount:C2}");
+                        col.Item().Text($"Balance Due: {viewModel.Bill.BalanceAmount:C2}");
+                    });
+                });
+                
+                // Bill Items Table
+                column.Item().Element(e => CreateBillItemsTable(e, viewModel));
+                
+                // Payment Summary
+                column.Item().PaddingTop(10).Element(e => CreateSummary(e, viewModel));
+                
+                // Payment History if available
                 if (viewModel.Payments.Count > 0)
                 {
-                    column.Item().PaddingTop(20);
-                    column.Item().Element(c => CreatePaymentHistorySection(viewModel, c));
+                    column.Item().PaddingTop(10).Element(e => CreatePaymentHistory(e, viewModel));
                 }
-
-                // Notes if any
+                
+                // Notes if available
                 if (!string.IsNullOrEmpty(viewModel.Bill.Notes))
                 {
-                    column.Item().PaddingTop(20);
-                    column.Item().Element(c => CreateNotesSection(viewModel, c));
+                    column.Item().PaddingTop(10).Element(e => CreateNotes(e, viewModel));
+                }
+                
+                // Payment Instructions
+                column.Item().PaddingTop(20).Border(1).BorderColor(Colors.Grey.Lighten1).Padding(10).Column(c =>
+                {
+                    c.Item().Text("PAYMENT INSTRUCTIONS").Bold();
+                    c.Item().Text("Please make payments to Community Portal HOA, Account #1234567890");
+                    c.Item().Text($"Reference: INV-{viewModel.Bill.Id}");
+                    c.Item().Text("For inquiries, contact billing@communityportal.com or (555) 123-4567");
+                });
+            });
+        }
+
+        // Clean bill items table
+        private void CreateBillItemsTable(IContainer container, BillDetailsViewModel viewModel)
+        {
+            container.Border(1).BorderColor(Colors.Grey.Lighten1).Column(column =>
+            {
+                // Table header
+                column.Item().Background(Colors.Blue.Medium).Padding(5).Row(row =>
+                {
+                    row.RelativeItem(3).Text("Description").Bold().FontColor(Colors.White);
+                    row.RelativeItem(2).Text("Fee Type").Bold().FontColor(Colors.White);
+                    row.RelativeItem(1).AlignRight().Text("Amount").Bold().FontColor(Colors.White);
+                    row.RelativeItem(2).Text("Notes").Bold().FontColor(Colors.White);
+                });
+                
+                // Table rows
+                bool isAlternate = false;
+                foreach (var item in viewModel.BillItems)
+                {
+                    var background = isAlternate ? Colors.Grey.Lighten3 : Colors.White;
+                    
+                    column.Item().Background(background).Padding(5).Row(row =>
+                    {
+                        row.RelativeItem(3).Text(item.Description);
+                        row.RelativeItem(2).Text(item.FeeType.Name);
+                        row.RelativeItem(1).AlignRight().Text(item.Amount.ToString("C2"));
+                        row.RelativeItem(2).Text(string.IsNullOrEmpty(item.Notes) ? "-" : item.Notes);
+                    });
+                    
+                    isAlternate = !isAlternate;
                 }
             });
         }
 
-        private void CreateBillingInfoSection(BillDetailsViewModel viewModel, IContainer container)
+        // Clear payment summary
+        private void CreateSummary(IContainer container, BillDetailsViewModel viewModel)
         {
-            container.Row(row =>
+            container.AlignRight().MinWidth(200).Border(1).BorderColor(Colors.Grey.Lighten1).Column(column =>
             {
-                // Billing info
-                row.RelativeItem().Column(column =>
-                {
-                    column.Item().Text("Billing Information").Bold().FontSize(14);
-                    column.Item().Text($"Bill #: {viewModel.Bill.Id}");
-                    column.Item().Text($"Billing Period: {viewModel.Bill.BillingPeriod}");
-                    if (viewModel.Bill.Status == "Paid" && viewModel.Bill.PaidDate.HasValue)
-                    {
-                        column.Item().Text($"Paid Date: {viewModel.Bill.PaidDate.Value:MMMM dd, yyyy}");
-                    }
-                });
-
-                // Homeowner info
-                row.RelativeItem().Column(column =>
-                {
-                    column.Item().Text("Homeowner Information").Bold().FontSize(14);
-                    column.Item().Text($"Name: {viewModel.Homeowner.FirstName} {viewModel.Homeowner.LastName}");
-                    column.Item().Text($"Address: Block {viewModel.Homeowner.BlockNumber}, House {viewModel.Homeowner.HouseNumber}");
-                    column.Item().Text($"Full Address: {viewModel.Homeowner.Address}");
-                });
-            });
-        }
-
-        private void CreateBillItemsSection(BillDetailsViewModel viewModel, IContainer container)
-        {
-            container.Column(column =>
-            {
-                column.Item().Text("Bill Items").Bold().FontSize(14);
-                column.Item().Table(table =>
-                {
-                    // Define columns
-                    table.ColumnsDefinition(columns =>
-                    {
-                        columns.RelativeColumn(3);  // Description
-                        columns.RelativeColumn(2);  // Fee Type
-                        columns.RelativeColumn(1);  // Amount
-                        columns.RelativeColumn(3);  // Notes
-                    });
-
-                    // Add header row
-                    table.Header(header =>
-                    {
-                        header.Cell().Background(Colors.Grey.Lighten3).Text("Description").Bold();
-                        header.Cell().Background(Colors.Grey.Lighten3).Text("Fee Type").Bold();
-                        header.Cell().Background(Colors.Grey.Lighten3).Text("Amount").Bold();
-                        header.Cell().Background(Colors.Grey.Lighten3).Text("Notes").Bold();
-                    });
-
-                    // Add data rows
-                    foreach (var item in viewModel.BillItems)
-                    {
-                        table.Cell().Text(item.Description);
-                        table.Cell().Text(item.FeeType.Name);
-                        table.Cell().Text(item.Amount.ToString("C2"));
-                        table.Cell().Text(string.IsNullOrEmpty(item.Notes) ? "-" : item.Notes);
-                    }
-
-                    // Add total row
-                    table.Cell().Text("");
-                    table.Cell().Text("Total:").Bold();
-                    table.Cell().Text(viewModel.Bill.TotalAmount.ToString("C2")).Bold();
-                    table.Cell().Text("");
-                });
-            });
-        }
-
-        private void CreateSummarySection(BillDetailsViewModel viewModel, IContainer container)
-        {
-            container.Column(column =>
-            {
-                column.Item().Text("Payment Summary").Bold().FontSize(14);
-                column.Item().Grid(grid =>
+                column.Item().Background(Colors.Blue.Medium).Padding(5).Text("SUMMARY").Bold().FontColor(Colors.White);
+                
+                column.Item().Padding(5).Grid(grid =>
                 {
                     grid.Columns(2);
                     grid.Item().Text("Total Amount:").Bold();
@@ -170,84 +183,79 @@ namespace CommunityPortal.Services
                     grid.Item().Text("Paid Amount:").Bold();
                     grid.Item().AlignRight().Text(viewModel.Bill.PaidAmount.ToString("C2"));
                     
-                    grid.Item().Text("Balance:").Bold();
-                    grid.Item().AlignRight().Text(viewModel.Bill.BalanceAmount.ToString("C2"));
-                    
                     if (viewModel.Bill.IsPenaltyApplied)
                     {
                         grid.Item().Text("Penalty:").Bold();
                         grid.Item().AlignRight().Text(viewModel.Bill.PenaltyAmount.ToString("C2"));
                     }
+                    
+                    grid.Item().BorderTop(1).BorderColor(Colors.Grey.Lighten1).Text("Amount Due:").Bold();
+                    grid.Item().BorderTop(1).BorderColor(Colors.Grey.Lighten1).AlignRight().Text(viewModel.Bill.BalanceAmount.ToString("C2")).Bold();
                 });
             });
         }
 
-        private void CreatePaymentHistorySection(BillDetailsViewModel viewModel, IContainer container)
+        // Clean payment history table
+        private void CreatePaymentHistory(IContainer container, BillDetailsViewModel viewModel)
         {
-            container.Column(column =>
+            container.Border(1).BorderColor(Colors.Grey.Lighten1).Column(column =>
             {
-                column.Item().Text("Payment History").Bold().FontSize(14);
-                column.Item().Table(table =>
+                column.Item().Background(Colors.Blue.Medium).Padding(5).Text("PAYMENT HISTORY").Bold().FontColor(Colors.White);
+                
+                // Table headers
+                column.Item().Background(Colors.Grey.Lighten3).Padding(5).Row(row =>
                 {
-                    // Define columns
-                    table.ColumnsDefinition(columns =>
-                    {
-                        columns.RelativeColumn(2);  // Date
-                        columns.RelativeColumn(1);  // Amount
-                        columns.RelativeColumn(2);  // Method
-                        columns.RelativeColumn(2);  // Reference
-                        columns.RelativeColumn(1);  // Status
-                    });
-
-                    // Add header row
-                    table.Header(header =>
-                    {
-                        header.Cell().Background(Colors.Grey.Lighten3).Text("Date").Bold();
-                        header.Cell().Background(Colors.Grey.Lighten3).Text("Amount").Bold();
-                        header.Cell().Background(Colors.Grey.Lighten3).Text("Method").Bold();
-                        header.Cell().Background(Colors.Grey.Lighten3).Text("Reference").Bold();
-                        header.Cell().Background(Colors.Grey.Lighten3).Text("Status").Bold();
-                    });
-
-                    // Add data rows
-                    foreach (var payment in viewModel.Payments)
-                    {
-                        table.Cell().Text(payment.PaymentDate.ToString("MMM dd, yyyy"));
-                        table.Cell().Text(payment.Amount.ToString("C2"));
-                        table.Cell().Text(payment.PaymentMethod.Name);
-                        table.Cell().Text(payment.TransactionReference);
-                        table.Cell().Text(payment.Status);
-                    }
+                    row.RelativeItem(2).Text("Date").Bold();
+                    row.RelativeItem(2).Text("Amount").Bold();
+                    row.RelativeItem(2).Text("Method").Bold();
+                    row.RelativeItem(3).Text("Reference").Bold();
+                    row.RelativeItem(1).Text("Status").Bold();
                 });
+                
+                // Payment rows
+                bool isAlternate = false;
+                foreach (var payment in viewModel.Payments)
+                {
+                    var background = isAlternate ? Colors.Grey.Lighten3 : Colors.White;
+                    
+                    column.Item().Background(background).Padding(5).Row(row =>
+                    {
+                        row.RelativeItem(2).Text(payment.PaymentDate.ToString("MM/dd/yyyy"));
+                        row.RelativeItem(2).Text(payment.Amount.ToString("C2"));
+                        row.RelativeItem(2).Text(payment.PaymentMethod.Name);
+                        row.RelativeItem(3).Text(payment.TransactionReference);
+                        row.RelativeItem(1).Text(payment.Status);
+                    });
+                    
+                    isAlternate = !isAlternate;
+                }
             });
         }
 
-        private void CreateNotesSection(BillDetailsViewModel viewModel, IContainer container)
+        // Simple notes section
+        private void CreateNotes(IContainer container, BillDetailsViewModel viewModel)
         {
-            container.Column(column =>
+            container.Border(1).BorderColor(Colors.Grey.Lighten1).Column(column =>
             {
-                column.Item().Text("Notes").Bold().FontSize(14);
-                column.Item().Background(Colors.Grey.Lighten5).Padding(5).Text(viewModel.Bill.Notes);
+                column.Item().Background(Colors.Blue.Medium).Padding(5).Text("NOTES").Bold().FontColor(Colors.White);
+                column.Item().Padding(10).Text(viewModel.Bill.Notes);
             });
         }
 
-        private void CreateFooterElement(IContainer container)
+        // Simple footer with company information
+        private void CreateFooter(IContainer container)
         {
-            container.Row(row =>
+            container.BorderTop(1).BorderColor(Colors.Grey.Lighten1).Padding(10).Row(row =>
             {
-                row.RelativeItem().Column(column =>
+                row.RelativeItem(3).Column(column =>
                 {
-                    column.Item().Text(text =>
-                    {
-                        text.Span("Page ").FontSize(10);
-                        text.CurrentPageNumber().FontSize(10);
-                        text.Span(" of ").FontSize(10);
-                        text.TotalPages().FontSize(10);
-                    });
+                    column.Item().Text("THANK YOU FOR YOUR BUSINESS").Bold();
+                    column.Item().Text("Payment is due within 30 days of the issue date.");
                 });
-                row.RelativeItem().Column(column =>
+                
+                row.RelativeItem(1).Column(column =>
                 {
-                    column.Item().AlignRight().Text("Generated on " + DateTime.Now.ToString("yyyy-MM-dd")).FontSize(10);
+                    column.Item().Text(DateTime.Now.ToString("MM/dd/yyyy")).FontSize(8);
                 });
             });
         }

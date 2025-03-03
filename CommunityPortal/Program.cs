@@ -1,3 +1,4 @@
+using QuestPDF.Infrastructure;
 using CommunityPortal.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,9 @@ using CommunityPortal.Models.Enums;
 using CommunityPortal.Hubs;
 using CommunityPortal.Services;
 using CommunityPortal.Models.Documents;
-using Microsoft.Extensions.Logging;
+
+// Set QuestPDF to use community license
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 

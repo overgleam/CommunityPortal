@@ -299,7 +299,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 1,
                             BillingCycleDay = 1,
-                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8694),
+                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4592),
                             CreatedBy = "system",
                             Description = "Default configuration for billing operations",
                             IsActive = true,
@@ -362,7 +362,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 1,
                             Category = "Association Dues",
-                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8626),
+                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4470),
                             DefaultAmount = 2000.00m,
                             Description = "Monthly homeowner association dues",
                             IsActive = true,
@@ -374,7 +374,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 2,
                             Category = "Security and Maintenance",
-                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8645),
+                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4482),
                             DefaultAmount = 1000.00m,
                             Description = "Fees for security personnel and maintenance of common areas",
                             IsActive = true,
@@ -386,7 +386,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 3,
                             Category = "Emergency Fund",
-                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8647),
+                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4484),
                             DefaultAmount = 200.00m,
                             Description = "Contribution to emergency fund for unforeseen community needs",
                             IsActive = true,
@@ -398,7 +398,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 4,
                             Category = "Facility Upkeep",
-                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8649),
+                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4485),
                             DefaultAmount = 500.00m,
                             Description = "Maintenance and upkeep of community facilities",
                             IsActive = true,
@@ -410,7 +410,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 5,
                             Category = "Administrative",
-                            CreatedAt = new DateTime(2025, 3, 1, 16, 3, 36, 510, DateTimeKind.Utc).AddTicks(8650),
+                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4486),
                             DefaultAmount = 300.00m,
                             Description = "Expenses related to administrative functions",
                             IsActive = true,
@@ -1036,6 +1036,87 @@ namespace CommunityPortal.Migrations
                     b.HasIndex("AuthorId");
 
                     b.ToTable("ForumPosts");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.GatePass.GatePass", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("ApprovedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ContactNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpectedArrivalTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("HomeownerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("NumberOfVisitors")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PassNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PdfPath")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("VisitDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("VisitorName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("VisitorVehicleDetails")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HomeownerId");
+
+                    b.ToTable("GatePasses");
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.Homeowner", b =>
@@ -1899,6 +1980,17 @@ namespace CommunityPortal.Migrations
                         .IsRequired();
 
                     b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("CommunityPortal.Models.GatePass.GatePass", b =>
+                {
+                    b.HasOne("CommunityPortal.Models.Homeowner", "Homeowner")
+                        .WithMany()
+                        .HasForeignKey("HomeownerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Homeowner");
                 });
 
             modelBuilder.Entity("CommunityPortal.Models.Homeowner", b =>

@@ -8,6 +8,7 @@ using CommunityPortal.Models.ServiceRequest;
 using CommunityPortal.Models.Documents;
 using CommunityPortal.Models.Poll;
 using CommunityPortal.Models.Billing;
+using CommunityPortal.Models.GatePass;
 using CommunityPortal.Data.Seeds;
 
 namespace CommunityPortal.Data
@@ -43,6 +44,7 @@ namespace CommunityPortal.Data
         public DbSet<Payment> Payments { get; set; }
         public DbSet<BillingSettings> BillingSettings { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<GatePass> GatePasses { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

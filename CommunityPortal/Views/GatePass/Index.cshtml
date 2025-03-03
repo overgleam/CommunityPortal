@@ -1,0 +1,156 @@
+@model IEnumerable<CommunityPortal.Models.GatePass.GatePassViewModel>
+@using CommunityPortal.Models.Enums
+
+@{
+    ViewData["Title"] = "My Gate Passes";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">My Gate Passes</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i> Request New Gate Pass
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-ticket-alt fa-4x text-muted mb-3"></i>
+                <h4>No Gate Passes Found</h4>
+                <p class="text-muted">You haven't requested any gate passes yet.</p>
+                <a asp-action="Create" class="btn btn-primary mt-2">
+                    <i class="fas fa-plus me-2"></i> Request New Gate Pass
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                var statusClass = "";
+                var statusBadge = "";
+
+                switch (item.Status)
+                {
+                    case GatePassStatus.Pending:
+                        statusClass = "bg-warning";
+                        statusBadge = "Pending";
+                        break;
+                    case GatePassStatus.Approved:
+                        statusClass = "bg-success";
+                        statusBadge = "Approved";
+                        break;
+                    case GatePassStatus.Cancelled:
+                        statusClass = "bg-secondary";
+                        statusBadge = "Cancelled";
+                        break;
+                    case GatePassStatus.Expired:
+                        statusClass = "bg-danger";
+                        statusBadge = "Expired";
+                        break;
+                }
+
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="badge @statusClass">@statusBadge</span>
+                            <small class="text-muted">@item.CreatedAt.ToString("MMM dd, yyyy")</small>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">@item.VisitorName</h5>
+                            <div class="mb-2">
+                                <small class="text-muted">Purpose:</small>
+                                <p class="mb-1">@item.Purpose</p>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Visit Date:</small>
+                                <p class="mb-1">@item.VisitDate.ToString("dddd, MMM dd, yyyy")</p>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Expected Arrival:</small>
+                                <p class="mb-1">@item.ExpectedArrivalTime.ToString(@"hh\:mm tt")</p>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Number of Visitors:</small>
+                                <p class="mb-1">@item.NumberOfVisitors</p>
+                            </div>
+
+                            @if (item.Status == GatePassStatus.Approved && !string.IsNullOrEmpty(item.PassNumber))
+                            {
+                                <div class="alert alert-success mt-3 p-2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <div>
+                                            <small>Gate Pass Number:</small>
+                                            <div><strong>@item.PassNumber</strong></div>
+                                            @if (item.ExpirationDate.HasValue)
+                                            {
+                                                <small>Valid until: @item.ExpirationDate.Value.ToString("MMM dd, yyyy, hh:mm tt")</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer bg-transparent d-flex justify-content-between">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i> View Details
+                            </a>
+                            @if (item.CanBeCancelled)
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#cancelModal@(item.Id)">
+                                    <i class="fas fa-times me-1"></i> Cancel
+                                </button>
+
+                                <!-- Cancel Modal -->
+                                <div class="modal fade" id="cancelModal@(item.Id)" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Confirm Cancellation</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to cancel this gate pass request?</p>
+                                                <p><strong>Visitor:</strong> @item.VisitorName</p>
+                                                <p><strong>Visit Date:</strong> @item.VisitDate.ToString("dddd, MMM dd, yyyy")</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <form asp-action="Cancel" asp-route-id="@item.Id" method="post">
+                                                    <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div> 

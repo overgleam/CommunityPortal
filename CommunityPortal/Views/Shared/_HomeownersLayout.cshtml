@@ -6,7 +6,7 @@
     ApplicationUser currentUser = null;
     // Default profile image path (ensure this exists in wwwroot/images/)
     var profileImageUrl = Url.Content("~/images/default-profile.jpg");
-    var userRole = "Homeowner";
+    var userRole = "homeowners";
     
     if (User.Identity.IsAuthenticated)
     {
@@ -142,6 +142,28 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Gate Pass Group -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="gatePassHeading">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#gatePassCollapse" aria-expanded="false" aria-controls="gatePassCollapse">
+                            <i class="material-icons">badge</i> Gate Pass
+                        </button>
+                    </h2>
+                    <div id="gatePassCollapse" class="accordion-collapse collapse" aria-labelledby="gatePassHeading">
+                        <div class="accordion-body">
+                            <div class="list-group list-group-flush">
+                                <a asp-controller="GatePass" asp-action="Index" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">list</i> My Gate Passes
+                                </a>
+                                <a asp-controller="GatePass" asp-action="Create" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">add_circle</i> Request Gate Pass
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Billing Group -->
                 <div class="accordion-item">
@@ -156,6 +178,9 @@
                             <div class="list-group list-group-flush">
                                 <a asp-controller="Billing" asp-action="Index" class="list-group-item list-group-item-action">
                                     <i class="material-icons">dashboard</i> Billing Dashboard
+                                </a>
+                                <a asp-controller="Billing" asp-action="AllBills" class="list-group-item list-group-item-action">
+                                    <i class="material-icons">receipt_long</i> All Bills
                                 </a>
                             </div>
                         </div>
