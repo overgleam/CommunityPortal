@@ -63,8 +63,11 @@ namespace CommunityPortal.Hubs
             _context.ChatMessages.Add(chatMessage);
             await _context.SaveChangesAsync();
 
-            // Send message to recipient via SignalR
-            await Clients.Group(recipientId).SendAsync("ReceiveMessage", senderFullName, message, chatMessage.Timestamp.ToLocalTime().ToString("g"));
+            // Send message to recipient via SignalR with senderId parameter
+            await Clients.Group(recipientId).SendAsync("ReceiveMessage", senderFullName, message, chatMessage.Timestamp.ToLocalTime().ToString("g"), senderId);
+            
+            // Also send to the sender's group (to update other open tabs/windows)
+            await Clients.Group(senderId).SendAsync("ReceiveMessage", senderFullName, message, chatMessage.Timestamp.ToLocalTime().ToString("g"), senderId);
             
             // Send notification to recipient
             await _notificationService.CreateMessageNotificationAsync(
