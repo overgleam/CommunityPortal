@@ -3,5 +3,591 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2>Welcome, To the Dashboard!</h2>
-<p>Manage the community portal using the dashboard.</p>
+<div class="admin-dashboard-container">
+    <!-- Welcome Section -->
+    <section class="welcome-section mb-4">
+        <div class="container-fluid p-0">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="welcome-card">
+                        <div class="welcome-content">
+                            <h1>Administration Dashboard</h1>
+                            <p class="lead">Manage your community with comprehensive tools and insights.</p>
+                            <div class="welcome-actions">
+                                <a href="@Url.Action("ManageUsers", "Admin")" class="btn btn-primary">
+                                    <i class="fas fa-users me-2"></i>Manage Users
+                                </a>
+                                <a href="@Url.Action("ServiceCategories", "Admin")" class="btn btn-outline-primary">
+                                    <i class="fas fa-th-list me-2"></i>Service Categories
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Stats -->
+    <section class="stats-section mb-4">
+        <div class="container-fluid p-0">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-primary-light">
+                            <i class="fas fa-user-alt"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Total Users</h3>
+                            <p class="stats-number">245</p>
+                            <p class="stats-text">Active users</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-warning-light">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Service Requests</h3>
+                            <p class="stats-number">28</p>
+                            <p class="stats-text">Pending</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-success-light">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Revenue</h3>
+                            <p class="stats-number">$35,750</p>
+                            <p class="stats-text">This month</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-danger-light">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Issues</h3>
+                            <p class="stats-number">12</p>
+                            <p class="stats-text">Unresolved</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Content -->
+    <div class="row g-4 mb-4">
+        <!-- Recent Service Requests -->
+        <div class="col-lg-8">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-tools me-2"></i>Recent Service Requests</h2>
+                    <a href="@Url.Action("Index", "ServiceRequest")" class="view-all">View All</a>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Resident</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>SR-2023-058</td>
+                                    <td>John Smith</td>
+                                    <td>Plumbing</td>
+                                    <td><span class="badge bg-warning">In Progress</span></td>
+                                    <td>Jun 12, 2023</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success">Assign</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SR-2023-062</td>
+                                    <td>Emily Johnson</td>
+                                    <td>HVAC</td>
+                                    <td><span class="badge bg-info">Scheduled</span></td>
+                                    <td>Jun 14, 2023</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success">Assign</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SR-2023-064</td>
+                                    <td>Michael Brown</td>
+                                    <td>Electrical</td>
+                                    <td><span class="badge bg-danger">Pending</span></td>
+                                    <td>Jun 15, 2023</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success">Assign</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SR-2023-061</td>
+                                    <td>Sarah Wilson</td>
+                                    <td>Landscaping</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td>Jun 13, 2023</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-dark">Archive</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Summary -->
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-chart-pie me-2"></i>Request Distribution</h2>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="category-stats">
+                        <div class="category-item">
+                            <div class="category-info">
+                                <span class="category-name">Plumbing</span>
+                                <span class="category-percentage">32%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 32%" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="category-item">
+                            <div class="category-info">
+                                <span class="category-name">HVAC</span>
+                                <span class="category-percentage">25%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="category-item">
+                            <div class="category-info">
+                                <span class="category-name">Electrical</span>
+                                <span class="category-percentage">18%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-info" role="progressbar" style="width: 18%" aria-valuenow="18" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="category-item">
+                            <div class="category-info">
+                                <span class="category-name">Landscaping</span>
+                                <span class="category-percentage">15%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="category-item">
+                            <div class="category-info">
+                                <span class="category-name">Other</span>
+                                <span class="category-percentage">10%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: 10%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Users -->
+        <div class="col-lg-6">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-users me-2"></i>Recent Users</h2>
+                    <a href="@Url.Action("ManageUsers", "Admin")" class="view-all">View All</a>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>John Smith</td>
+                                    <td>Homeowner</td>
+                                    <td>Jun 10, 2023</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-warning">Edit</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Emily Johnson</td>
+                                    <td>Homeowner</td>
+                                    <td>Jun 12, 2023</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-warning">Edit</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Michael Brown</td>
+                                    <td>Staff</td>
+                                    <td>Jun 15, 2023</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-warning">Edit</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Announcements -->
+        <div class="col-lg-6">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-bullhorn me-2"></i>Announcements</h2>
+                    <a href="@Url.Action("Index", "Announcement")" class="view-all">View All</a>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Views</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Community Pool Maintenance</td>
+                                    <td>Jun 15, 2023</td>
+                                    <td>45</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-warning">Edit</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>New Recycling Guidelines</td>
+                                    <td>Jun 10, 2023</td>
+                                    <td>78</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-warning">Edit</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create Announcement
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom styles for the admin dashboard -->
+@section Styles {
+    <style>
+        /* Admin Dashboard container */
+        .admin-dashboard-container {
+            padding: 20px;
+        }
+
+        /* Welcome section */
+        .welcome-card {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            border-radius: 16px;
+            padding: 30px;
+            color: white;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 8px 16px rgba(44, 62, 80, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .welcome-content {
+            flex: 1;
+        }
+
+        .welcome-actions {
+            margin-top: 20px;
+        }
+
+        .welcome-actions .btn {
+            margin-right: 10px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .welcome-actions .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+
+        .welcome-actions .btn-outline-primary {
+            border-color: #3498db;
+            color: #ffffff;
+        }
+
+        .welcome-actions .btn-outline-primary:hover {
+            background-color: #3498db;
+            color: #ffffff;
+        }
+
+        /* Stats cards */
+        .stats-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .bg-primary-light {
+            background-color: #e3f2fd;
+            color: #2196f3;
+        }
+
+        .bg-warning-light {
+            background-color: #fff8e1;
+            color: #ffc107;
+        }
+
+        .bg-success-light {
+            background-color: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .bg-danger-light {
+            background-color: #ffebee;
+            color: #f44336;
+        }
+
+        .stats-info {
+            flex: 1;
+        }
+
+        .stats-info h3 {
+            margin: 0;
+            font-size: 14px;
+            color: #67748e;
+        }
+
+        .stats-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 5px 0;
+        }
+
+        .stats-text {
+            margin: 0;
+            font-size: 13px;
+            color: #67748e;
+        }
+
+        /* Dashboard cards */
+        .dashboard-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            transition: box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dashboard-card-header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .view-all {
+            font-size: 14px;
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .dashboard-card-body {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Table styling */
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: #2c3e50;
+            border-top: none;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .badge {
+            padding: 0.5em 0.6em;
+            font-weight: 500;
+        }
+
+        /* Category stats */
+        .category-item {
+            margin-bottom: 15px;
+        }
+
+        .category-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .category-name {
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .category-percentage {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3498db;
+        }
+
+        .progress {
+            height: 6px;
+            border-radius: 3px;
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 767px) {
+            .welcome-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .welcome-actions .btn {
+                display: block;
+                width: 100%;
+                margin: 0 0 10px 0;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation for stats cards
+            const statsCards = document.querySelectorAll('.stats-card');
+            statsCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+
+            // Initialize any interactive elements
+            const dashboardCards = document.querySelectorAll('.dashboard-card');
+            dashboardCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+}

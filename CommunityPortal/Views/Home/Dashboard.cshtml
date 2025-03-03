@@ -2,4 +2,792 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    ViewData["Title"] = "Dashboard";
+    Layout = User.IsInRole("admin") || User.IsInRole("staff") ? "_AdminLayout" : "_HomeownersLayout";
+}
+
+<div class="dashboard-container">
+    <!-- Welcome Section -->
+    <section class="welcome-section mb-4">
+        <div class="container-fluid p-0">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="welcome-card">
+                        <div class="welcome-content">
+                            <h1>Welcome to your Dashboard</h1>
+                            <p class="lead">Your community hub for managing your home and staying connected.</p>
+                            <div class="welcome-actions">
+                                <a href="@Url.Action("Create", "ServiceRequest")" class="btn btn-primary">
+                                    <i class="fas fa-tools me-2"></i>Request Service
+                                </a>
+                                <a href="@Url.Action("Index", "Billing")" class="btn btn-outline-primary">
+                                    <i class="fas fa-file-invoice-dollar me-2"></i>View Payments
+                                </a>
+                            </div>
+                        </div>
+                        <div class="welcome-image">
+                            <img src="~/images/tramLOGO.jpg" alt="Community Welcome" class="img-fluid rounded-circle">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Stats -->
+    <section class="stats-section mb-4">
+        <div class="container-fluid p-0">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Service Requests</h3>
+                            <p class="stats-number">3</p>
+                            <p class="stats-text">Active requests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Upcoming Events</h3>
+                            <p class="stats-number">2</p>
+                            <p class="stats-text">This week</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Payments</h3>
+                            <p class="stats-number">$0</p>
+                            <p class="stats-text">Due this month</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Notifications</h3>
+                            <p class="stats-number">5</p>
+                            <p class="stats-text">Unread</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Content -->
+    <div class="row g-4 mb-4">
+        <!-- Announcements -->
+        <div class="col-lg-6 col-xl-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-bullhorn me-2"></i>Announcements</h2>
+                    <a href="@Url.Action("Index", "Announcement")" class="view-all">View All</a>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="announcements-list">
+                        <div class="announcement-item">
+                            <span class="announcement-date">Jun 15</span>
+                            <h3>Community Pool Maintenance</h3>
+                            <p>The community pool will be closed on June 20th for regular maintenance...</p>
+                            <a href="#" class="btn btn-sm btn-outline-primary">Read More</a>
+                        </div>
+                        <div class="announcement-item">
+                            <span class="announcement-date">Jun 10</span>
+                            <h3>New Recycling Guidelines</h3>
+                            <p>Please review the updated recycling guidelines for our community...</p>
+                            <a href="#" class="btn btn-sm btn-outline-primary">Read More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Events -->
+        <div class="col-lg-6 col-xl-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-calendar-alt me-2"></i>Upcoming Events</h2>
+                    <a href="@Url.Action("Index", "Event")" class="view-all">View All</a>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="events-list">
+                        <div class="event-item">
+                            <div class="event-date">
+                                <span class="event-month">Jun</span>
+                                <span class="event-day">25</span>
+                            </div>
+                            <div class="event-details">
+                                <h3>Summer Community Picnic</h3>
+                                <p class="event-time"><i class="far fa-clock me-1"></i>12:00 PM - 4:00 PM</p>
+                                <p class="event-location"><i class="fas fa-map-marker-alt me-1"></i>Community Park</p>
+                                <a href="#" class="btn btn-sm btn-outline-primary">RSVP</a>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-date">
+                                <span class="event-month">Jul</span>
+                                <span class="event-day">10</span>
+                            </div>
+                            <div class="event-details">
+                                <h3>HOA Monthly Meeting</h3>
+                                <p class="event-time"><i class="far fa-clock me-1"></i>7:00 PM - 8:30 PM</p>
+                                <p class="event-location"><i class="fas fa-map-marker-alt me-1"></i>Community Center</p>
+                                <a href="#" class="btn btn-sm btn-outline-primary">Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Service Requests -->
+        <div class="col-lg-6 col-xl-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-tools me-2"></i>Service Requests</h2>
+                    <a href="@Url.Action("Index", "ServiceRequest")" class="view-all">View All</a>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="service-requests-list">
+                        <div class="service-request-item">
+                            <div class="service-request-status status-in-progress">In Progress</div>
+                            <h3>Plumbing Issue - Leaky Faucet</h3>
+                            <p class="service-request-id">Request #SR-2023-058</p>
+                            <p class="service-request-date">Submitted: Jun 12, 2023</p>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View Details</a>
+                        </div>
+                        <div class="service-request-item">
+                            <div class="service-request-status status-scheduled">Scheduled</div>
+                            <h3>HVAC Maintenance</h3>
+                            <p class="service-request-id">Request #SR-2023-062</p>
+                            <p class="service-request-date">Submitted: Jun 14, 2023</p>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Forum -->
+        <div class="col-lg-6 col-xl-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-comments me-2"></i>Community Forum</h2>
+                    <a href="@Url.Action("Index", "Forum")" class="view-all">View All</a>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="forum-posts-list">
+                        <div class="forum-post-item">
+                            <div class="forum-post-avatar">
+                                <img src="~/images/default-profile.jpg" alt="User Avatar">
+                            </div>
+                            <div class="forum-post-content">
+                                <h3>Gardening Tips for Summer</h3>
+                                <p class="forum-post-author">Posted by: Jane D.</p>
+                                <p class="forum-post-preview">I've found some great drought-resistant plants that work well in our climate...</p>
+                                <div class="forum-post-meta">
+                                    <span><i class="far fa-comment me-1"></i>15 replies</span>
+                                    <span><i class="far fa-clock me-1"></i>2 days ago</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="forum-post-item">
+                            <div class="forum-post-avatar">
+                                <img src="~/images/default-profile.jpg" alt="User Avatar">
+                            </div>
+                            <div class="forum-post-content">
+                                <h3>Looking for Recommendations</h3>
+                                <p class="forum-post-author">Posted by: Mike T.</p>
+                                <p class="forum-post-preview">Can anyone recommend a good local plumber? I need to fix...</p>
+                                <div class="forum-post-meta">
+                                    <span><i class="far fa-comment me-1"></i>8 replies</span>
+                                    <span><i class="far fa-clock me-1"></i>5 days ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="col-lg-6 col-xl-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-file-alt me-2"></i>Documents</h2>
+                    <a href="@Url.Action("Index", "Documents")" class="view-all">View All</a>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="documents-list">
+                        <div class="document-item">
+                            <div class="document-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <div class="document-details">
+                                <h3>HOA Rules and Regulations</h3>
+                                <p class="document-date">Updated: May 15, 2023</p>
+                                <p class="document-size">PDF • 1.2 MB</p>
+                                <a href="#" class="btn btn-sm btn-outline-primary">Download</a>
+                            </div>
+                        </div>
+                        <div class="document-item">
+                            <div class="document-icon">
+                                <i class="fas fa-file-word"></i>
+                            </div>
+                            <div class="document-details">
+                                <h3>Community Newsletter - June 2023</h3>
+                                <p class="document-date">Published: Jun 1, 2023</p>
+                                <p class="document-size">DOCX • 3.5 MB</p>
+                                <a href="#" class="btn btn-sm btn-outline-primary">Download</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments & Billing -->
+        <div class="col-lg-6 col-xl-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-file-invoice-dollar me-2"></i>Payments & Billing</h2>
+                    <a href="@Url.Action("Index", "Billing")" class="view-all">View All</a>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="billing-summary">
+                        <div class="billing-balance">
+                            <h3>Current Balance</h3>
+                            <p class="balance-amount">$0.00</p>
+                            <a href="#" class="btn btn-primary mt-2">Make a Payment</a>
+                        </div>
+                        <div class="billing-transactions">
+                            <h3>Recent Transactions</h3>
+                            <div class="transaction-item">
+                                <div class="transaction-date">May 31, 2023</div>
+                                <div class="transaction-details">
+                                    <p>HOA Monthly Fee</p>
+                                    <p class="transaction-amount paid">$150.00 Paid</p>
+                                </div>
+                            </div>
+                            <div class="transaction-item">
+                                <div class="transaction-date">Apr 29, 2023</div>
+                                <div class="transaction-details">
+                                    <p>HOA Monthly Fee</p>
+                                    <p class="transaction-amount paid">$150.00 Paid</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom styles for the dashboard -->
+@section Styles {
+    <style>
+        /* Dashboard container */
+        .dashboard-container {
+            padding: 20px;
+        }
+
+        /* Welcome section */
+        .welcome-card {
+            background: linear-gradient(135deg, #4a6fdc, #6c8df7);
+            border-radius: 16px;
+            padding: 30px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 16px rgba(74, 111, 220, 0.2);
+        }
+
+        .welcome-content {
+            flex: 1;
+        }
+
+        .welcome-image {
+            flex: 0 0 150px;
+            margin-left: 20px;
+        }
+
+        .welcome-image img {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .welcome-actions {
+            margin-top: 20px;
+        }
+
+        .welcome-actions .btn {
+            margin-right: 10px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .welcome-actions .btn-primary {
+            background-color: #ffffff;
+            border-color: #ffffff;
+            color: #4a6fdc;
+        }
+
+        .welcome-actions .btn-outline-primary {
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+
+        /* Stats cards */
+        .stats-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #f0f5ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #4a6fdc;
+            margin-right: 15px;
+        }
+
+        .stats-info {
+            flex: 1;
+        }
+
+        .stats-info h3 {
+            margin: 0;
+            font-size: 14px;
+            color: #67748e;
+        }
+
+        .stats-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 5px 0;
+        }
+
+        .stats-text {
+            margin: 0;
+            font-size: 13px;
+            color: #67748e;
+        }
+
+        /* Dashboard cards */
+        .dashboard-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            transition: box-shadow 0.3s;
+        }
+
+        .dashboard-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dashboard-card-header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .view-all {
+            font-size: 14px;
+            color: #4a6fdc;
+            text-decoration: none;
+        }
+
+        .dashboard-card-body {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Announcements */
+        .announcement-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .announcement-item:last-child {
+            border-bottom: none;
+        }
+
+        .announcement-date {
+            display: inline-block;
+            background-color: #f0f5ff;
+            color: #4a6fdc;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .announcement-item h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Events */
+        .event-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-date {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background-color: #4a6fdc;
+            color: white;
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+
+        .event-month {
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .event-day {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .event-details {
+            flex: 1;
+        }
+
+        .event-details h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .event-time, .event-location {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            color: #67748e;
+        }
+
+        /* Service Requests */
+        .service-request-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+        }
+
+        .service-request-item:last-child {
+            border-bottom: none;
+        }
+
+        .service-request-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .status-in-progress {
+            background-color: #fff8e1;
+            color: #f59e0b;
+        }
+
+        .status-scheduled {
+            background-color: #e1f5fe;
+            color: #0ea5e9;
+        }
+
+        .status-completed {
+            background-color: #e8f5e9;
+            color: #10b981;
+        }
+
+        .service-request-item h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .service-request-id, .service-request-date {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            color: #67748e;
+        }
+
+        /* Forum Posts */
+        .forum-post-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .forum-post-item:last-child {
+            border-bottom: none;
+        }
+
+        .forum-post-avatar {
+            flex: 0 0 50px;
+            margin-right: 15px;
+        }
+
+        .forum-post-avatar img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .forum-post-content {
+            flex: 1;
+        }
+
+        .forum-post-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .forum-post-author {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            color: #4a6fdc;
+        }
+
+        .forum-post-preview {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #67748e;
+        }
+
+        .forum-post-meta {
+            display: flex;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .forum-post-meta span {
+            margin-right: 15px;
+        }
+
+        /* Documents */
+        .document-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .document-item:last-child {
+            border-bottom: none;
+        }
+
+        .document-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            background-color: #f0f5ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #4a6fdc;
+            margin-right: 15px;
+        }
+
+        .document-details {
+            flex: 1;
+        }
+
+        .document-details h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .document-date, .document-size {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            color: #67748e;
+        }
+
+        /* Billing */
+        .billing-summary {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .billing-balance {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .billing-balance h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .balance-amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: #10b981;
+            margin: 0 0 10px 0;
+        }
+
+        .transaction-item {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-date {
+            flex: 0 0 100px;
+            font-size: 14px;
+            color: #67748e;
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-details p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .transaction-amount {
+            font-weight: 600;
+        }
+
+        .transaction-amount.paid {
+            color: #10b981;
+        }
+
+        .transaction-amount.due {
+            color: #ef4444;
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 767px) {
+            .welcome-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .welcome-image {
+                margin: 20px 0 0 0;
+            }
+
+            .welcome-actions .btn {
+                display: block;
+                width: 100%;
+                margin: 0 0 10px 0;
+            }
+
+            .event-date {
+                flex: 0 0 50px;
+                height: 50px;
+            }
+
+            .forum-post-avatar {
+                flex: 0 0 40px;
+            }
+
+            .forum-post-avatar img {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation for stats cards
+            const statsCards = document.querySelectorAll('.stats-card');
+            statsCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+
+            // Initialize any interactive elements
+            const dashboardCards = document.querySelectorAll('.dashboard-card');
+            dashboardCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
 }

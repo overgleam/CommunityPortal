@@ -1,0 +1,709 @@
+@{
+    ViewData["Title"] = "Staff Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="staff-dashboard-container">
+    <!-- Welcome Section -->
+    <section class="welcome-section mb-4">
+        <div class="container-fluid p-0">
+            <div class="row g-0">
+                <div class="col-12">
+                    <div class="welcome-card">
+                        <div class="welcome-content">
+                            <h1>Staff Dashboard</h1>
+                            <p class="lead">Manage service requests and community operations.</p>
+                            <div class="welcome-actions">
+                                <a href="@Url.Action("Index", "ServiceRequest")" class="btn btn-primary">
+                                    <i class="fas fa-tools me-2"></i>Manage Requests
+                                </a>
+                                <a href="@Url.Action("Index", "Facility")" class="btn btn-outline-primary">
+                                    <i class="fas fa-building me-2"></i>Facilities
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Stats -->
+    <section class="stats-section mb-4">
+        <div class="container-fluid p-0">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-info-light">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>My Assigned Tasks</h3>
+                            <p class="stats-number">8</p>
+                            <p class="stats-text">Active tasks</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-warning-light">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Pending Requests</h3>
+                            <p class="stats-number">15</p>
+                            <p class="stats-text">Awaiting assignment</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-success-light">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Completed</h3>
+                            <p class="stats-number">32</p>
+                            <p class="stats-text">This month</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-icon bg-primary-light">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stats-info">
+                            <h3>Scheduled</h3>
+                            <p class="stats-number">6</p>
+                            <p class="stats-text">Upcoming services</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Content -->
+    <div class="row g-4 mb-4">
+        <!-- My Tasks -->
+        <div class="col-lg-8">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-tasks me-2"></i>My Tasks</h2>
+                    <a href="@Url.Action("Index", "ServiceRequest")" class="view-all">View All</a>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Resident</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Due Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>SR-2023-058</td>
+                                    <td>John Smith</td>
+                                    <td>Plumbing</td>
+                                    <td><span class="badge bg-warning">In Progress</span></td>
+                                    <td>Jun 18, 2023</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success">Complete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SR-2023-062</td>
+                                    <td>Emily Johnson</td>
+                                    <td>HVAC</td>
+                                    <td><span class="badge bg-info">Scheduled</span></td>
+                                    <td>Jun 20, 2023</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success">Complete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SR-2023-060</td>
+                                    <td>Robert Davis</td>
+                                    <td>Electrical</td>
+                                    <td><span class="badge bg-warning">In Progress</span></td>
+                                    <td>Jun 16, 2023</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success">Complete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SR-2023-064</td>
+                                    <td>Michael Brown</td>
+                                    <td>Electrical</td>
+                                    <td><span class="badge bg-info">Scheduled</span></td>
+                                    <td>Jun 22, 2023</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">View</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success">Complete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Schedule -->
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-calendar-day me-2"></i>Today's Schedule</h2>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="schedule-list">
+                        <div class="schedule-item">
+                            <div class="schedule-time">9:00 AM</div>
+                            <div class="schedule-content">
+                                <h3>Plumbing Repair</h3>
+                                <p>John Smith - Unit 104</p>
+                                <span class="badge bg-warning">In Progress</span>
+                            </div>
+                        </div>
+                        <div class="schedule-item">
+                            <div class="schedule-time">11:30 AM</div>
+                            <div class="schedule-content">
+                                <h3>HVAC Maintenance</h3>
+                                <p>Emily Johnson - Unit 215</p>
+                                <span class="badge bg-info">Scheduled</span>
+                            </div>
+                        </div>
+                        <div class="schedule-item">
+                            <div class="schedule-time">2:00 PM</div>
+                            <div class="schedule-content">
+                                <h3>Team Meeting</h3>
+                                <p>Staff Conference Room</p>
+                                <span class="badge bg-primary">Meeting</span>
+                            </div>
+                        </div>
+                        <div class="schedule-item">
+                            <div class="schedule-time">3:30 PM</div>
+                            <div class="schedule-content">
+                                <h3>Electrical Issue</h3>
+                                <p>Robert Davis - Unit 122</p>
+                                <span class="badge bg-warning">In Progress</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card mt-4">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-clipboard-list me-2"></i>Pending Approvals</h2>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="approvals-list">
+                        <div class="approval-item">
+                            <div class="approval-content">
+                                <h3>Purchase Order #12345</h3>
+                                <p>Plumbing supplies - $235.50</p>
+                                <div class="approval-actions">
+                                    <button class="btn btn-sm btn-success">Approve</button>
+                                    <button class="btn btn-sm btn-danger">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="approval-item">
+                            <div class="approval-content">
+                                <h3>Time Off Request</h3>
+                                <p>John Technician - Jun 25-27</p>
+                                <div class="approval-actions">
+                                    <button class="btn btn-sm btn-success">Approve</button>
+                                    <button class="btn btn-sm btn-danger">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Status -->
+        <div class="col-lg-6">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-boxes me-2"></i>Inventory Status</h2>
+                    <a href="#" class="view-all">View All</a>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>HVAC Filters</td>
+                                    <td>Maintenance</td>
+                                    <td>45</td>
+                                    <td><span class="badge bg-success">Good</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">Order</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Plumbing Fixtures</td>
+                                    <td>Plumbing</td>
+                                    <td>12</td>
+                                    <td><span class="badge bg-warning">Low</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">Order</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Light Bulbs (LED)</td>
+                                    <td>Electrical</td>
+                                    <td>8</td>
+                                    <td><span class="badge bg-danger">Critical</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">Order</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Paint (White)</td>
+                                    <td>General</td>
+                                    <td>23</td>
+                                    <td><span class="badge bg-success">Good</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary">Order</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-lg-6">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2><i class="fas fa-history me-2"></i>Recent Activity</h2>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon bg-success-light">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h3>Service Request Completed</h3>
+                                <p>HVAC maintenance for Unit 156</p>
+                                <span class="activity-time">2 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon bg-info-light">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h3>New Service Request</h3>
+                                <p>Plumbing issue reported in Unit 203</p>
+                                <span class="activity-time">4 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon bg-warning-light">
+                                <i class="fas fa-sync-alt"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h3>Inventory Updated</h3>
+                                <p>Received 25 HVAC filters in stock</p>
+                                <span class="activity-time">Yesterday, 3:45 PM</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon bg-primary-light">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h3>Service Scheduled</h3>
+                                <p>Electrical repair for Unit 122</p>
+                                <span class="activity-time">Yesterday, 2:30 PM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom styles for the staff dashboard -->
+@section Styles {
+    <style>
+        /* Staff Dashboard container */
+        .staff-dashboard-container {
+            padding: 20px;
+        }
+
+        /* Welcome section */
+        .welcome-card {
+            background: linear-gradient(135deg, #3949ab, #5c6bc0);
+            border-radius: 16px;
+            padding: 30px;
+            color: white;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 8px 16px rgba(57, 73, 171, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .welcome-content {
+            flex: 1;
+        }
+
+        .welcome-actions {
+            margin-top: 20px;
+        }
+
+        .welcome-actions .btn {
+            margin-right: 10px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .welcome-actions .btn-primary {
+            background-color: #ffffff;
+            border-color: #ffffff;
+            color: #3949ab;
+        }
+
+        .welcome-actions .btn-outline-primary {
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+
+        .welcome-actions .btn-outline-primary:hover {
+            background-color: #ffffff;
+            color: #3949ab;
+        }
+
+        /* Stats cards */
+        .stats-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .bg-primary-light {
+            background-color: #e3f2fd;
+            color: #2196f3;
+        }
+
+        .bg-info-light {
+            background-color: #e0f7fa;
+            color: #00bcd4;
+        }
+
+        .bg-warning-light {
+            background-color: #fff8e1;
+            color: #ffc107;
+        }
+
+        .bg-success-light {
+            background-color: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .bg-danger-light {
+            background-color: #ffebee;
+            color: #f44336;
+        }
+
+        .stats-info {
+            flex: 1;
+        }
+
+        .stats-info h3 {
+            margin: 0;
+            font-size: 14px;
+            color: #67748e;
+        }
+
+        .stats-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 5px 0;
+        }
+
+        .stats-text {
+            margin: 0;
+            font-size: 13px;
+            color: #67748e;
+        }
+
+        /* Dashboard cards */
+        .dashboard-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: 100%;
+            transition: box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dashboard-card-header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .view-all {
+            font-size: 14px;
+            color: #3949ab;
+            text-decoration: none;
+        }
+
+        .dashboard-card-body {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Table styling */
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: #2c3e50;
+            border-top: none;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .badge {
+            padding: 0.5em 0.6em;
+            font-weight: 500;
+        }
+
+        /* Schedule list */
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .schedule-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .schedule-item:last-child {
+            border-bottom: none;
+        }
+
+        .schedule-time {
+            flex: 0 0 80px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #3949ab;
+        }
+
+        .schedule-content {
+            flex: 1;
+        }
+
+        .schedule-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .schedule-content p {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            color: #67748e;
+        }
+
+        /* Approvals list */
+        .approvals-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .approval-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .approval-item:last-child {
+            border-bottom: none;
+        }
+
+        .approval-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .approval-content p {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #67748e;
+        }
+
+        .approval-actions button {
+            margin-right: 5px;
+        }
+
+        /* Activity list */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .activity-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-right: 15px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .activity-content p {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+            color: #67748e;
+        }
+
+        .activity-time {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 767px) {
+            .welcome-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .welcome-actions .btn {
+                display: block;
+                width: 100%;
+                margin: 0 0 10px 0;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animation for stats cards
+            const statsCards = document.querySelectorAll('.stats-card');
+            statsCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+
+            // Initialize any interactive elements
+            const dashboardCards = document.querySelectorAll('.dashboard-card');
+            dashboardCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+} 

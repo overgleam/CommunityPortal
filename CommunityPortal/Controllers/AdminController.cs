@@ -30,8 +30,14 @@ namespace CommunityPortal.Controllers
             _notificationService = notificationService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (await _userManager.IsInRoleAsync(user, "staff"))
+            {
+                return View("StaffDashboard");
+            }
+            
             return View();
         }
 
