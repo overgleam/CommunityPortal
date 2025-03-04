@@ -251,6 +251,20 @@ using (var scope = app.Services.CreateScope())
                             LastUpdated = DateTime.UtcNow,
                             UploadedById = adminId,
                             IsDeleted = false
+                        },
+                        new Document
+                        {
+                            Title = "Secutiy Policies for Gate Pass",
+                            Description = "Official rules and regulations governing the subdivision",
+                            FilePath = "images/default/Guidelines-Subdivision-Rules-1.pdf",
+                            FileName = "Guidelines-GatePass.pdf",
+                            FileType = "application/pdf",
+                            FileSizeInKB = 355,
+                            Category = DocumentCategory.CommunityGuidelines,
+                            UploadDate = DateTime.UtcNow,
+                            LastUpdated = DateTime.UtcNow,
+                            UploadedById = adminId,
+                            IsDeleted = false
                         }
                     };
 
