@@ -129,7 +129,7 @@
                         </div>
                     </div>
 
-                    <!-- Services Management Group -->
+                    <!-- Services Management Group 
                     <div class="accordion-item">
                         <h3 class="accordion-header" id="servicesManagementHeading">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
@@ -150,8 +150,9 @@
                             </div>
                         </div>
                     </div>
+                    -->
 
-                    <!-- Gate Pass Management Group -->
+                    <!-- Gate Pass Management Group 
                     <div class="accordion-item">
                         <h3 class="accordion-header" id="gatePassManagementHeading">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
@@ -169,15 +170,17 @@
                             </div>
                         </div>
                     </div>
+                    -->
                 }
                 @if (!User.IsInRole("admin"))
                 {
-                    <!-- Services Group for Staff -->
+                    <!-- Services Group for Staff 
                     <div class="accordion-item">
                         <a asp-controller="ServiceRequest" asp-action="Index" class="list-group-item list-group-item-action bg-sidebar" style="font-size:1rem;">
                             <i class="material-icons">build</i> Service Requests
                         </a>
                     </div>
+                    -->
                 }
 
                 <!-- Communication Group -->
@@ -246,7 +249,7 @@
                 </div>
                 @if (User.IsInRole("admin"))
                 {
-                    <!-- Billing Management Group -->
+                    <!-- Billing Management Group 
                     <div class="accordion-item">
                         <h3 class="accordion-header" id="billingManagementHeading">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
@@ -282,6 +285,7 @@
                             </div>
                         </div>
                     </div>
+                    -->
                 }
             </div>
         </div>
