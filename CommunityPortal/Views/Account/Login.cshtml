@@ -1,58 +1,141 @@
 ﻿@model CommunityPortal.Models.Account.LoginViewModel
-
 @{
     Layout = "~/Views/Shared/_EmptyLayout.cshtml";
     ViewData["Title"] = "Login";
 }
-
 <!-- Bootstrap Container -->
 <div class="d-flex justify-content-center align-items-center min-vh-100 bg-image-login font-swifted">
-    <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4 login-card">
+    <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4 login-card @(ViewContext.ModelState.ErrorCount > 0 ? "shake-animation" : "")">
         <div class="card-body position-relative">
-            <a asp-action="Landing" asp-controller="Home" class="text-white text-decoration-none fs-4 position-absolute top-0 start-0 p-3">&larr;</a>
+            <a asp-action="Landing" asp-controller="Home" class="text-white text-decoration-none fs-4 position-absolute top-0 start-0 p-3 back-button">&larr;</a>
             <h2 class="text-center mb-4 text-white" style="color: white;">Login</h2>
-
             <form asp-action="Login" method="post">
-                <div asp-validation-summary="All" class="text-danger"></div>
-
+                @if (ViewContext.ModelState.ErrorCount > 0)
+                {
+                    <div class="card bg-danger bg-opacity-25 border border-danger mb-4">
+                        <div class="card-body p-3">
+                            <div asp-validation-summary="All" class="text-white text-center mb-0" style="list-style: none;"></div>
+                        </div>
+                    </div>
+                }
                 <div class="form-floating mb-3">
                     <input asp-for="Email" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Email">
                     <label asp-for="Email" class="text-white"></label>
                     <span asp-validation-for="Email" class="text-danger"></span>
                 </div>
-
-                <div class="form-floating mb-3">
-                    <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Password">
+                <div class="form-floating mb-3 position-relative">
+                    <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" id="passwordInput" placeholder="Password">
                     <label asp-for="Password" class="text-white"></label>
+                    <button type="button" id="togglePassword" class="btn btn-link position-absolute end-0 top-50 translate-middle-y" style="z-index: 5;">
+                        <img src="~/images/default/eye.png" alt="Show Password" id="toggleImage" class="img-fluid password-icon" style="width: 20px; height: 20px;">
+                    </button>
                     <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
-
                 <div class="form-check mb-3">
                     <input asp-for="RememberMe" class="form-check-input" type="checkbox">
                     <label asp-for="RememberMe" class="form-check-label text-white"></label>
                 </div>
-
                 <button type="submit" class="btn w-100 rounded-pill login-button">Login</button>
             </form>
-
             <div class="cAcc">
                 <a asp-action="Register" asp-controller="Account" class="text-white text-decoration-none">Create an Account</a>
             </div>
         </div>
     </div>
 </div>
-
 <style>
     .cAcc {
         text-align: center;
         margin-top: 1rem;
     }
 
-    .cAcc:hover {
-        text-decoration: underline;
+        .cAcc:hover {
+            text-decoration: underline;
+        }
+
+    .validation-summary-errors ul {
+        margin-bottom: 0;
+        padding-left: 0;
+        list-style-type: none;
+        font-size: 15px;
     }
+
+    .validation-summary-errors li {
+        margin-bottom: 0.5rem;
+    }
+
+        .validation-summary-errors li:last-child {
+            margin-bottom: 0;
+        }
+    /* Remove default button styling */
+    #togglePassword {
+        background: none;
+        border: none;
+        padding: 0.25rem 0.5rem;
+    }
+
+        #togglePassword:focus {
+            box-shadow: none;
+            outline: none;
+        }
+
+        #togglePassword:hover {
+            opacity: 0.8;
+        }
+    /* Make PNG icons white */
+    .password-icon {
+        filter: brightness(0) invert(1);
+    }
+
+    .back-button:hover {
+        text-decoration: underline;
+        transform: scale(1.2);
+        transition: transform 0.2s ease-in-out;
+    }
+
 </style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Check if there are validation errors
+        $(document).ready(function() {
+            // Password toggle functionality
+            $("#togglePassword").click(function() {
+                var passwordInput = $("#passwordInput");
+                var toggleImage = $("#toggleImage");
+
+                if (passwordInput.attr("type") === "password") {
+                    passwordInput.attr("type", "text");
+                    toggleImage.attr("src", "/images/default/hidden.png");
+                    toggleImage.attr("alt", "Hide Password");
+                } else {
+                    passwordInput.attr("type", "password");
+                    toggleImage.attr("src", "/images/default/eye.png");
+                    toggleImage.attr("alt", "Show Password");
+                }
+            });
+
+            // Shake animation if there are errors
+            if (@ViewContext.ModelState.ErrorCount > 0) {
+                var card = $('.login-card');
+                var originalLeft = card.css('position', 'relative').css('left');
+
+                var shakeAnimation = function(times, distance, speed) {
+                    if (times > 0) {
+                        card.animate({ left: '+=' + distance }, speed)
+                            .animate({ left: '-=' + (distance * 2) }, speed * 2)
+                            .animate({ left: '+=' + distance }, speed, function() {
+                                shakeAnimation(times - 1, distance, speed);
+                            });
+                    } else {
+                        card.css('left', originalLeft);
+                    }
+                };
+
+                shakeAnimation(5, 5, 50);
+            }
+        });
+    </script>
 }

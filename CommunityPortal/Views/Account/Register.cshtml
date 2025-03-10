@@ -18,29 +18,56 @@
             input[type="date"]::-webkit-calendar-picker-indicator:hover {
                 opacity: 1
             }
+
+        /* Shake Animation */
+        .shake-animation {
+            animation: shake 0.5s;
+        }
+
+        @@keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
     </style>
 }
 
 <div class="d-flex justify-content-center align-items-center min-vh-100 bg-image-register font-swifted">
-    <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4 register-card">
+    <div class="card text-white bg-dark bg-opacity-75 shadow-lg p-4 rounded-4 register-card @(ViewContext.ModelState.ErrorCount > 0 ? "shake-animation" : "")">
         <div class="card-body position-relative">
-            <a asp-action="Landing" asp-controller="Home" class="text-white text-decoration-none fs-4 position-absolute top-0 start-0 p-3">&larr;</a>
+            <a asp-action="Landing" asp-controller="Home" class="text-white text-decoration-none fs-4 position-absolute top-0 start-0 p-3 back-button">&larr;</a>
             <h2 class="text-center mb-4 text-white">Sign Up</h2>
 
-            <form asp-action="Register" method="post">
+            <form asp-action="Register" method="post" id="registerForm">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="row g-3">
                     <!-- First Row -->
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input asp-for="FirstName" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="First Name" />
+                            <input asp-for="FirstName" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="First Name" required />
                             <label asp-for="FirstName" class="text-white"></label>
                             <span asp-validation-for="FirstName" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input asp-for="LastName" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Last Name" />
+                            <input asp-for="LastName" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Last Name" required />
                             <label asp-for="LastName" class="text-white"></label>
                             <span asp-validation-for="LastName" class="text-danger"></span>
                         </div>
@@ -49,14 +76,14 @@
                     <!-- Second Row -->
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input asp-for="Email" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Email" />
+                            <input asp-for="Email" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Email" required />
                             <label asp-for="Email" class="text-white"></label>
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input asp-for="PhoneNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Contact #" maxlength="11" />
+                            <input asp-for="PhoneNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Contact #" maxlength="11" required />
                             <label asp-for="PhoneNumber" class="text-white"></label>
                             <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                         </div>
@@ -65,7 +92,7 @@
                     <!-- Third Row -->
                     <div class="col-md-12">
                         <div class="form-floating">
-                            <input asp-for="Address" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Address" />
+                            <input asp-for="Address" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Address" required />
                             <label asp-for="Address" class="text-white"></label>
                             <span asp-validation-for="Address" class="text-danger"></span>
                         </div>
@@ -74,14 +101,14 @@
                     <!-- Fourth Row -->
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input asp-for="BlockNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Block #" />
+                            <input asp-for="BlockNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Block #" required />
                             <label asp-for="BlockNumber" class="text-white"></label>
                             <span asp-validation-for="BlockNumber" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input asp-for="HouseNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="House Number" />
+                            <input asp-for="HouseNumber" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="House Number" required />
                             <label asp-for="HouseNumber" class="text-white"></label>
                             <span asp-validation-for="HouseNumber" class="text-danger"></span>
                         </div>
@@ -90,7 +117,7 @@
                     <!-- Fifth Row -->
                     <div class="col-md-6">
                         <div class="form-floating position-relative">
-                            <select asp-for="TypeOfResidency" class="form-control bg-transparent text-white border-0 border-bottom" style="color: white !important;">
+                            <select asp-for="TypeOfResidency" class="form-control bg-transparent text-white border-0 border-bottom" style="color: white !important;" required>
                                 <option value="Homeowner" style="color: black;">Homeowner</option>
                                 <option value="Tenant" style="color: black;">Tenant</option>
                             </select>
@@ -101,7 +128,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input asp-for="MoveInDate" type="date" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Move In Date" value="" id="MoveInDate">
+                            <input asp-for="MoveInDate" type="date" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Move In Date" value="" id="MoveInDate" required>
                             <label asp-for="MoveInDate" class="text-white"></label>
                             <span asp-validation-for="MoveInDate" class="text-danger"></span>
                         </div>
@@ -110,14 +137,14 @@
                     <!-- Last Row -->
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Password" />
+                            <input asp-for="Password" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Password" required />
                             <label asp-for="Password" class="text-white"></label>
                             <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input asp-for="ConfirmPassword" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Confirm Password" />
+                            <input asp-for="ConfirmPassword" type="password" class="form-control bg-transparent text-white border-0 border-bottom" placeholder="Confirm Password" required />
                             <label asp-for="ConfirmPassword" class="text-white"></label>
                             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                         </div>
@@ -144,8 +171,14 @@
         margin-top: 1rem;
     }
 
-    .cLog:hover {
-        text-decoration: underline !important;
+        .cLog:hover {
+            text-decoration: underline !important;
+        }
+
+    .back-button:hover {
+        text-decoration: underline;
+        transform: scale(1.2);
+        transition: transform 0.2s ease-in-out;
     }
 </style>
 
@@ -158,20 +191,38 @@
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
             var maxDateTime = now.toISOString().slice(0, 10); // Only date part
             document.getElementById('MoveInDate').setAttribute('max', maxDateTime);
-            
-            // Remove the default value setting, not needed
-            // No default value needed
 
             // Add custom validation for past dates
             $('#MoveInDate').on('change', function() {
                 var selectedDate = new Date(this.value);
                 var now = new Date();
                 now.setHours(0, 0, 0, 0); // Remove time part for comparison
-                
+
                 if (selectedDate > now) {
                     this.setCustomValidity('Please select a past or current date.');
                 } else {
                     this.setCustomValidity('');
+                }
+            });
+
+            // Shake animation on missing input
+            $('#registerForm').on('submit', function(event) {
+                var isEmpty = false;
+                $(this).find('input[required], select[required]').each(function() {
+                    if (!$(this).val().trim()) {
+                        isEmpty = true;
+                        $(this).addClass('is-invalid'); // Highlight empty fields
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+
+                if (isEmpty) {
+                    event.preventDefault(); // Prevent form submission
+                    $('.register-card').addClass('shake-animation'); // Add shake animation
+                    setTimeout(function() {
+                        $('.register-card').removeClass('shake-animation'); // Remove animation after it plays
+                    }, 500); // Duration of the shake animation
                 }
             });
         });
