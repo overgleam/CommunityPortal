@@ -6,33 +6,78 @@
     <title>@ViewData["Title"] - CommunityPortal</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/enhanced-ui.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="icon" type="image/png" href="~/images/logo.png" asp-append-version="true">
-</head>
 
-<style>
-    .logsign {
-        margin-bottom: 3rem;
-        margin-left: 3rem;
-        z-index: 1000;
-    }
-
-        .logsign a {
-            display: inline-block;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+    <style>
+        /* Video Background */
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
         }
 
-            .logsign a:hover {
-                transform: scale(1.05);
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            .video-container video {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                min-width: 100%;
+                min-height: 100%;
+                width: auto;
+                height: auto;
+                object-fit: cover;
             }
-</style>
 
-<body class="d-flex flex-column min-vh-100 bg-image font-swifted">
-    <main class="d-flex align-items-center justify-content-center flex-grow-1 text-center">
+            /* Optional Dark Overlay */
+            .video-container::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.4); /* Adjust opacity for darkness */
+            }
+
+        /* Login & Sign Up Buttons */
+        .logsign {
+            margin-bottom: 3rem;
+            margin-left: 3rem;
+            z-index: 1000;
+        }
+
+            .logsign a {
+                display: inline-block;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+
+                .logsign a:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                }
+    </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100 font-swifted">
+    <!-- Video Background -->
+    <div class="video-container">
+        <video autoplay muted loop playsinline>
+            <source src="~/landing-video.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <!-- Main Content -->
+    <main class="d-flex align-items-center justify-content-center flex-grow-1 text-center position-relative">
         @RenderBody()
     </main>
+
+    <!-- Footer with Login & Sign Up -->
     <footer class="position-absolute bottom-0 start-0 w-100 bg-transparent p-5 d-flex">
         <div class="logsign">
             <a asp-controller="Account" asp-action="Login" class="bg-dark bg-opacity-75 rounded-3 text-white px-5 py-3 me-3 text-decoration-none">Login</a>
