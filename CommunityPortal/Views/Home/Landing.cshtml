@@ -3,7 +3,23 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1 class="display-3 text-white" style="background: radial-gradient(circle, rgba(255, 255, 255, 0.30) 0%, rgba(248, 249, 250, 0) 100%);">
+<h1 id="landing-title" class="display-5 text-white landing-text" style="background: radial-gradient(circle, rgba(255, 255, 255, 0.30) 0%, rgba(248, 249, 250, 0) 100%);">
     The Rise at Monterrazas <br />
     Community Portal
 </h1>
+
+<style>
+    .landing-text {
+        transition: opacity 2s ease-in-out; /* Smooth fade effect */
+    }
+</style>
+
+<script>
+    setTimeout(function () {
+        document.getElementById("landing-title").style.opacity = "0"; // Fade out
+
+        setTimeout(function () {
+            document.getElementById("landing-title").style.opacity = "1"; // Fade back in
+        }, 8000); // Wait 5 seconds before fading in
+    }, 52000); // Start hiding after 50 seconds
+</script>
