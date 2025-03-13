@@ -104,7 +104,7 @@
                                 <div class="avatar">
                                     @if (!string.IsNullOrEmpty(comment.Author?.ProfileImagePath))
                                     {
-                                        <img src="@comment.Author.ProfileImagePath" alt="@comment.Author?.UserName" />
+                                        <img src="~/@comment.Author.ProfileImagePath" alt="@comment.Author?.UserName" />
                                     }
                                     else
                                     {
@@ -155,7 +155,7 @@
                                             <div class="avatar">
                                                 @if (!string.IsNullOrEmpty(reply.Author?.ProfileImagePath))
                                                 {
-                                                    <img src="@reply.Author.ProfileImagePath" alt="@reply.Author?.UserName" />
+                                                    <img src="~/@reply.Author.ProfileImagePath" alt="@reply.Author?.UserName" />
                                                 }
                                                 else
                                                 {
