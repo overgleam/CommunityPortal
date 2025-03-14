@@ -100,7 +100,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4" style="z-index:999">
                         <div class="card shadow-sm h-100">
                             <div class="card-body text-center">
                                 <i class="material-icons text-success mb-3" style="font-size: 3rem;">folder_copy</i>
@@ -110,7 +110,7 @@
                                     <button class="btn btn-outline-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="material-icons align-middle me-1">filter_list</i> Select Category
                                     </button>
-                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <ul class="dropdown-menu z-5" aria-labelledby="dropdownMenuButton">
                                         @foreach (DocumentCategory category in Enum.GetValues(typeof(DocumentCategory)))
                                         {
                                             <li><a class="dropdown-item" href="@Url.Action("Index", new { category = category })">@category.GetDisplayName()</a></li>
@@ -127,7 +127,7 @@
 
     @if (!Model.Documents.Any())
     {
-        <div class="alert alert-info shadow-sm">
+        <div class="alert alert-info shadow-sm z-1">
             <div class="d-flex align-items-center">
                 <i class="material-icons me-3 fs-1">info</i>
                 <div>
