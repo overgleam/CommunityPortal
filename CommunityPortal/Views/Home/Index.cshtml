@@ -282,6 +282,53 @@
         cursor: pointer; 
         transition: background 0.3s ease-in-out;
     }
+
+    #prev {
+        background-color: rgba(128, 128, 128, 0.6); /* Gray with 60% opacity */
+        border-radius: 50%;
+        padding: 10px;
+        width: 40px; /* Adjust as needed */
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.3s ease-in-out; /* Smooth hover effect */
+    }
+
+        #prev img {
+            width: 20px; /* Adjust size of arrow */
+            height: auto;
+        }
+
+        /* Hover effect to make it slightly darker */
+        #prev:hover {
+            background-color: rgba(128, 128, 128, 0.8);
+        }
+
+    #next {
+        background-color: rgba(128, 128, 128, 0.6); /* Gray with 60% opacity */
+        border-radius: 50%;
+        padding: 10px;
+        width: 40px; /* Adjust as needed */
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.3s ease-in-out; /* Smooth hover effect */
+    }
+
+        #next img {
+            width: 20px; /* Adjust size of arrow */
+            height: auto;
+        }
+
+        /* Hover effect to make it slightly darker */
+        #next:hover {
+            background-color: rgba(128, 128, 128, 0.8);
+        }
+
 </style>
 <div id="hero" style="position: relative">
     <div class="fade-bg"></div>

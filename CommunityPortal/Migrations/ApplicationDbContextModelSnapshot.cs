@@ -299,7 +299,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 1,
                             BillingCycleDay = 1,
-                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4592),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 44, 55, 131, DateTimeKind.Utc).AddTicks(4390),
                             CreatedBy = "system",
                             Description = "Default configuration for billing operations",
                             IsActive = true,
@@ -362,7 +362,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 1,
                             Category = "Association Dues",
-                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4470),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 44, 55, 131, DateTimeKind.Utc).AddTicks(4341),
                             DefaultAmount = 2000.00m,
                             Description = "Monthly homeowner association dues",
                             IsActive = true,
@@ -374,7 +374,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 2,
                             Category = "Security and Maintenance",
-                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4482),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 44, 55, 131, DateTimeKind.Utc).AddTicks(4349),
                             DefaultAmount = 1000.00m,
                             Description = "Fees for security personnel and maintenance of common areas",
                             IsActive = true,
@@ -386,7 +386,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 3,
                             Category = "Emergency Fund",
-                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4484),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 44, 55, 131, DateTimeKind.Utc).AddTicks(4351),
                             DefaultAmount = 200.00m,
                             Description = "Contribution to emergency fund for unforeseen community needs",
                             IsActive = true,
@@ -398,7 +398,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 4,
                             Category = "Facility Upkeep",
-                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4485),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 44, 55, 131, DateTimeKind.Utc).AddTicks(4352),
                             DefaultAmount = 500.00m,
                             Description = "Maintenance and upkeep of community facilities",
                             IsActive = true,
@@ -410,7 +410,7 @@ namespace CommunityPortal.Migrations
                         {
                             Id = 5,
                             Category = "Administrative",
-                            CreatedAt = new DateTime(2025, 3, 3, 6, 8, 42, 350, DateTimeKind.Utc).AddTicks(4486),
+                            CreatedAt = new DateTime(2025, 3, 14, 9, 44, 55, 131, DateTimeKind.Utc).AddTicks(4354),
                             DefaultAmount = 300.00m,
                             Description = "Expenses related to administrative functions",
                             IsActive = true,
