@@ -6,7 +6,7 @@
 
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-        <h1>Notification Details</h1>
+        <h1 class="text-white-dm">Notification Details</h1>
         <div>
             <a asp-action="Index" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Back to List
@@ -59,7 +59,7 @@
                                 break;
                             default:
                                 <i class="fas fa-bell text-primary me-2"></i>
-                                <span>General</span>
+                                <span class="text-white-dm">General</span>
                                 break;
                         }
                         <span class="badge @(Model.IsRead ? "bg-secondary" : "bg-primary") ms-2">
@@ -71,7 +71,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title">@Model.Title</h5>
+                    <h5 class="card-title text-white-dm">@Model.Title</h5>
                     <h6 class="card-subtitle mb-3 text-muted">From: @(Model.Sender?.FullName ?? "System")</h6>
                     <p class="card-text">@Model.Message</p>
                     
