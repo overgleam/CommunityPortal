@@ -171,7 +171,7 @@
     <div class="row">
         <div class="col-md-12 mb-4">
             <div class="d-flex justify-content-between align-items-center">
-                <h2>Community Events Calendar</h2>
+                <h2 class="text-white-dm">Community Events Calendar</h2>
                 @if (User.IsInRole("admin"))
                 {
                     <a href="@Url.Action("Create", "Event")" class="btn btn-primary">
@@ -185,7 +185,7 @@
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="legend-container">
-                <h5 class="mb-3">Event Status Legend</h5>
+                <h5 class="mb-3 text-white-dm">Event Status Legend</h5>
                 <div class="legend-item" style="background-color: #007bff">
                     <span class="material-icons">event</span> Scheduled
                 </div>

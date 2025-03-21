@@ -6,7 +6,7 @@
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">@ViewData["Title"]</h1>
+        <h1 class="mb-0 text-white-dm">@ViewData["Title"]</h1>
         @if (User.IsInRole("admin"))
         {
             <a asp-action="Create" class="btn btn-primary">

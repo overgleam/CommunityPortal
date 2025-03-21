@@ -22,7 +22,7 @@
                         <div class="list-group scrollable-chat-list">
                             @foreach (var user in GetUsersByCategory(Model, category))
                             {
-                                <li class="list-group-item d-flex align-items-center user-item" data-user-id="@user.Id">
+                                <li class="list-group-item d-flex align-items-center user-item list-group-item-dm" data-user-id="@user.Id">
                                     @if (!string.IsNullOrEmpty(user.ProfileImagePath))
                                     {
                                         <img src="~/@user.ProfileImagePath" alt="Avatar" class="rounded-circle" width="40" height="40" />
