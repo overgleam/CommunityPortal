@@ -236,3 +236,14 @@ body.dark-mode .table-striped tbody tr:nth-of-type(odd) {
     body.dark-mode .btn-link {
         color: #73C0FC;
     }
+
+.rounded-img {
+    /*    max-width: 100%;
+    height: auto;
+    border-radius: 50% !important;*/
+
+    width: 350px; 
+    height: 200px; 
+    border: 5px solid navy; 
+    object-fit: cover; 
+}

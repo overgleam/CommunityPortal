@@ -4,7 +4,7 @@
 }
 
 <div class="container py-4">
-    <h1 class="mb-4">Billing Dashboard</h1>
+    <h1 class="mb-4 text-white-dm">Billing Dashboard</h1>
 
     <div class="row">
         <!-- Summary Cards -->
@@ -12,7 +12,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h5 class="text-muted">Total Due</h5>
-                    <h2 class="text-danger font-weight-bold">@Model.TotalDue.ToString("C2")</h2>
+                    <h2 class="text-danger font-weight-bold text-white-dm">@Model.TotalDue.ToString("C2")</h2>
                 </div>
             </div>
         </div>
@@ -20,7 +20,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h5 class="text-muted">Total Paid</h5>
-                    <h2 class="text-success font-weight-bold">@Model.TotalPaid.ToString("C2")</h2>
+                    <h2 class="text-success font-weight-bold text-white-dm">@Model.TotalPaid.ToString("C2")</h2>
                 </div>
             </div>
         </div>
@@ -28,7 +28,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h5 class="text-muted">Total Bills</h5>
-                    <h2 class="text-primary font-weight-bold">@Model.TotalBills</h2>
+                    <h2 class="text-primary font-weight-bold text-white-dm">@Model.TotalBills</h2>
                     <p class="text-success mb-0">@Model.PaidBills Paid</p>
                 </div>
             </div>
@@ -37,7 +37,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h5 class="text-muted">Overdue Bills</h5>
-                    <h2 class="@(Model.OverdueBills > 0 ? "text-danger" : "text-success") font-weight-bold">
+                    <h2 class="@(Model.OverdueBills > 0 ? "text-danger" : "text-success") font-weight-bold text-white-dm">
                         @Model.OverdueBills
                     </h2>
                 </div>

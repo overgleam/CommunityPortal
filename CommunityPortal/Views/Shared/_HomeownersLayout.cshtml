@@ -6,7 +6,7 @@
     ApplicationUser currentUser = null;
     // Default profile image path (ensure this exists in wwwroot/images/)
     var profileImageUrl = Url.Content("~/images/default-profile.jpg");
-    var userRole = "homeowners";
+    var userRole = "homeowner";
     
     if (User.Identity.IsAuthenticated)
     {
@@ -301,7 +301,7 @@
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 <img src="@profileImageUrl" alt="Profile" class="me-md-2">
                                 <div class="user-info d-none d-md-block">
-                                    <p class="user-name">@User.Identity.Name</p>
+                                    <p class="user-name text-white-dm">@User.Identity.Name</p>
                                     <p class="user-role">@userRole</p>
                                 </div>
                                 <i class="material-icons ms-1 d-none d-md-block">expand_more</i>
@@ -351,7 +351,7 @@
                 </div>
                 <div class="col-md-4 text-center text-md-end">
                     <div class="footer-contact">
-                        <p class="mb-0"><i class="material-icons">email</i> <a href="mailto:contact@communityportal.com">contact@communityportal.com</a></p>
+                        <p class="mb-2"><i class="material-icons">email</i> <a href="mailto:contact@communityportal.com">contact@communityportal.com</a></p>
                         <p class="mb-0"><i class="material-icons">phone</i> <a href="tel:+11234567890">+1 (123) 456-7890</a></p>
                     </div>
                 </div>
