@@ -134,10 +134,13 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var context = services.GetRequiredService<ApplicationDbContext>();
+    context.Database.EnsureCreated(); // Creates DB if it does not exist
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var logger = services.GetRequiredService<ILogger<Program>>();
+    
 
     var roles = new[] { "admin", "staff", "homeowners" };
 
